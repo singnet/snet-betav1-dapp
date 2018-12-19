@@ -1171,17 +1171,22 @@ async waitForTransaction(hash) {
                            <p> {this.state.tagsall.map(rowtags => <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
                            
                         <div className="text-right border-top1">
-                       {(typeof web3 !== 'undefined')?
-                       (web3.eth.coinbase !== null)?
-                       <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
-                                :  <Button type="button" variant="contained"  disabled>Start
-                                
-                                Job</Button>:
-                                <Button type="button" variant="contained"  disabled>Start
-                                
-                                Job</Button>
-
-                               } 
+                       {
+                       (typeof web3 !== 'undefined' && web3.eth.coinbase !== null)?
+                       this.state.userservicestatus.map(row => {
+                        ((row["service_id"]===this.state.modaluser["service_id"])? 
+                            ((row["is_available"] ===1)?
+                                   <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
+                                     :  <Button type="button" variant="contained"  disabled>Start
+                                          Job</Button>)
+                                     :
+                                       <Button type="button" variant="contained"  disabled>Start
+                                       Job</Button>
+                         ) }
+                        )
+                        : <Button type="button" variant="contained"  disabled>Start
+                        Job</Button>
+                       }
                       </div>
                         
                     </div>
