@@ -1,0 +1,162 @@
+.profile-page {
+	font-family: 'Roboto',sans-serif;
+}
+ 
+.ProfilegridWrapper {
+	display: grid;
+	height: 250px;
+	width: 100%;
+	grid-template-rows: 250px  1fr;
+	grid-template-columns: 5% 40% 5% 40%;
+	font-family: 'Roboto',sans-serif;
+	}
+.profilegridspacer{
+	 
+	  width:100%;
+}
+.wrapper {
+	width: 75%;
+	margin: 30px auto;
+}
+
+.amount-type{width: 100% !important;}
+
+
+.amount-type {
+	border-radius: 5px;
+	border-top: 3px solid #0066ff;
+	font-family: 'Roboto',sans-serif;
+	font-size: 15px;
+	box-shadow: 1px 1px 10px #e0dbdb;
+	padding: 0 15px;
+	margin: 20px 0;
+	}
+
+
+
+
+
+.authorize-deposit-withdraw { padding-bottom: 32px; }
+
+.authorize-deposit-withdraw a { 
+	border-bottom: 2px solid #959595;
+	padding: 0 10px 7px;
+	margin-right: 35px;
+	font-size: 15px;
+	text-transform: uppercase;
+	color: #959595;
+}
+
+.authorize-deposit-withdraw a:hover {
+	border-bottom: 2px solid #0066ff;
+	text-decoration: none;
+	color: #0066ff;
+}
+
+.authorize-deposit-withdraw .active {
+	border-bottom: 2px solid #0066ff; 
+	color: #0066ff;
+}
+
+
+.confirm-btn {
+	float: right;
+	color: #fff;
+	background-color: #0066ff;
+	border: 1px solid #0066ff;
+	border-radius: 50px;
+	padding: 7px 28px;
+	margin-top: 10px;
+	font-size: 14px;
+}
+
+.channel-info {
+	height: 485px;
+	overflow: auto;
+	border-radius: 5px;
+	border-top: 3px solid #0066ff;
+	padding: 15px 15px 35px;
+	margin-top: 30px;
+	box-shadow: 1px 1px 10px #e0dbdb;
+}
+
+.channel-header {
+	font-size: 15px;
+	font-weight: bold;
+	
+}
+
+.channel-detail-block {
+	margin: 25px 0;
+	box-shadow: 1px 1px 11px 0px #bcd7ff;
+}
+
+.channel-details {
+	padding: 15px 0;
+	background-color: #f7fbff;
+}
+
+.toggle-btn {
+	float: right;
+	border: none;
+	background: none;
+}
+
+.channel-confirmation { 
+	display: none;
+	background: #f1f1f1;
+	text-align: right;
+}
+
+.show-confirmation { display: block; }
+
+.channel-confirmation div {
+	padding-top: 10px;
+	padding-bottom: 10px; 
+}
+
+.channel-confirmation div input {
+	border: none;
+	padding: 7px 0;
+	margin-right: 10px;
+}
+
+.channel-confirmation button { 
+	margin-top: 0;
+	float: none;
+}
+
+/* width */
+.channel-info::-webkit-scrollbar {
+	width: 8px;
+	background-color: #c3c3c3;
+}
+
+/* Track */
+.channel-info::-webkit-scrollbar-track {
+	box-shadow: inset 0 0 5px grey; 
+	border-radius: 10px;
+}
+ 
+/* Handle */
+.channel-info::-webkit-scrollbar-thumb {
+	background: #676767; 
+	border-radius: 10px;
+}
+
+
+.MuiCardContent-root-29 {
+padding-top:0px !important;
+}
+.MuiTab-root-81 {
+min-height:30px !important;
+font-size:13px !important;
+}
+.MuiTabs-root-72 {
+min-height:34px !important;
+}
+
+.MuiInputLabel-shrink-110 {
+transform: translate(0, 1.5px) scale(1) !important;
+}
+
