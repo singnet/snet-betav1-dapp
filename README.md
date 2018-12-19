@@ -6,6 +6,7 @@ The Dapp uses the SingularityNET contracts deployed on the Kovan testnet.
 To get Kovan AGI to use the Dapp you can use the official [SingularityNET AGI Faucet](https://faucet.singularitynet.io/).
 To get Kovan ETH to pay for gas costs you should refer to [this repo](https://github.com/kovan-testnet/faucet).
 
+# The beta dapp is under active development and will see several changes in the upcoming weeks#
 ## How to call a Service
 The DApp can currently only interact with services that match the API of the example service. This will change in the future as we support a generic mechanism to declaratively describe a service's API. 
 
