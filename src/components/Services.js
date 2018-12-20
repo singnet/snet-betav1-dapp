@@ -1254,14 +1254,14 @@ async waitForTransaction(hash) {
       {valueTab === 1 && <TabContainer >
         <div className="row">
         <div  className="col-md-3 col-lg-3" style={{fontSize:"13px",marginLeft:"10px"}}>Service Name</div><div className="col-md-3 col-lg-3"> 
-        <input type="text" ref="serviceref" style={{height:"40px",width:"250px",fontSize:"13px"}} onChange={(e) =>this.changehandlerservicename(e,this.state.modaluser)}></input>
+        <input type="text" ref="serviceref" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom:"5px"}} onChange={(e) =>this.changehandlerservicename(e,this.state.modaluser)}></input>
        
         
         </div>
         </div>
         <div className="row">
         <div  className="col-md-3 col-lg-3" style={{fontSize:"13px",marginLeft:"10px"}}>Method Name</div><div className="col-md-3 col-lg-3"> 
-        <input type="text" style={{height:"40px",width:"250px",fontSize:"13px"}} ref="methodref" onChange={() =>this.changehandlermethodname()} ></input>
+        <input type="text" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom:"5px"}} ref="methodref" onChange={() =>this.changehandlermethodname()} ></input>
      
         </div>
         </div>
