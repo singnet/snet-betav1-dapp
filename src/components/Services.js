@@ -209,20 +209,22 @@ class SampleServices extends React.Component {
  
    changehandlermethodname()
    {
-     
-    var el = ReactDOM.findDOMNode(this.refs.methodref)
+     var strmethod = this.refs.methodref
+    this.setState({inputmethodname:strmethod})
+    /*var el = ReactDOM.findDOMNode(this.refs.methodref)
     var strmethod = el.options[el.selectedIndex].text;
-    console.log("methodname " + strmethod)
-     this.setState({inputmethodname:strmethod})
+    console.log("methodname " + strmethod)*/
+     
    }
    changehandlerservicename(e,data)
    {
-    // var el = this.refs.serviceref
-    this.setState({servicemethodnames:[]})
+     var strservice = this.refs.serviceref
+    this.setState({inputservicename:strservice})
+    /*this.setState({servicemethodnames:[]})
     var el = ReactDOM.findDOMNode(this.refs.serviceref)
     var strservice = el.options[el.selectedIndex].text;
     
-     this.setState({inputservicename:strservice})
+     
 
      let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) +data["org_id"] +"/"+ data["service_idfier"] 
 
@@ -233,15 +235,14 @@ fetch( encodeURI(_urlservicebuf))
   console.log(serviceSpecJSON)
 
 
-  var methods = Object.keys(serviceSpecJSON.nested[strservice].methods)
-  console.log(methods)
-  this.setState({servicemethodnames:["Select a method",methods]})
-  /*const method = Object.keys(serviceSpecJSON.nested).find(key =>
-    typeof serviceSpecJSON.nested[key] === "Object"
-    
-    )*/
+  //var servicedets = Object.keys(serviceSpecJSON.nested[strservice])
+  //var servicedets = Object.keys(serviceSpecJSON.nested[strservice])
+  var servicedets = Object.keys(servicedets["example_service"].Calculator.methods)
+  console.log(servicedets)
+  this.setState({servicemethodnames:["Select a method",servicedets]})
+ 
 }
-)
+)*/
    }
    changehandlerervicejson(e)
    {
@@ -710,7 +711,7 @@ handlehealthsort()
   handlerInvokeJob(data,dataservicestatus)
   {
 //find user balanceOf
-
+var user_address = web3.eth.defaultAccount
 let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
 mpeTokenInstance.balances(user_address, (err, balance) => {
  if (balance > 0)
@@ -858,6 +859,14 @@ fetch( encodeURI(_urlservicebuf))
                    {
                     serviceobject.push(rr)
                    }
+                   else if (serviceSpecJSON.nested[rr].hasOwnProperty("nested"))
+                   {
+                    //serviceobject.push(rr)
+                    //var objservicenested =Object.keys(serviceSpecJSON.nested[rr])
+                     serviceobject =Object.keys(serviceSpecJSON.nested[rr].nested);
+                   // serviceobject.push(objservicenested)
+                   }
+
                   }
     )
   
@@ -1243,20 +1252,14 @@ async waitForTransaction(hash) {
       {valueTab === 1 && <TabContainer >
         <div className="row">
         <div  className="col-md-3 col-lg-3" style={{fontSize:"13px",marginLeft:"10px"}}>Service Name</div><div className="col-md-3 col-lg-3"> 
-        <select id="select1" style={{height:"40px",width:"250px",fontSize:"13px"}} ref="serviceref"  onChange={(e) =>this.changehandlerservicename(e,this.state.modaluser)}>
-        <option>Select a service</option>
-        {this.state.servicestatenames.map((rowservice,index) => 
-        <option value={index}>{rowservice}</option>)}
-       </select>
+        <input type="text" ref="serviceref" style={{height:"40px",width:"250px",fontSize:"13px"}} onChange={(e) =>this.changehandlerservicename(e,this.state.modaluser)}></input>
+       
+        
         </div>
         </div>
         <div className="row">
         <div  className="col-md-3 col-lg-3" style={{fontSize:"13px",marginLeft:"10px"}}>Method Name</div><div className="col-md-3 col-lg-3"> 
-        <select style={{height:"40px",width:"250px",fontSize:"13px"}} ref="methodref" onChange={this.changehandlermethodname} >
-        
-        {this.state.servicemethodnames.map((rowmethod,index) => 
-        <option value={index}>{rowmethod}</option>)}
-       </select>
+        <input type="text" style={{height:"40px",width:"250px",fontSize:"13px"}} ref="methodref" onChange={() =>this.changehandlermethodname()} ></input>
      
         </div>
         </div>
