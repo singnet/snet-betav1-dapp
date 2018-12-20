@@ -142,6 +142,7 @@ class SampleServices extends React.Component {
       depositopenchannelrecpt:'',
       userchannelstateinfo:[],
       depositextenderror:'',
+      runjobstate:false,
     };
 
     this.network = new Network();
@@ -223,7 +224,7 @@ class SampleServices extends React.Component {
     
      this.setState({inputservicename:strservice})
 
-     let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) +data["organization_name"] +"/"+ data["service_name"] 
+     let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) +data["org_id"] +"/"+ data["service_idfier"] 
 
 fetch( encodeURI(_urlservicebuf))
 .then( serviceSpecResponse  =>  serviceSpecResponse.json())
@@ -321,6 +322,7 @@ else {
     }
     var user_address = web3.eth.defaultAccount
     let mpeInstance = this.network.getMPEInstance(this.state.chainId);
+    var amountInWei = AGI.inWei(web3,this.state.ocvalue);
     //GetChannel from MPE service//
     //if we get channel then pick one channel and check balance in channel//
     console.log('channel object ' + this.state.userchannelstateinfo["endpoint"])
@@ -339,7 +341,7 @@ else {
         {
             var senderAddress = web3.eth.defaultAccount;
     //Get this information from MPE service for endpoint and //
-          var amountInWei = AGI.inWei(web3,this.state.ocvalue);
+          
           var groupidgetter = ''
     
       //pick a channel//
@@ -408,7 +410,7 @@ else {
       
       if (this.state.userchannelstateinfo["channelId"].length === 0)
       {
-    mpeInstance.depositAndOpenChannel(recipientaddress,amountInWei,this.state.ocexpiration,groupidgetterhex,senderAddress,{ gas: 210000, gasPrice:51 }, (error, txnHash) => { 
+    mpeInstance.depositAndOpenChannel(senderAddress, recipientaddress,groupidgetterhex, amountInWei,this.state.ocexpiration,{ gas: 210000, gasPrice:51 }, (error, txnHash) => { 
       console.log("Channel opened is TXN Has : " + txnHash);
       this.onOpenchaining()
       
@@ -652,6 +654,24 @@ handlehealthsort()
       .catch(err => console.log(err))
     }
 
+//disabled start job if the service is not up at all - unhealthy agent//
+
+    dataservicestatus.map(row =>
+        {
+          if (row["service_id"]===data["service_id"])
+          {
+            if (row["is_available"] === 1)
+            {
+              this.setState({runjobstate:true})
+              return
+            }
+        }
+        
+        }
+        )
+
+        
+
   }
 
   onCloseModal1(){
@@ -750,7 +770,7 @@ let buff = new Buffer(byteSig);
 let base64data = buff.toString('base64')      
 console.log("Using signature " + base64data)
 
-const serviceurl = this.network.getProtobufjsURL(this.state.chainId) + data["organization_name"] + "/" + data["service_name"];
+const serviceurl = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
 
 console.log("service location is " + encodeURI(serviceurl) )
 console.log("service is" + this.state.inputservicename)
@@ -821,10 +841,10 @@ startjob(data)
   {
   //find user balanceOf
 
-
+console.log("start job clicked here....")
 //let  _urlservicebuf = "http://protobufjs.singularitynet.io/" +data["organization_name"] +"/"+ data["service_name"] 
-let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["organization_name"] + "/" + data["service_name"];
-
+let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
+console.log(_urlservicebuf)
 fetch( encodeURI(_urlservicebuf))
 .then( serviceSpecResponse  =>  serviceSpecResponse.json())
 .then( serviceSpec  => {
@@ -848,16 +868,18 @@ fetch( encodeURI(_urlservicebuf))
 
      let user_address = web3.eth.defaultAccount
      let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
+     console.log('mpe address is ' + this.network.getMPEAddress(this.state.chainId))
      mpeTokenInstance.balances(user_address, (err, balance) => {
-     
+     console.log("balance here is actually" + balance)
     if (balance === 0)//change for testing purpose and remove it later with 0 value here//
       {
         this.onOpenModalAlert()
       //setInterval(() => this.props.history.push("/Profile"),5000)
       }
-      else if (balance > 0)
+      else if (balance  > 0)
       {
         this.setState({startjobfundinvokeres:true}) 
+        this.setState({valueTab:1})
       }
 })//balance closure
 
@@ -1166,28 +1188,29 @@ async waitForTransaction(hash) {
     
          
                     <div className="col-xs-12 col-sm-12 col-md-12 name no-padding">
-                        <h3>{this.state.modaluser["service_name"]}</h3>
+                        <h3>{this.state.modaluser["service_name"]} </h3>
                         
                            <p> {this.state.tagsall.map(rowtags => <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
                            
                         <div className="text-right border-top1">
-                       {
-                       (typeof web3 !== 'undefined' && web3.eth.coinbase !== null)?
-                       this.state.userservicestatus.map(row => {
-                        ((row["service_id"]===this.state.modaluser["service_id"])? 
-                            ((row["is_available"] ===1)?
-                                   <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
-                                     :  <Button type="button" variant="contained"  disabled>Start
-                                          Job</Button>)
-                                     :
-                                       <Button type="button" variant="contained"  disabled>Start
-                                       Job</Button>
-                         ) }
-                        )
-                        : <Button type="button" variant="contained"  disabled>Start
-                        Job</Button>
-                       }
-                      </div>
+                      
+                        {(typeof web3 !== 'undefined')?
+                       (web3.eth.defaultAccount !== null)?
+ 
+                          (this.state.runjobstate === true)?
+                        <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
+                        :  <button type="button" className="btn-start"  disabled>Start
+                                
+                        Job</button>
+                                :  <button type="button" className="btn-start"  disabled>Start
+                                
+                                Job</button>:
+                                <button type="button" className="btn-start"  disabled>Start
+                                
+                                Job</button>
+
+                               } 
+                               </div>
                         
                     </div>
                    
