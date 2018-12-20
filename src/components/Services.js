@@ -209,7 +209,7 @@ class SampleServices extends React.Component {
  
    changehandlermethodname()
    {
-     var strmethod = this.refs.methodref
+     var strmethod = this.refs.methodref.value
     this.setState({inputmethodname:strmethod})
     /*var el = ReactDOM.findDOMNode(this.refs.methodref)
     var strmethod = el.options[el.selectedIndex].text;
@@ -218,7 +218,7 @@ class SampleServices extends React.Component {
    }
    changehandlerservicename(e,data)
    {
-     var strservice = this.refs.serviceref
+     var strservice = this.refs.serviceref.value
     this.setState({inputservicename:strservice})
     /*this.setState({servicemethodnames:[]})
     var el = ReactDOM.findDOMNode(this.refs.serviceref)
@@ -626,6 +626,7 @@ handlehealthsort()
     this.setState({valueTab:0})
     this.setState({channelstateid:'' })
     this.setState({startjobfundinvokeres:false})
+    this.setState({runjobstate:false})
     this.setState({inputservicejson:{}})
     this.setState({depositopenchannelerror:''})
 
@@ -752,6 +753,7 @@ dataservicestatus.map((row) => {console.log(row)
 }
 } 
 )
+console.log("service is" + this.state.inputservicename + "and method name is " +  this.state.inputmethodname)
 var from = web3.eth.defaultAccount
 console.log(contractAddrForMPE +" " + this.state.channelstateid+"  " + data['price']);
 //var msg = web3.sha3(contractAddrForMPE, this.state.channelstateid, 0, data['price']);
