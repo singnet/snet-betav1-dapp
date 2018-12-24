@@ -1,3 +1,6 @@
+dist/bundle.*
+dist/index.html
+
 # Logs
 logs
 *.log

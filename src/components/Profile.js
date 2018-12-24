@@ -22,7 +22,7 @@ import BigNumber from 'bignumber.js';
 
 const TabContainer = (props) => {
   return (
-    <Typography component="div">
+    <Typography component="div" style={{padding:"21px"}}>
       {props.children}
     </Typography>
   );
@@ -87,6 +87,7 @@ export class Profile extends Component {
       amount: 0,
       tokenbalance: 0,
       escrowaccountbalance: 0,
+      allowedtokenbalance:[],
       value: 0,
       authorizeamount: 0,
       depositamount: 0,
@@ -104,6 +105,7 @@ export class Profile extends Component {
       depositerror:'',
       withdrawalerror:'',
       depositextenderror:'',
+      
     }
     //this.eth = undefined;
     this.web3Initialized = false;
@@ -254,11 +256,22 @@ export class Profile extends Component {
           this.setState({ escrowaccountbalance: balance });
           return;
         }
-        balance = balance / 10 ** 18
-        console.log("balance of user is  " + balance / 10 ** 6);
+        //balance = balance / 10 ** 18
+        console.log("balance of user is  " + balance);
         this.setState({ escrowaccountbalance: balance });
       }))
     }
+    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
+
+    instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
+      if (err)
+      {
+        console.log(err)
+        this.setState({allowedtokenbalance:allowedbalance["c"]})
+      }
+      this.setState({allowedtokenbalance:allowedbalance["c"]})
+    }
+    )
   }
 
   watchWallet() {
@@ -273,6 +286,8 @@ export class Profile extends Component {
         this.setState({ ethBalance: balance });
       }
     });
+
+ 
   }
 
   nextJobStep() {
@@ -338,7 +353,7 @@ export class Profile extends Component {
         console.log("balance of user is on " + balance / 10 ** 6)
       })
 
-      var allowed_bal = 0
+      
       //In allowance owner is useraddress and spender is the MPE address
       instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
         let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
@@ -460,9 +475,12 @@ export class Profile extends Component {
 
         <div className="container">
 
+
           <div className="row">
-            <div className=" col-xs-12 col-sm-12 col-md-6 col-lg-6 mtb-20">
+            <div className=" col-xs-12 col-sm-12 col-md-6 col-lg-6 your-account-details" >
+                <h3>Your Account details</h3>
               <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 agent-detail">
+              
 
                 <div className="row">
                   <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10"><label>Account</label></div>
@@ -489,25 +507,33 @@ export class Profile extends Component {
                     : null}
                 </div>
                 <div className="row">
-                  <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10"><label>Balance</label></div>
-                  <Tooltip title={<span style={{ fontSize: "15px" }}>Balance</span>}>
+                  <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10"><label>Wallet Balance</label></div>
+                  <Tooltip title={<span style={{ fontSize: "15px" }}>Wallet Balance</span>}>
                     <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding "><label >{this.state.ethBalance / 10 ** (18)} ETH</label></div></Tooltip>
                 </div>
                 <div className="row">
                   <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10"><label>Escow Balance</label></div>
                   <Tooltip title={<span style={{ fontSize: "15px" }}>Escow Balance</span>}>
-                    <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding "><label >{this.state.escrowaccountbalance} ETH</label></div></Tooltip>
+                    <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding "><label >{AGI.toDecimal(this.state.escrowaccountbalance)} AGI</label></div></Tooltip>
+                </div>
+                <div className="row">
+                  <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10"><label>Authorized Tokens</label></div>
+                  <Tooltip title={<span style={{ fontSize: "15px" }}>Authorized Tokens</span>}>
+                    <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding "><label>{AGI.toDecimal(this.state.allowedtokenbalance)} AGI</label></div></Tooltip>
                 </div>
               </div>
+            
+              
             </div>
 
-            <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 mtb-20" >
-              <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
+            <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 manage-account" >
+              <h3>Manage your Escrow account</h3>
 
+              <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
                 <Tabs style={{ padding: "0" }} value={value} onChange={(event, value) => this.handleChange(event, value)} indicatorColor='primary'>
-                  <Tab label={<span style={{ fontSize: "13px" }}>Authorize</span>} />
-                  <Tab label={<span style={{ fontSize: "13px" }}>Deposit</span>} />
-                  <Tab label={<span style={{ fontSize: "13px" }}>WithDraw</span>} />
+                  <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
+                  <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
+                  <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
                 </Tabs>
                 {value === 0 && <TabContainer>
                   <TextField
@@ -517,25 +543,21 @@ export class Profile extends Component {
                     onChange={this.changeAuthorizeAmount}
                     value={this.state.authorizeamount}
                     style={{ width: "100%", fontWeight: "bold" }}
-
                     onKeyPress={(e) => this.onKeyPressvalidator(e)}
                   /><br />
                   <div className="row">
                   <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.approveerror!== '' ?ERROR_UTILS.sanitizeError(this.state.approveerror):''}</div>
                   <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-
                     {(typeof web3 !== 'undefined') ?
                       (web3.eth.coinbase !== null) ?
                         <Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>} style={{ fontsize: "15px" }}><button className="btn btn-primary mtb-10 " onClick={this.handleAuthorize} ><span>Authorize</span></button></Tooltip> :
                         <button className="btn btn-primary mtb-10" disabled><span >Authorize</span></button> :
                          <button className="btn btn-primary mtb-10" disabled><span >Authorize</span></button>
                     }
-                    
                   </div>
                   </div>
                 </TabContainer>}
                 {value === 1 && <TabContainer>
-
                   <TextField
                     id="depositamt"
                     label={<span style={{ fontSize: "13px" }}>Amount</span>}
@@ -543,7 +565,6 @@ export class Profile extends Component {
                     onChange={this.changeDepositAmount}
                     value={this.state.depositamount}
                     style={{ width: "100%", fontWeight: "bold" }}
-
                     onKeyPress={(e) => this.onKeyPressvalidator(e)}
                   />
                   <br />
@@ -558,8 +579,6 @@ export class Profile extends Component {
                     }
                   </div>
                   </div>
-                  
-
                   <p style={{ color: "red", fontSize: "14px" }}>{this.state.depositwarning}</p>
                 </TabContainer>}
                 {value === 2 && <TabContainer>
@@ -570,14 +589,12 @@ export class Profile extends Component {
                     onChange={this.changeWithDrawalAmount}
                     value={this.state.withdrawalamount}
                     style={{ width: "100%", fontWeight: "bold" }}
-
                     onKeyPress={(e) => this.onKeyPressvalidator(e)}
                   />
                   <br />
                   <div className="row">
                   <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.withdrawalerror!== '' ?ERROR_UTILS.sanitizeError(this.state.withdrawalerror):''}</div>
                   <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-
                     {(typeof web3 !== 'undefined') ?
                       (web3.eth.coinbase !== null) ?
                         <Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>} >
@@ -587,12 +604,11 @@ export class Profile extends Component {
                       : <button className="btn" disabled><span style={{ fontSize: "15px" }}>WithDraw</span></button>
                     }
                   </div>
-                  </div>
-                  
+                  </div> 
+                  <p></p>
                 </TabContainer>}
               </div>
             </div>
-
             <div>
               <Modal style={ModalStylesAlertWait}
                 open={this.state.openchaining}
@@ -651,25 +667,28 @@ export class Profile extends Component {
                     <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["expiration"]}</span></Typography></div>
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails style={{ backgroundColor: "#F1F1F1" }}>
-                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 pull-right" >
+                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-7 no-padding" >
+                    lorem ipsum
+                    </div>
+                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-5 pull-right" >
                       <div className="row">
-                        <div className="col-md-4 pull-right no-padding">
+                        <div className="col-md-12 pull-right no-padding">
                           <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
                             <label>Amount</label></div>
                           <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
                             <Tooltip title={<span style={{ fontSize: "15px" }}>Amount</span>}>
-                              <input type="text" value={this.state.extamount} name="amount" className="border height-35" onChange={(e) => this.extamountchange(e)} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
+                              <input type="text" value={this.state.extamount} name="amount" className="channels-input" onChange={(e) => this.extamountchange(e)} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                             </Tooltip>
                           </div>
                         </div>
                       </div>
                       <div className="row">
-                        <div className="col-md-4 pull-right no-padding">
+                        <div className="col-md-12 pull-right no-padding">
                           <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
                             <label>New Expiration</label></div>
                           <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
                             <Tooltip title={<span style={{ fontSize: "15px" }}>Expiration</span>}>
-                              <input type="text" value={this.state.extexp} name="newexpiration" className="border height-35" onChange={(e) => this.Expirationchange(e)} />
+                              <input type="text" value={this.state.extexp} name="newexpiration" className="channels-input" onChange={(e) => this.Expirationchange(e)} />
                             </Tooltip>
                           </div>
                         </div>

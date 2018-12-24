@@ -3,7 +3,6 @@ import PropTypes, { array } from 'prop-types';
 import Eth from 'ethjs';
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import Pagination from "material-ui-flat-pagination";
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
@@ -14,7 +13,6 @@ import {  AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import ReactDOM from 'react-dom';
 import Network from "./Network.js"
 
 
@@ -88,6 +86,9 @@ const theme = createMuiTheme({
     },
   },
 });
+
+const BLOCK_OFFSET = 6000 //# blocks generated in 25 hrs
+
 class SampleServices extends React.Component {
   constructor(props) {
     super(props);
@@ -141,7 +142,16 @@ class SampleServices extends React.Component {
       depositopenchannelerror:'',
       depositopenchannelrecpt:'',
       userchannelstateinfo:[],
+      depositextenderror:'',
+      runjobstate:false,
     };
+
+    this.serviceState = {
+      serviceSpecJSON : undefined,
+      channels : undefined,
+      groupId : undefined,
+      endpoint : undefined
+    }
 
     this.network = new Network();
     this.web3Initialized = false;
@@ -201,28 +211,29 @@ class SampleServices extends React.Component {
         this.setState({ chainId: chainId });
         this.loadDetails();
       }
-
     });
   }
  
    changehandlermethodname()
    {
-     
-    var el = ReactDOM.findDOMNode(this.refs.methodref)
+     var strmethod = this.refs.methodref.value
+    this.setState({inputmethodname:strmethod})
+    /*var el = ReactDOM.findDOMNode(this.refs.methodref)
     var strmethod = el.options[el.selectedIndex].text;
-    console.log("methodname " + strmethod)
-     this.setState({inputmethodname:strmethod})
+    console.log("methodname " + strmethod)*/
+     
    }
    changehandlerservicename(e,data)
    {
-    // var el = this.refs.serviceref
-    this.setState({servicemethodnames:[]})
+     var strservice = this.refs.serviceref.value
+    this.setState({inputservicename:strservice})
+    /*this.setState({servicemethodnames:[]})
     var el = ReactDOM.findDOMNode(this.refs.serviceref)
     var strservice = el.options[el.selectedIndex].text;
     
-     this.setState({inputservicename:strservice})
+     
 
-     let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) +data["organization_name"] +"/"+ data["service_name"] 
+     let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) +data["org_id"] +"/"+ data["service_idfier"] 
 
 fetch( encodeURI(_urlservicebuf))
 .then( serviceSpecResponse  =>  serviceSpecResponse.json())
@@ -231,15 +242,14 @@ fetch( encodeURI(_urlservicebuf))
   console.log(serviceSpecJSON)
 
 
-  var methods = Object.keys(serviceSpecJSON.nested[strservice].methods)
-  console.log(methods)
-  this.setState({servicemethodnames:["Select a method",methods]})
-  /*const method = Object.keys(serviceSpecJSON.nested).find(key =>
-    typeof serviceSpecJSON.nested[key] === "Object"
-    
-    )*/
+  //var servicedets = Object.keys(serviceSpecJSON.nested[strservice])
+  //var servicedets = Object.keys(serviceSpecJSON.nested[strservice])
+  var servicedets = Object.keys(servicedets["example_service"].Calculator.methods)
+  console.log(servicedets)
+  this.setState({servicemethodnames:["Select a method",servicedets]})
+ 
 }
-)
+)*/
    }
    changehandlerervicejson(e)
    {
@@ -272,8 +282,8 @@ fetch( encodeURI(_urlservicebuf))
   GetEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress)
   {
 
-   //var startingBlock = web3.eth.getBlockNumber()
-   var startingBlock = 9510097;
+   var startingBlock = web3.eth.getBlockNumber()
+   //var startingBlock = 9510097;
   
     var MPEChannelId = ''
 var evt =mpeInstance.ChannelOpen({sender: senderAddress}, {fromBlock: startingBlock, toBlock: 'latest'});
@@ -314,115 +324,104 @@ else {
   
   openchannelhandler(data,dataservicestatus)
   {
-    
     if(web3 === 'undefined') {
       return;
     }
     var user_address = web3.eth.defaultAccount
     let mpeInstance = this.network.getMPEInstance(this.state.chainId);
-    //GetChannel from MPE service//
-    //if we get channel then pick one channel and check balance in channel//
-    let serviceid = data["service_id"]
-    let orgname = data["organization_name"]
-    let channeldataouter =[]
-    if (typeof web3 !== 'undefined'){
-      let _urlfetchchannelinfo = this.network.getMarketplaceURL(this.state.chainId) +'channel-info'
-      fetch(_urlfetchchannelinfo,{'mode':'cors',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: 'POST',
-      body: JSON.stringify({user_address:web3.eth.coinbase,service_id:serviceid,org_name:orgname})
-     /* body: JSON.stringify({
-        "user_address":"0x265c146da19aCd8670603aA86e3927775bfce9dd",
-        "service_id":"43",
-        "org_name":"dapp-org"})*/
+    var amountInWei = AGI.inWei(web3,this.state.ocvalue);
 
-      }
-      
-      )
-      .then(res => res.json())
-     .then(channeldata => //this.setState({userchannelstateinfo:channeldata})
-    { 
-      channeldata.map(rrchanneldata => console.log('object is in with length ' + rrchanneldata))
-    }
-     )
-      .catch(err => console.log(err))
-    }
-
-   // channeldataouter.map((rr) => console.log('object array1 is ' + rr["endpoint"]))
-
-    mpeInstance.balances(user_address,(err,balance) =>{
-    if (balance === 0)//change for testing purpose and remove it later with 0 value here//
+    console.log('channel object ' + this.state.userchannelstateinfo["endpoint"])
+    mpeInstance.balances(user_address,(err,balance) => {
+    if (balance === 0 && typeof this.state.channelstateid === 'undefined')
     {
         this.onOpenModalAlert()
     }
-    else if (balance > 0)
-      {
-   
-    var senderAddress = web3.eth.defaultAccount;
-    //Get this information from MPE service for endpoint and //
-    
-    var groupidgetter = ''
-    dataservicestatus.map((row) => {console.log(row)
-            if (row["service_id"] === data["service_id"])
+    /*else if (typeof this.state.channelstateid !== 'undefined')
+    {
+      console.log("Found channel with balance to do the job " + this.state.channelstateid);
+      this.setState({valueTab:1})
+      this.nextJobStep();
+    }*/
+    else //if (balance > 0)
+    {
+      console.log("MPE has balance but have to check if we need to open a channel or extend one. Balance is " + balance);
+        if (typeof this.state.userchannelstateinfo !== 'undefined')
+        {
+            var senderAddress = web3.eth.defaultAccount;
+            console.log('Examining channels ' +  this.state.userchannelstateinfo["groupId"])
+            var groupidgetter = this.state.userchannelstateinfo["groupId"]
+            var groupidgetterhex = atob(groupidgetter); 
+            var recipientaddress = ''
+
+            Object.values(data["groups"]).map((rr) => recipientaddress = rr["payment_address"])
+            console.log("group id is " + groupidgetter)
+            console.log("recipient address is " + recipientaddress )
+            console.log('groupdidgetter hex is ' + groupidgetterhex)
+            console.log(this.state.ocvalue);
+            console.log(this.state.ocexpiration);
+            console.log(senderAddress);            
+        
+            if (this.serviceState.channels.length > 0)
             {
-                    if (row["is_available"] === 1)
-                    {
-                     // console.log("service is available for this groupid")
-                     // console.log('row of groups are ' + row["groups"])
-                      row["groups"].map(rgg => {
-
-                        if (rgg["is_available"] === 1)
-                        {
-                            // console.log('groups id ' + rgg)
-                              groupidgetter = rgg["group_id"]
-                        }           
-                    })
-            }
-          }
-    } 
-    )
-    //console.log(Object.values(data["groups"]))
-    var recipientaddress = ''
-    Object.values(data["groups"]).map((rr) => recipientaddress = rr["payment_address"])
-    console.log("group id is " + groupidgetter)
-    console.log("recipient address is " + recipientaddress )
-    var groupidgetterhex = atob(groupidgetter); //Buffer.from(groupidgetter, 'utf8').toString('hex');
-    console.log('groupdidgetter hex is ' + groupidgetterhex)
-   
-     //MPE Contract ABI
-
-    //need to accept inputs/##inputsforvalue
-    console.log(this.state.ocvalue);
-    console.log(this.state.ocexpiration);
-    console.log(senderAddress);
-    var amountInWei = AGI.inWei(web3,this.state.ocvalue);
-    mpeInstance.depositAndOpenChannel(recipientaddress,amountInWei,this.state.ocexpiration,groupidgetterhex,senderAddress,{ gas: 210000, gasPrice:51 }, (error, txnHash) => { 
-      console.log("Channel opened is TXN Has : " + txnHash);
-     // this.onOpenchaining()
+              console.log("Found an existing channel, will try to extend it ");
+              var rrchannels = this.serviceState.channels[0]
+              /*if (rrchannels["balance"] > data["price"])
+              {
+                this.setState({valueTab:1})
+              }
+              else */
+              console.log("Existing channel is " + JSON.stringify(rrchannels));
+              if (rrchannels["balance"] <= data["price"])
+              {
+                console.log("Channel balance is less, extending it Channel balance - " + rrchannels["balance"]);
+                mpeInstance.channelExtendAndAddFunds(rrchannels["channelId"], this.state.ocexpiration, amountInWei, { gas: 210000, gasPrice: 51 }, (error, txnHash) => {
       
-      this.waitForTransaction(txnHash).then(receipt => {
-        console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + senderAddress);
-        this.setState({depositopenchannelrecpt:receipt})
-        //this.nextJobStep();
-      })
-      .catch((error) => this.setState({depositopenchannelerror:error}))
-    
-     //channeladdfunds//
-      })
-      /*this.GetEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress)
-      if (this.state.channelstateid !== '' && this.state.depositopenchannelrecpt !== '')
-      {
-         this.nextJobStep();
-      }*/
-
-     ///////////////////
-    }
+                console.log("Channel extended and added funds is TXN Has : " + txnHash);
+                this.onOpenchaining()
+                this.waitForTransaction(txnHash).then(receipt => {
+                    console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + senderAddress + 'receipt is ' + receipt);
+                    this.state.channelstateid = rrchannels["channelId"]; 
+                    console.log('ReUsing channel ' + this.state.channelstateid);
+                    this.nextJobStep();
+                    })
+                  .catch((error) => {
+                      this.setState({depositextenderror: error })
+                      this.nextJobStep();
+                    })
+                  })
+              }
+              else
+              {
+                console.log("Blackhole in openchannel handler");
+              }       
+            }
+            else
+            {
+              console.log("No Channel found to going to deposit from MPE and open a channel");
+              //if (this.state.userchannelstateinfo["channelId"].length === 0)
+              mpeInstance.depositAndOpenChannel(senderAddress, recipientaddress,groupidgetterhex, amountInWei,this.state.ocexpiration,{ gas: 210000, gasPrice:51 }, (error, txnHash) => 
+              { 
+                console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
+                this.onOpenchaining()
+                
+                this.waitForTransaction(txnHash).then(receipt => {
+                  console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + senderAddress);
+                  this.setState({depositopenchannelrecpt:receipt})
+                  //this.nextJobStep();
+                })
+                .catch((error) => this.setState({depositopenchannelerror:error}))
+              })
+              this.GetEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress)
+              if (this.state.channelstateid !== '' && this.state.depositopenchannelrecpt !== '')
+              {
+                console.log("Using new channel " + this.state.channelstateid);
+                this.nextJobStep();
+              }
+            }
+        }
+  }
   })
-
-  
-
 }
 
 base64ToHex(base64String) {
@@ -548,8 +547,7 @@ handlehealthsort()
     fetch(_url,{'mode':'cors',
     'Access-Control-Allow-Origin':'*'})
     .then(res => res.json())
-    .then(data => this.setState({agents:data})
-                  )
+    .then(data => this.setState({agents:data})).then(this.handlehealthsort)
   
   //fetchprofile service
   
@@ -607,9 +605,44 @@ handlehealthsort()
     this.setState({valueTab:0})
     this.setState({channelstateid:'' })
     this.setState({startjobfundinvokeres:false})
+    this.setState({runjobstate:false})
     this.setState({inputservicejson:{}})
-   
     this.setState({depositopenchannelerror:''})
+
+    let serviceid = data["service_id"]
+    let orgname = data["organization_name"]
+    let _urlfetchchannelinfo = this.network.getMarketplaceURL(this.state.chainId) +'channel-info'
+    fetch(_urlfetchchannelinfo,{'mode':'cors',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: 'POST',
+      body: JSON.stringify({user_address:web3.eth.coinbase,service_id:serviceid,org_name:orgname})
+    }).then(res => res.json())
+      .then(channeldata => {
+                    channeldata.map(rr => this.setState({userchannelstateinfo:rr}));
+                    this.populateChannelDetails();
+      }).catch(err => console.log(err))
+
+    if (typeof web3 !== 'undefined') {
+      if (typeof web3.eth.getBlockNumber() !== 'undefined')
+      {
+        this.setState({ocexpiration:(web3.eth.getBlockNumber() + BLOCK_OFFSET)});
+      }
+    }
+
+//disabled start job if the service is not up at all - unhealthy agent//
+    dataservicestatus.map(row =>
+        {
+          if (row["service_id"]===data["service_id"])
+          {
+            if (row["is_available"] === 1)
+            {
+              this.setState({runjobstate:true})
+              return
+            }
+          }
+        })
   }
 
   onCloseModal1(){
@@ -639,16 +672,86 @@ handlehealthsort()
     var ethereumjsabi  = require('ethereumjs-abi'); 
     var sha3Message = ethereumjsabi.soliditySHA3(
       ["address",        "uint256",  "uint256", "uint256"],
-      [contract, parseInt(channelID), 0, parseInt(price)]);
+      [contract, parseInt(channelID), parseInt(nonce), parseInt(price)]);
     var msg = "0x" + sha3Message.toString("hex");
     console.log(msg);
     return msg;
   }
 
+  handleJobInvocation(data,dataservicestatus)
+  {
+    console.log("Invoking service " + this.state.inputservicename + "and method name " +  this.state.inputmethodname)
+    var from = web3.eth.defaultAccount
+    var nonce = 0;
+    if(typeof this.serviceState.channels !== 'undefined' && typeof this.serviceState.channels["nonce"] !== 'undefined') {
+      nonce = this.serviceState.channels["nonce"];
+    }
+
+    var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.state.channelstateid, nonce, data['price']);
+    console.log("Composed message for signing is " + msg)
+    window.ethjs.personal_sign(msg, from)
+    .then((signed) => {
+      console.log('Signed!  Result is: ', signed)
+      var stripped = signed.substring(2,signed.length)
+      var byteSig = Buffer.from(stripped,'hex');
+      let buff = new Buffer(byteSig);  
+      let base64data = buff.toString('base64')      
+      console.log("Using signature " + base64data)
+
+      //this.serviceSpecJSON =>>> Root.fromJSON(serviceSpec[0])
+      const serviceSpecJSON = this.serviceSpecJSON 
+      const serviceName = this.state.inputservicename
+      const methodName = this.state.inputmethodname
+
+      const requestHeaders = {"snet-payment-type":"escrow",
+                              "snet-payment-channel-id":parseInt(this.state.channelstateid), 
+                              "snet-payment-channel-nonce":parseInt(nonce), 
+                              "snet-payment-channel-amount":parseInt(data["price"]),
+                              "snet-payment-channel-signature-bin": base64data}   
+      console.log(requestHeaders);
+      console.log(serviceSpecJSON);
+      const packageName = Object.keys(serviceSpecJSON.nested).find(key =>
+        typeof serviceSpecJSON.nested[key] === "object" &&
+        hasOwnDefinedProperty(serviceSpecJSON.nested[key], "nested")
+      )
+
+      var endpointgetter = this.serviceState.endpoint[0];
+      console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + "endpoint " + endpointgetter);
+
+      if(!endpointgetter.startsWith("http"))
+      {
+        endpointgetter = "http://"+endpointgetter;
+      }
+      const Service = serviceSpecJSON.lookup(serviceName)
+      const serviceObject = Service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
+      const requestObject = JSON.parse(this.state.inputservicejson)
+      console.log('service object is ' + serviceObject)
+      console.log('requestObject is ' + requestObject)
+      grpcRequest(serviceObject, methodName, requestObject)
+        .then(response => {
+          console.log("Got a GRPC response")
+          this.setState({servicegrpcresponse:response.value})
+          console.log("jobResult" + response.value);
+          this.nextJobStep();
+        })
+        .catch((err) => {
+          console.log("GRPC call failed")
+          this.setState({servicegrpcerror:'GRPC call failed ' + err});
+          console.log(err);
+          this.nextJobStep();
+        })  
+      return window.ethjs.personal_ecRecover(msg, signed);
+    }); 
+  }
+
+
   handlerInvokeJob(data,dataservicestatus)
   {
+    if (true) {
+      return this.handleJobInvocation(data,dataservicestatus);
+    }
 //find user balanceOf
-
+var user_address = web3.eth.defaultAccount
 let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
 mpeTokenInstance.balances(user_address, (err, balance) => {
  if (balance > 0)
@@ -689,6 +792,7 @@ dataservicestatus.map((row) => {console.log(row)
 }
 } 
 )
+console.log("service is" + this.state.inputservicename + "and method name is " +  this.state.inputmethodname)
 var from = web3.eth.defaultAccount
 console.log(contractAddrForMPE +" " + this.state.channelstateid+"  " + data['price']);
 //var msg = web3.sha3(contractAddrForMPE, this.state.channelstateid, 0, data['price']);
@@ -697,7 +801,7 @@ console.log(msg)
 var params = [msg, from]
 if (from !== null)
 {
-this.eth.personal_sign(msg, from)
+  window.ethjs.personal_sign(msg, from)
 .then((signed) => {
 console.log('Signed!  Result is: ', signed)
 var stripped = signed.substring(2,signed.length)
@@ -708,7 +812,7 @@ let buff = new Buffer(byteSig);
 let base64data = buff.toString('base64')      
 console.log("Using signature " + base64data)
 
-const serviceurl = this.network.getProtobufjsURL(this.state.chainId) + data["organization_name"] + "/" + data["service_name"];
+const serviceurl = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
 
 console.log("service location is " + encodeURI(serviceurl) )
 console.log("service is" + this.state.inputservicename)
@@ -721,7 +825,7 @@ fetch( encodeURI(serviceurl))
   const methodName = this.state.inputmethodname
   console.log("method name is " + methodName)
   const requestHeaders = {"snet-payment-type":"escrow",
-                          "snet-payment-channel-id":this.state.channelstateid, 
+                          "snet-payment-channel-id":parseInt(this.state.channelstateid), 
                           "snet-payment-channel-nonce":"0", 
                           "snet-payment-channel-amount":parseInt(data["price"]),
                           "snet-payment-channel-signature-bin": base64data}   
@@ -732,6 +836,11 @@ fetch( encodeURI(serviceurl))
     typeof serviceSpecJSON.nested[key] === "object" &&
     hasOwnDefinedProperty(serviceSpecJSON.nested[key], "nested")
   )
+  if(!endpointgetter.startsWith("http"))
+  {
+    endpointgetter = "http://"+endpointgetter;
+  }
+  
   console.log('package name is ' + packageName)
   const Service = serviceSpecJSON.lookup(serviceName)
   const serviceObject = Service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
@@ -757,7 +866,7 @@ fetch( encodeURI(serviceurl))
 
 ////signed and invoked//
 
-return this.eth.personal_ecRecover(msg, signed)
+return window.ethjs.personal_ecRecover(msg, signed)
 }
 ).then((recovered) => {
 
@@ -774,65 +883,110 @@ if (recovered === from) {
 this.setState({valueTab:2})
   }
 
+  populateChannelDetails() {
+    this.serviceState.channels = this.state.userchannelstateinfo["channelId"];
+    if(typeof this.serviceState.channels !== 'undefined') {
+      this.serviceState.channels.map(rr => { rr["balance"] = AGI.toDecimal(rr["balance"])});
+      //rrchannels["balance"] = AGI.toDecimal(rrchannels["balance"]);
+    }
+    
+    this.serviceState.endpoint = this.state.userchannelstateinfo["endpoint"]
+    this.serviceState.groupId = this.state.userchannelstateinfo["groupId"];
+  }
 
-startjob(data)
+ findChannelWithBalance(data) {
+  if (typeof this.state.userchannelstateinfo !== 'undefined')
   {
-  //find user balanceOf
-
-
-//let  _urlservicebuf = "http://protobufjs.singularitynet.io/" +data["organization_name"] +"/"+ data["service_name"] 
-let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["organization_name"] + "/" + data["service_name"];
-
-fetch( encodeURI(_urlservicebuf))
-.then( serviceSpecResponse  =>  serviceSpecResponse.json())
-.then( serviceSpec  => {
-  const serviceSpecJSON = Root.fromJSON(serviceSpec[0])
-  console.log(serviceSpecJSON)
-
-  var objservice =Object.keys(serviceSpecJSON.nested)
-  var serviceobject = []
-  objservice.map(rr => {
-                   if (serviceSpecJSON.nested[rr].hasOwnProperty("methods"))
-                   {
-                    serviceobject.push(rr)
-                   }
-                  }
-    )
-  
-  this.setState({servicestatenames:serviceobject})
-  
+    console.log('channel state information is ' +  this.state.userchannelstateinfo["groupId"])
+    if (this.serviceState.channels.length > 0)
+    {
+      for(let ii=0; ii < this.serviceState.channels.length; ii++) {
+        var rrchannels = this.serviceState.channels[ii];
+        if (rrchannels["balance"] > data["price"])
+        {
+          console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
+          console.log("Setting channel ID to " + rrchannels["channelId"]);
+          this.state.channelstateid = rrchannels["channelId"];    
+          return true;
+        }  
+      }
+    }
+  }
+  console.log("Did not find a channel with adequate funds");
+  return false;
 }
-)
 
-     let user_address = web3.eth.defaultAccount
-     let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
-     mpeTokenInstance.balances(user_address, (err, balance) => {
-     
-    if (balance === 0)//change for testing purpose and remove it later with 0 value here//
-      {
-        this.onOpenModalAlert()
-      //setInterval(() => this.props.history.push("/Profile"),5000)
-      }
-      else if (balance > 0)
-      {
-        this.setState({startjobfundinvokeres:true}) 
-      }
-})//balance closure
+clearJobState() {
+  this.state.channelstateid = undefined;
+  this.serviceState = {
+    channel : undefined,
+    endpoint : undefined,
+    groupId : undefined
+  };
+  this.setState({servicegrpcerror:''});
+  this.setState({
+    servicestatenames: undefined
+  })
+}
 
-     }
+startjob(data) {
+  this.clearJobState();
+  this.populateChannelDetails(); //TODO HACK - CLEAN THIS UP
+  let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
+
+  fetch(encodeURI(_urlservicebuf))
+    .then(serviceSpecResponse => serviceSpecResponse.json())
+    .then(serviceSpec => {
+      this.serviceSpecJSON = Root.fromJSON(serviceSpec[0])
+      var objservice = Object.keys(this.serviceSpecJSON.nested)
+      var serviceobject = []
+      objservice.map(rr => {
+        if (this.serviceSpecJSON.nested[rr].hasOwnProperty("methods")) {
+          serviceobject.push(rr)
+        } else if (this.serviceSpecJSON.nested[rr].hasOwnProperty("nested")) {
+          serviceobject = Object.keys(this.serviceSpecJSON.nested[rr].nested);
+        }
+      })
+
+      this.setState({
+        servicestatenames: serviceobject
+      })
+    })
+
+  let user_address = web3.eth.defaultAccount
+  let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
+  mpeTokenInstance.balances(user_address, (err, balance) => {
+    balance = AGI.toDecimal(balance);
+    console.log("In start job Balance is " + balance + " job cost is " + data['price']);
+    let foundChannel = this.findChannelWithBalance(data);
+    if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) 
+    {
+      this.onOpenModalAlert();
+    }
+    else if(foundChannel) {
+      console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
+      this.setState({startjobfundinvokeres: true});
+      this.setState({valueTab: 1})
+    } 
+    else {
+      console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price']);
+      this.setState({startjobfundinvokeres: true})
+      this.setState({valueTab: 0})
+    }
+  })
+}
 
 onKeyPressvalidator(event) {
-      const keyCode = event.keyCode || event.which;
+  const keyCode = event.keyCode || event.which;
   if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
-        event.preventDefault()
-    }
-  else {
-      let dots = event.target.value.split('.');
-        if (dots.length > 1 && keyCode == 46)
-            event.preventDefault()
-        
-    }
-     }
+    event.preventDefault()
+  } else {
+    let dots = event.target.value.split('.');
+    if (dots.length > 1 && keyCode == 46)
+      event.preventDefault()
+
+  }
+}
      
   handlesearch()
   {
@@ -861,6 +1015,7 @@ onKeyPressvalidator(event) {
   {
     this.setState({searchterm:e.target.value})
   }
+
 async waitForTransaction(hash) {
     let receipt;
     while(!receipt) {
@@ -875,10 +1030,8 @@ async waitForTransaction(hash) {
   }
 
   nextJobStep() {
-    //this.clearModal();
     this.onClosechaining()
-    this.setState({valueTab:1})
-   
+    this.setState({valueTab:(this.state.valueTab + 1)})   
   }
 
   render() {
@@ -1089,7 +1242,7 @@ async waitForTransaction(hash) {
          <div style={{ width: '50px' }} className="col-sm-12 col-md-6 col-lg-6">
          <CircularProgress
          background
-         backgroundPadding={6}
+         backgroundpadding={6}
          styles={{
            background: {
              fill: '#3e98c7',
@@ -1124,23 +1277,29 @@ async waitForTransaction(hash) {
     
          
                     <div className="col-xs-12 col-sm-12 col-md-12 name no-padding">
-                        <h3>{this.state.modaluser["service_name"]}</h3>
+                        <h3>{this.state.modaluser["service_name"]} </h3>
                         
                            <p> {this.state.tagsall.map(rowtags => <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
                            
                         <div className="text-right border-top1">
-                       {(typeof web3 !== 'undefined')?
-                       (web3.eth.coinbase !== null)?
-                       <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
-                                :  <Button type="button" variant="contained"  disabled>Start
+                      
+                        {(typeof web3 !== 'undefined')?
+                       (web3.eth.defaultAccount !== null)?
+ 
+                          (this.state.runjobstate === true)?
+                        <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
+                        :  <button type="button" className="btn-start"  disabled>Start
                                 
-                                Job</Button>:
-                                <Button type="button" variant="contained"  disabled>Start
+                        Job</button>
+                                :  <button type="button" className="btn-start"  disabled>Start
                                 
-                                Job</Button>
+                                Job</button>:
+                                <button type="button" className="btn-start"  disabled>Start
+                                
+                                Job</button>
 
                                } 
-                      </div>
+                               </div>
                         
                     </div>
                    
@@ -1173,20 +1332,14 @@ async waitForTransaction(hash) {
       {valueTab === 1 && <TabContainer >
         <div className="row">
         <div  className="col-md-3 col-lg-3" style={{fontSize:"13px",marginLeft:"10px"}}>Service Name</div><div className="col-md-3 col-lg-3"> 
-        <select id="select1" style={{height:"40px",width:"250px",fontSize:"13px"}} ref="serviceref"  onChange={(e) =>this.changehandlerservicename(e,this.state.modaluser)}>
-        <option>Select a service</option>
-        {this.state.servicestatenames.map((rowservice,index) => 
-        <option value={index}>{rowservice}</option>)}
-       </select>
+        <input type="text" ref="serviceref" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom:"5px"}} onChange={(e) =>this.changehandlerservicename(e,this.state.modaluser)}></input>
+       
+        
         </div>
         </div>
         <div className="row">
         <div  className="col-md-3 col-lg-3" style={{fontSize:"13px",marginLeft:"10px"}}>Method Name</div><div className="col-md-3 col-lg-3"> 
-        <select style={{height:"40px",width:"250px",fontSize:"13px"}} ref="methodref" onChange={this.changehandlermethodname} >
-        
-        {this.state.servicemethodnames.map((rowmethod,index) => 
-        <option value={index}>{rowmethod}</option>)}
-       </select>
+        <input type="text" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom:"5px"}} ref="methodref" onChange={() =>this.changehandlermethodname()} ></input>
      
         </div>
         </div>
@@ -1278,7 +1431,7 @@ async waitForTransaction(hash) {
             </div>
                   <div className='col-sm-6 col-md-6 col-lg-6  rborder '> 
                       <div className='form-group'> 
-                          <div className="search-title"><label for='search' >Search</label></div>
+                          <div className="search-title"><label htmlFor='search' >Search</label></div>
                                 <div className="col-sm-12 col-md-12 col-lg-12 no-padding">    
                                         <div className="col-sm-9 col-md-9 col-lg-9 no-padding">
                                           <input  id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchterm} onChange={this.CaptureSearchterm} onKeyUp={(e) =>this.handlesearchkeyup(e)} />                                                     

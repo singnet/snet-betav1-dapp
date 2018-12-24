@@ -9331,6 +9331,10 @@ body.modal-open .modal .close {
 .mt-10 {
   margin-top:10px;
 }
+
+.mt-100 {
+  margin-top:100px;
+}
 .border-left-1 {
   border-left:1px solid #ddd;
 }
@@ -11381,15 +11385,19 @@ position: absolute;
 .profile-content {
     margin:20px 0 0 0;
 }
-  .agent-detail {
-    border-radius: 5px;
-    border-top: 3px solid #0066ff;
-    padding: 15px 30px;
-    margin-right: 0;
-    box-shadow: 1px 1px 10px #e0dbdb;
-    margin:20px 0;
-    width:100%;
-  }
+.agent-detail {
+  border-radius: 5px;
+  border-top: 3px solid #0066ff;
+  padding: 14px 30px;
+  margin-right: 0;
+  box-shadow: 1px 1px 10px #e0dbdb;
+  margin: 12px 0;
+  width: 100%;
+  height:202px;
+}
+.agent-detail label {
+  font-weight: normal;
+}
   .name h3 {
     font-size: 15px;
     color: #0066ff;
@@ -11417,12 +11425,15 @@ position: absolute;
 
 
 
-.amount-type {
-    border-radius: 5px;
-    border-top: 3px solid #0066ff;
-    padding: 18px 30px;
-    margin-right: 0;
-    box-shadow: 1px 1px 10px #e0dbdb;
+ .amount-type {
+  border-radius: 5px;
+  border-top: 3px solid #0066ff;
+  font-family: 'Roboto',sans-serif;
+  font-size: 15px !important;
+  box-shadow: 1px 1px 10px #e0dbdb;
+  padding: 0 15px;
+  margin: 12px 0;
+  height:202px;
 }
 .blue-boxes-head {
 	margin:15px 0 13px 16px;
@@ -11498,16 +11509,23 @@ position: absolute;
     text-align: right;
     background-color: #f1f1f1;
 }
+.overview-header {
+  height: 198px;
+  padding: 10px;
+  position: relative;
+  z-index: 22;
+}
 .overview {
     margin: 0px;
     padding: 80px 0 0 0;
-    background: url(../img/overview-background.jpg);
+    background: url(../img/overview-background.png);
     background-size: cover;
     background-repeat: no-repeat;
     position: absolute;
-    top: 100px;
+    top: 0;
     z-index: 1;
     color: #fff;
+    background-position: 0 -200px;
 }
 .step-guide-boxes {
     margin: 0px;
@@ -11530,7 +11548,8 @@ position: absolute;
     color: #fff;
     text-transform: uppercase;
     text-align: center;
-    margin: 40px 0;
+    margin: 0 0 40px 0;
+    padding:129px 0 0 0;
     font-size: 18px;
     font-weight: 500;
 }
@@ -11561,32 +11580,32 @@ position: absolute;
   width: 100%;
 }
 .overview-text {
-  margin: 25px 0 35px 0;
-  color: #fff;
+  margin: 20px 0 35px 0;
+  color: #0066ff;
   text-align: center;
-  font-size: 15px;
+  font-size: 20px;
 }
 .connect-wallet-title {
     color: #fff;
     text-transform: uppercase;
     text-align: center;
-    margin: 90px 0 30px 0;
+    margin: 30px 0 30px 0;
     font-size: 18px;
     font-weight: 500;
 }
 .connect-wallet-text {
-  margin: 35px 0;
+  margin: 20px 0 80px 0;
   color: #fff;
   text-align: center;
-  font-size: 15px;
+  font-size: 20px;
 }
 .connect-black-text {
   margin:40px 0 0 0;
   font-size: 15px;
-  color: #000;
+  color: #fff;
 }
 .install-link {
-  margin: 25px 0 116px 0;
+  margin: 25px 0 0 0;
   color: #fff;
   text-transform: uppercase;
   font-size: 15px;
@@ -11595,6 +11614,29 @@ position: absolute;
 .install-link a {
   color: #fff;
 }
+
+.your-account-details {
+  margin:20px 0;
+}
+.your-account-details h3 {
+  margin:0;
+  font-size:16px;
+  font-weight: bold;
+}
+.manage-account {
+  margin:20px 0;
+}
+
+.manage-account h3 {
+  margin:0px;
+  font-size:16px;
+  font-weight: bold;
+}
+.channels-input {
+  padding:6px;
+  border:1px solid #ddd;
+}
+
 @media only screen and (max-width: 768px) {
   .logo img {
     width:80%;
