@@ -16,9 +16,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Network from "./Network.js"
 
 
-//const _serviceurl = 'https://nhsdguu656.execute-api.us-east-1.amazonaws.com/kovan/'
-//const _serviceurl = getMarketplaceURL(this.state.chainId)
-
 const TabContainer = (props) => {
   return (
     <Typography component="div" style={{padding:"10px"}}>
@@ -139,6 +136,7 @@ class SampleServices extends React.Component {
       servicestatenames:[],
       servicemethodnames:[],
       chainId: undefined,
+      ethBlockNumber: 900000,
       depositopenchannelerror:'',
       depositopenchannelrecpt:'',
       userchannelstateinfo:[],
@@ -210,6 +208,9 @@ class SampleServices extends React.Component {
       if (chainId !== this.state.chainId) {
         this.setState({ chainId: chainId });
         this.loadDetails();
+        web3.eth.getBlockNumber((error, result) => {
+          this.setState({ethBlockNumber:  result})
+        })
       }
     });
   }
@@ -279,29 +280,22 @@ fetch( encodeURI(_urlservicebuf))
     this.setState({ocexpiration:e.target.value})
   }
 
-  GetEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress)
+  matchEvent(evt, error, result, senderAddress,groupidgetter,recipientaddress)
   {
-
-   var startingBlock = web3.eth.getBlockNumber()
-   //var startingBlock = 9510097;
-  
-    var MPEChannelId = ''
-var evt =mpeInstance.ChannelOpen({sender: senderAddress}, {fromBlock: startingBlock, toBlock: 'latest'});
-console.log('event after channel open is ' + evt)
-
-evt.watch((error, result) => {
-console.log('Watching for events');
-if(error) {
-    console.log("Error in events");
-}
-else {
-    console.log("result from event: " + result);
-    var event = result.event;
-    console.log("event: " + event);
-    var agentGroupID = this.base64ToHex(groupidgetter);
-    if(event == "ChannelOpen")
-    {
-        MPEChannelId = result.args.channelId;
+    console.log('Watching for events');
+    if(error) {
+      console.log("Error in events" + error);
+      evt.stopWatching();
+      this.onClosechaining();
+    }
+    else {
+      console.log("result from event: " + result);
+      var event = result.event;
+      console.log("event: " + event);
+      var agentGroupID = this.base64ToHex(groupidgetter);
+      if(event == "ChannelOpen")
+      {
+        var MPEChannelId = result.args.channelId;
         var channelSender = result.args.sender;
         var channelRecipient = result.args.recipient;
         var channelGoupId = result.args.groupId;
@@ -313,13 +307,11 @@ else {
           console.log("Matched channel id " + MPEChannelId)
           this.setState({channelstateid:MPEChannelId});
           evt.stopWatching();
+          this.nextJobStep();
         }
         console.log("channel id" + MPEChannelId)
-    }
-}
-});
-
-    
+      }
+    } 
   }
   
   openchannelhandler(data,dataservicestatus)
@@ -327,6 +319,7 @@ else {
     if(web3 === 'undefined') {
       return;
     }
+    this.setState({depositopenchannelerror:''});
     var user_address = web3.eth.defaultAccount
     let mpeInstance = this.network.getMPEInstance(this.state.chainId);
     var amountInWei = AGI.inWei(web3,this.state.ocvalue);
@@ -337,13 +330,7 @@ else {
     {
         this.onOpenModalAlert()
     }
-    /*else if (typeof this.state.channelstateid !== 'undefined')
-    {
-      console.log("Found channel with balance to do the job " + this.state.channelstateid);
-      this.setState({valueTab:1})
-      this.nextJobStep();
-    }*/
-    else //if (balance > 0)
+    else
     {
       console.log("MPE has balance but have to check if we need to open a channel or extend one. Balance is " + balance);
         if (typeof this.state.userchannelstateinfo !== 'undefined')
@@ -356,9 +343,9 @@ else {
 
             Object.values(data["groups"]).map((rr) => recipientaddress = rr["payment_address"])
             console.log("group id is " + groupidgetter)
-            console.log("recipient address is " + recipientaddress )
+            console.log("recipient address is " + recipientaddress)
             console.log('groupdidgetter hex is ' + groupidgetterhex)
-            console.log(this.state.ocvalue);
+            console.log('Amount is ' + amountInWei);
             console.log(this.state.ocexpiration);
             console.log(senderAddress);            
         
@@ -366,11 +353,6 @@ else {
             {
               console.log("Found an existing channel, will try to extend it ");
               var rrchannels = this.serviceState.channels[0]
-              /*if (rrchannels["balance"] > data["price"])
-              {
-                this.setState({valueTab:1})
-              }
-              else */
               console.log("Existing channel is " + JSON.stringify(rrchannels));
               if (rrchannels["balance"] <= data["price"])
               {
@@ -400,7 +382,7 @@ else {
             {
               console.log("No Channel found to going to deposit from MPE and open a channel");
               //if (this.state.userchannelstateinfo["channelId"].length === 0)
-              mpeInstance.depositAndOpenChannel(senderAddress, recipientaddress,groupidgetterhex, amountInWei,this.state.ocexpiration,{ gas: 210000, gasPrice:51 }, (error, txnHash) => 
+              mpeInstance.openChannel(senderAddress, recipientaddress,groupidgetterhex, amountInWei,this.state.ocexpiration,{ gas: 210000, gasPrice:51 }, (error, txnHash) => 
               { 
                 console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
                 this.onOpenchaining()
@@ -408,11 +390,21 @@ else {
                 this.waitForTransaction(txnHash).then(receipt => {
                   console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + senderAddress);
                   this.setState({depositopenchannelrecpt:receipt})
-                  //this.nextJobStep();
+                }).then(()=>
+                  {
+                    //this.getEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress);
+                    var startingBlock = this.state.ethBlockNumber;
+                    console.log("Scanning events from " + startingBlock);
+                    var evt =mpeInstance.ChannelOpen({sender: senderAddress}, {fromBlock: startingBlock, toBlock: 'latest'});
+                    console.log('event after channel open is ' + evt);                
+                    evt.watch((error, result) => this.matchEvent(evt, error, result, senderAddress,groupidgetter,recipientaddress));                    
+                  })
+                .catch((error) => {
+                  this.setState({depositopenchannelerror:error});
+                  this.onClosechaining();
                 })
-                .catch((error) => this.setState({depositopenchannelerror:error}))
               })
-              this.GetEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress)
+              //this.GetEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress)
               if (this.state.channelstateid !== '' && this.state.depositopenchannelrecpt !== '')
               {
                 console.log("Using new channel " + this.state.channelstateid);
@@ -752,143 +744,7 @@ handlehealthsort()
   }
 
 
-  handlerInvokeJob(data,dataservicestatus)
-  {
-    if (true) {
-      return this.handleJobInvocation(data,dataservicestatus);
-    }
-//find user balanceOf
-var user_address = web3.eth.defaultAccount
-let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
-mpeTokenInstance.balances(user_address, (err, balance) => {
- if (balance > 0)
-  {
-      console.log('inside MPE Events')   
-      var contractAddrForMPE = this.network.getMPEAddress();
-      
-      var groupidgetter = ''
-      var recipientaddress = ''
-      var endpointgetter = ''
-
-dataservicestatus.map((row) => {console.log(row)
-  if (row["service_id"] === data["service_id"])
-  {
-          if (row["is_available"] === 1)
-          {
-            console.log("service is available for this groupid")
-            console.log('row of groups are ' + row["groups"])
-            row["groups"].map(rgg => {
-              if (rgg["is_available"] === 1)
-              {
-                    groupidgetter = rgg["group_id"]
-                    recipientaddress = rgg["payment_address"]
-                    console.log('groups id is' + groupidgetter + ' recipient is '+recipientaddress);
-
-                 rgg["endpoints"].map(rendpt =>
-                  {
-                      if (rendpt["is_available"] ===1)
-                      {
-                        console.log('service ed point is ' + rendpt["endpoint"])
-                        endpointgetter = rendpt["endpoint"]
-                      }
-                  }
-                  )
-              }           
-          })
-  }
-}
-} 
-)
-console.log("service is" + this.state.inputservicename + "and method name is " +  this.state.inputmethodname)
-var from = web3.eth.defaultAccount
-console.log(contractAddrForMPE +" " + this.state.channelstateid+"  " + data['price']);
-//var msg = web3.sha3(contractAddrForMPE, this.state.channelstateid, 0, data['price']);
-var msg = this.composeMessage(contractAddrForMPE, this.state.channelstateid, 0, data['price']);
-console.log(msg)
-var params = [msg, from]
-if (from !== null)
-{
-  window.ethjs.personal_sign(msg, from)
-.then((signed) => {
-console.log('Signed!  Result is: ', signed)
-var stripped = signed.substring(2,signed.length)
-console.log("Stripped " + stripped)
-var byteSig = Buffer.from(stripped,'hex');
-console.log("Signature in bytes " + byteSig);
-let buff = new Buffer(byteSig);  
-let base64data = buff.toString('base64')      
-console.log("Using signature " + base64data)
-
-const serviceurl = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
-
-console.log("service location is " + encodeURI(serviceurl) )
-console.log("service is" + this.state.inputservicename)
-fetch( encodeURI(serviceurl))
-.then( serviceSpecResponse  =>  serviceSpecResponse.json())
-.then( serviceSpec  => {
-  console.log("Making the GRPC call")
-  const serviceName = this.state.inputservicename
-  console.log("service name is " + serviceName)
-  const methodName = this.state.inputmethodname
-  console.log("method name is " + methodName)
-  const requestHeaders = {"snet-payment-type":"escrow",
-                          "snet-payment-channel-id":parseInt(this.state.channelstateid), 
-                          "snet-payment-channel-nonce":"0", 
-                          "snet-payment-channel-amount":parseInt(data["price"]),
-                          "snet-payment-channel-signature-bin": base64data}   
-  console.log(requestHeaders)
-  const serviceSpecJSON = Root.fromJSON(serviceSpec[0])
-  console.log(serviceSpecJSON)
-  const packageName = Object.keys(serviceSpecJSON.nested).find(key =>
-    typeof serviceSpecJSON.nested[key] === "object" &&
-    hasOwnDefinedProperty(serviceSpecJSON.nested[key], "nested")
-  )
-  if(!endpointgetter.startsWith("http"))
-  {
-    endpointgetter = "http://"+endpointgetter;
-  }
-  
-  console.log('package name is ' + packageName)
-  const Service = serviceSpecJSON.lookup(serviceName)
-  const serviceObject = Service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
-  const requestObject = JSON.parse(this.state.inputservicejson)
-  console.log('service object is ' + serviceObject)
-  console.log('requestObject is ' + requestObject)
-  grpcRequest(serviceObject, methodName, requestObject)
-    .then(response => {
-      console.log("Got a GRPC response")
-      this.setState({servicegrpcresponse:response.value})
-      console.log("jobResult" + response.value)
-    })
-    .catch((err) => {
-      console.log("GRPC call failed")
-      this.setState({servicegrpcerror:'GRPC call failed ' + err})
-      console.log(err)})
-})
-.catch((err) => {
-  console.log("Some error")
-  this.setState({servicefetcherror:'Exiting  failed ' + err})
-  console.log(err)
-}) 
-
-////signed and invoked//
-
-return window.ethjs.personal_ecRecover(msg, signed)
-}
-).then((recovered) => {
-
-if (recovered === from) {
-  console.log('Ethjs recovered the message signar!')
-} else {
-  console.log('Ethjs failed to recover the message signar!')
-  console.dir({ recovered })
-}
-})
-}
-  }
-})//balance closure
-this.setState({valueTab:2})
-  }
+  //handlerInvokeJob(data,dataservicestatus)
 
   populateChannelDetails() {
     this.serviceState.channels = this.state.userchannelstateinfo["channelId"];
@@ -1354,7 +1210,7 @@ async waitForTransaction(hash) {
           <div className="col-md-3 col-lg-3" style={{fontSize:"13px",marginLeft:"10px"}}>Json Input</div><div className="col-md-3 col-lg-3"><textarea placeholder="JSON format..." style={{rows:"4", cols:"50",width:"250px",fontSize:"13px"}} value={this.state.inputservicejson} onChange={(e) =>this.changehandlerervicejson(e)}/></div></div>
         <div className="row">
         <div className="col-md-6 col-lg-6" style={{textAlign:"right"}}>
-        <button type="button" className="btn btn-primary" onClick={() =>this.handlerInvokeJob(this.state.modaluser,this.state.modalservicestatus)}>Invoke</button></div>
+        <button type="button" className="btn btn-primary" onClick={() =>this.handleJobInvocation(this.state.modaluser,this.state.modalservicestatus)}>Invoke</button></div>
         </div>
         
       </TabContainer>}
