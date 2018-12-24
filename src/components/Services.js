@@ -680,11 +680,18 @@ handlehealthsort()
 
   handleJobInvocation(data,dataservicestatus)
   {
-    console.log("Invoking service " + this.state.inputservicename + "and method name " +  this.state.inputmethodname)
+    console.log("Invoking service " + this.state.inputservicename + " and method name " +  this.state.inputmethodname)
     var from = web3.eth.defaultAccount
     var nonce = 0;
-    if(typeof this.serviceState.channels !== 'undefined' && typeof this.serviceState.channels["nonce"] !== 'undefined') {
-      nonce = this.serviceState.channels["nonce"];
+    if(typeof this.serviceState.channels !== 'undefined') {
+      for(let ii=0; ii < this.serviceState.channels.length; ii++) {
+        var rrchannels = this.serviceState.channels[ii];
+        if (rrchannels["channelId"] === this.state.channelstateid)
+        {
+          nonce = rrchannels["nonce"];
+          break;
+        }
+      }
     }
 
     var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.state.channelstateid, nonce, data['price']);
@@ -902,7 +909,7 @@ this.setState({valueTab:2})
     {
       for(let ii=0; ii < this.serviceState.channels.length; ii++) {
         var rrchannels = this.serviceState.channels[ii];
-        if (rrchannels["balance"] > data["price"])
+        if (parseInt(rrchannels["balance"]) >= parseInt(data["price"]))
         {
           console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
           console.log("Setting channel ID to " + rrchannels["channelId"]);
@@ -1070,7 +1077,7 @@ async waitForTransaction(hash) {
   <div className="col-sm-12 col-md-2 col-lg-2 org-name-align"><Typography className="m-0" style={{fontSize:"14px",fontFamily:"Arial", }}>{rown["organization_name"]}</Typography></div>
   <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Price</div>
   <div className="col-sm-12 col-md-2 col-lg-2 price-align">
-    <label className="m-0"><Typography className="m-0" style={{fontSize:"15px",fontFamily:"Arial", }}>{rown["price"]}  ETH</Typography></label>
+    <label className="m-0"><Typography className="m-0" style={{fontSize:"15px",fontFamily:"Arial", }}>{rown["price"]}  AGI</Typography></label>
   </div> 
   <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
   <div className="col-sm-12 col-md-2 col-lg-2 tag-align"> 

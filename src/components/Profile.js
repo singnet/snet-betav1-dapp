@@ -156,12 +156,14 @@ export class Profile extends Component {
 
   handlerextendadd(channelid) {
     let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
+    var amountInWei = AGI.inWei(web3,this.state.extamount);
+    console.log("Extending channel id:" + channelid, " amount:"+amountInWei + " expiry: " + this.state.extexp);
     instanceEscrowContract.channelExtendAndAddFunds(channelid, this.state.extexp, this.state.extamount, { gas: 210000, gasPrice: 51 }, (error, txnHash) => {
     
       console.log("Channel extended and added funds is TXN Has : " + txnHash);
       this.onOpenchaining()
       this.waitForTransaction(txnHash).then(receipt => {
-        console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + senderAddress + 'receipt is ' + receipt);
+        console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + web3.eth.defaultAccount + 'receipt is ' + receipt);
       
         this.nextJobStep();
         
@@ -285,9 +287,7 @@ export class Profile extends Component {
       if (balance !== this.state.ethBalance) {
         this.setState({ ethBalance: balance });
       }
-    });
-
- 
+    }); 
   }
 
   nextJobStep() {
@@ -299,39 +299,19 @@ export class Profile extends Component {
       let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
       var user_address = web3.eth.defaultAccount
       var amount = this.state.authorizeamount; // Means 6 Tokens assuming number of decimals are 18
-      //var amountInWei = new BigNumber(web3.toWei(amount, "ether") / (10 ** (this.decimals)));
       var amountInWei = AGI.inWei(web3,amount);
 
-
-      /*var gasPrice;
-      web3.eth.getGasPrice((err, price) => {
-          console.log("Gas Price : " + price);
-          gasPrice = price;
-      })*/
       instanceTokenContract.approve(this.network.getMPEAddress(this.state.chainId), amountInWei, { gas: 210000, gasPrice: 23 }, (error, txnHash) => {
         console.log("Txn Hash for approved transaction is : " + txnHash);
-        this.onOpenchaining()
-             //approveerror:'',
-        //depositerror:'',
-        //withdrawalerror:'',
-        this.waitForTransaction(txnHash).then(receipt => {
-          console.log('Opened channel and deposited ' + this.state.ocvalue + ' from: ' + user_address + 'reciept object is ' + receipt);
-
+          this.onOpenchaining()
+          this.waitForTransaction(txnHash).then(receipt => {
+            console.log('Opened channel and deposited ' + this.state.ocvalue + ' from: ' + user_address + 'reciept object is ' + receipt);
           this.nextJobStep();
         })
         .catch((error) =>{this.setState({approveerror: error})
         this.nextJobStep();
       } )
       })
-
-      /*this.instanceEscrowContract.approve.estimateGas(amount, (err, estimatedGas ) => {
-                 
-
-
-        this.instanceEscrowContract.approve(amount, { gas: estimatedGas, gasPrice }, (error, txnHash) => { 
-            console.log("TXN Has : " + txnHash);
-        });
-      });*/
     }
   }
 
@@ -694,7 +674,7 @@ export class Profile extends Component {
                         </div>
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        {(typeof web3 !== 'undefined') ? <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} ><button type="button" className="btn btn-primary " onClick={() => this.handlerextendadd(57)}><span style={{ fontSize: "15px" }}>Confirm</span></button></Tooltip> :
+                        {(typeof web3 !== 'undefined') ? <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} ><button type="button" className="btn btn-primary " onClick={() => this.handlerextendadd(row["channel_id"])}><span style={{ fontSize: "15px" }}>Confirm</span></button></Tooltip> :
                           <Tooltip title={<span style={{ fontSize: "15px" }} >Confirm</span>} ><button type="button" className="btn " disabled ><span style={{ fontSize: "15px" }}>Confirm</span></button></Tooltip>
                         }
                       </div>
