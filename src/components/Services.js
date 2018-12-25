@@ -13,7 +13,7 @@ import {  AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Network from "./Network.js"
+import BlockchainHelper from "./BlockchainHelper.js"
 
 
 const TabContainer = (props) => {
@@ -95,8 +95,8 @@ class SampleServices extends React.Component {
       offset:0,
       show:false,
       open:false,
-      open1:false,
-      open2:false,
+      jobDetailsSliderOpen:false,
+      searchBarOpen:false,
       openAlert:false,
       uservote:[],
       userservicestatus:[],
@@ -151,13 +151,13 @@ class SampleServices extends React.Component {
       endpoint : undefined
     }
 
-    this.network = new Network();
+    this.network = new BlockchainHelper();
     this.web3Initialized = false;
     this.account = undefined;
-    this.onOpenModal1 = this.onOpenModal1.bind(this)
-    this.onCloseModal1 = this.onCloseModal1.bind(this)
-    this.onOpenModal2 = this.onOpenModal2.bind(this)
-    this.onCloseModal2 = this.onCloseModal2.bind(this)
+    this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
+    this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
+    this.onOpenSearchBar = this.onOpenSearchBar.bind(this)
+    this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
     this.onOpencallserviceinputs = this.onOpencallserviceinputs.bind(this)
     this.onClosecallserviceinputs = this.onClosecallserviceinputs.bind(this)
     this.handleCloseserviceinputs = this.handleCloseserviceinputs.bind(this)
@@ -167,7 +167,7 @@ class SampleServices extends React.Component {
     this.changehandlerervicejson= this.changehandlerervicejson.bind(this)
     this.handlesearch = this.handlesearch.bind(this)
     this.startjob = this.startjob.bind(this)
-    this.CaptureSearchterm = this.CaptureSearchterm.bind(this)
+    this.CaptureSearchterm = this.captureSearchterm.bind(this)
     this.handlesearchbytag = this.handlesearchbytag.bind(this)
     this.handlepricesort = this.handlepricesort.bind(this)
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
@@ -181,13 +181,12 @@ class SampleServices extends React.Component {
     this.handlesearchclear = this.handlesearchclear.bind(this)
     this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this)
     this.handleChangeTabs = this.handleChangeTabs.bind(this)
-    this.handlerInvokeJob = this.handlerInvokeJob.bind(this)
+    this.handleJobInvocation = this.handleJobInvocation.bind(this)
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
     this.watchNetworkTimer =         undefined;
     this.web3 = undefined
     this.eth = undefined
-    
   }
 
   onClosechaining()
@@ -312,7 +311,7 @@ fetch( encodeURI(_urlservicebuf))
         console.log("channel id" + MPEChannelId)
       }
     } 
-  }
+  }  
   
   openchannelhandler(data,dataservicestatus)
   {
@@ -351,32 +350,23 @@ fetch( encodeURI(_urlservicebuf))
         
             if (this.serviceState.channels.length > 0)
             {
-              console.log("Found an existing channel, will try to extend it ");
+              console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannels));
               var rrchannels = this.serviceState.channels[0]
-              console.log("Existing channel is " + JSON.stringify(rrchannels));
-              if (rrchannels["balance"] <= data["price"])
-              {
-                console.log("Channel balance is less, extending it Channel balance - " + rrchannels["balance"]);
-                mpeInstance.channelExtendAndAddFunds(rrchannels["channelId"], this.state.ocexpiration, amountInWei, { gas: 210000, gasPrice: 51 }, (error, txnHash) => {
-      
-                console.log("Channel extended and added funds is TXN Has : " + txnHash);
-                this.onOpenchaining()
-                this.waitForTransaction(txnHash).then(receipt => {
-                    console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + senderAddress + 'receipt is ' + receipt);
-                    this.state.channelstateid = rrchannels["channelId"]; 
-                    console.log('ReUsing channel ' + this.state.channelstateid);
-                    this.nextJobStep();
-                    })
-                  .catch((error) => {
-                      this.setState({depositextenderror: error })
-                      this.nextJobStep();
-                    })
+              mpeInstance.channelExtendAndAddFunds(rrchannels["channelId"], this.state.ocexpiration, amountInWei, { gas: 210000, gasPrice: 51 }, (error, txnHash) => {
+    
+              console.log("Channel extended and added funds is TXN Has : " + txnHash);
+              this.onOpenchaining()
+              this.waitForTransaction(txnHash).then(receipt => {
+                  console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + senderAddress + 'receipt is ' + receipt);
+                  this.state.channelstateid = rrchannels["channelId"]; 
+                  console.log('ReUsing channel ' + this.state.channelstateid);
+                  this.nextJobStep();
                   })
-              }
-              else
-              {
-                console.log("Blackhole in openchannel handler");
-              }       
+                .catch((error) => {
+                    this.setState({depositextenderror: error })
+                    this.nextJobStep();
+                  })
+                })
             }
             else
             {
@@ -404,15 +394,9 @@ fetch( encodeURI(_urlservicebuf))
                   this.onClosechaining();
                 })
               })
-              //this.GetEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress)
-              if (this.state.channelstateid !== '' && this.state.depositopenchannelrecpt !== '')
-              {
-                console.log("Using new channel " + this.state.channelstateid);
-                this.nextJobStep();
-              }
             }
         }
-  }
+    }
   })
 }
 
@@ -521,8 +505,7 @@ handlehealthsort()
 		if(this.watchNetworkTimer) {
 		  clearInterval(this.watchNetworkTimer);
 		}
-	   
-	  }
+  }
 
   componentDidMount(){    
    window.addEventListener('load', () => this.handleWindowLoad());
@@ -584,16 +567,14 @@ handlehealthsort()
     
     this.setState({opencallserviceinputs:false})
   }
-  
-  onOpenModal1(e,data,dataservicestatus) {
-  
-    
+
+  onOpenJobDetailsSlider(e,data,dataservicestatus) {  
     (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
 
     this.setState({modaluser:data})
     this.setState({modalservicestatus:dataservicestatus})
-    this.setState({ open1: true });
-    this.setState({ocexpiration:10000})
+    this.setState({jobDetailsSliderOpen: true });
+    this.setState({expiryBlockNumber:10000})
     this.setState({valueTab:0})
     this.setState({channelstateid:'' })
     this.setState({startjobfundinvokeres:false})
@@ -637,14 +618,14 @@ handlehealthsort()
         })
   }
 
-  onCloseModal1(){
-    this.setState({ open1: false });
+  onCloseJobDetailsSlider(){
+    this.setState({ jobDetailsSliderOpen: false });
   };
-  onOpenModal2(e) {
-    this.setState({ open2: true });
+  onOpenSearchBar(e) {
+    this.setState({ searchBarOpen: true });
   };
-  onCloseModal2(){
-    this.setState({ open2: false });
+  onCloseSearchBar(){
+    this.setState({ searchBarOpen: false });
   };
 
   onOpenModalAlert()
@@ -655,7 +636,7 @@ handlehealthsort()
   onCloseModalAlert()
   {
    this.setState({openAlert:false})
-   this.onCloseModal1()
+   this.onCloseJobDetailsSlider()
     this.props.history.push("/Profile")
   }
 
@@ -686,7 +667,7 @@ handlehealthsort()
       }
     }
 
-    var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.state.channelstateid, nonce, data['price']);
+    var msg = this.network.composeMessage(this.network.getMPEAddress(this.state.chainId), this.state.channelstateid, nonce, data['price']);
     console.log("Composed message for signing is " + msg)
     window.ethjs.personal_sign(msg, from)
     .then((signed) => {
@@ -743,14 +724,10 @@ handlehealthsort()
     }); 
   }
 
-
-  //handlerInvokeJob(data,dataservicestatus)
-
   populateChannelDetails() {
     this.serviceState.channels = this.state.userchannelstateinfo["channelId"];
     if(typeof this.serviceState.channels !== 'undefined') {
       this.serviceState.channels.map(rr => { rr["balance"] = AGI.toDecimal(rr["balance"])});
-      //rrchannels["balance"] = AGI.toDecimal(rrchannels["balance"]);
     }
     
     this.serviceState.endpoint = this.state.userchannelstateinfo["endpoint"]
@@ -870,11 +847,13 @@ onKeyPressvalidator(event) {
     //inner loop trap//
     this.setState({besttagresult:tagresult})
   }
+
   hexToAscii(hexString) { 
     let asciiString = Eth.toAscii(hexString);
     return asciiString.substr(0,asciiString.indexOf("\0")); // name is right-padded with null bytes
   }
-  CaptureSearchterm(e)
+    
+  captureSearchterm(e)
   {
     this.setState({searchterm:e.target.value})
   }
@@ -950,7 +929,7 @@ async waitForTransaction(hash) {
   </div>
   <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Action</div>
 <div className="col-sm-12 col-md-2 col-lg-2 action-align">
-  <button className="btn btn-primary" onClick={(e)=>this.onOpenModal1(e,rown,this.state.userservicestatus)} id={rown["service_id"]}>Details</button>
+  <button className="btn btn-primary" onClick={(e)=>this.onOpenJobDetailsSlider(e,rown,this.state.userservicestatus)} id={rown["service_id"]}>Details</button>
 </div>
 <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
 
@@ -986,7 +965,7 @@ async waitForTransaction(hash) {
       
       </div>
       <div className="col-xs-6 col-sm-8 col-md-6 col-lg-6 search-user">
-      <input className="search hidden-xs"  placeholder={this.state.searchterm} name="srch-term" id="srch-term" type="label"  onClick={this.onOpenModal2}  />
+      <input className="search hidden-xs"  placeholder={this.state.searchterm} name="srch-term" id="srch-term" type="label"  onClick={this.onOpenSearchBar}  />
       <div className="user">
       {(typeof web3 !== 'undefined')?
                 <Link to="/SampleServices"><img src="./img/home-icon.png" alt=""/> </Link>:
@@ -1129,12 +1108,12 @@ async waitForTransaction(hash) {
    </div>
  <div>
  <Modal
-         open={this.state.open1}
-         onClose={this.onCloseModal1}
+         open={this.state.jobDetailsSliderOpen}
+         onClose={this.onCloseJobDetailsSlider}
        >    
-           <Slide direction="left" in={this.state.open1} mountOnEnter unmountOnExit>
+           <Slide direction="left" in={this.state.jobDetailsSliderOpen} mountOnEnter unmountOnExit>
          <div  className="sidebar" > 
-         <div  style={{fontSize:"35px",textAlign:"right"}}><a href="#" className="closebtn" onClick={this.onCloseModal1}>&times;</a></div>
+         <div  style={{fontSize:"35px",textAlign:"right"}}><a href="#" className="closebtn" onClick={this.onCloseJobDetailsSlider}>&times;</a></div>
           <Typography component={'div'}>
            <div className="right-panel agentdetails-sec p-3 pb-5">
     
@@ -1146,24 +1125,13 @@ async waitForTransaction(hash) {
                            
                         <div className="text-right border-top1">
                       
-                        {(typeof web3 !== 'undefined')?
-                       (web3.eth.defaultAccount !== null)?
- 
-                          (this.state.runjobstate === true)?
-                        <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
-                        :  <button type="button" className="btn-start"  disabled>Start
-                                
-                        Job</button>
-                                :  <button type="button" className="btn-start"  disabled>Start
-                                
-                                Job</button>:
-                                <button type="button" className="btn-start"  disabled>Start
-                                
-                                Job</button>
-
-                               } 
-                               </div>
-                        
+                        {((typeof web3 !== 'undefined') &&
+                          (web3.eth.defaultAccount !== null) &&
+                          (this.state.runjobstate === true)) ?
+                           <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
+                        :  <button type="button" className="btn-start-disabled"  disabled>Start Job</button>
+                        } 
+                        </div>
                     </div>
                    
         
@@ -1178,20 +1146,27 @@ async waitForTransaction(hash) {
         <Tab disabled ={this.state.channelstateid !== '' && this.state.openchaining===false?false:true } label={<span className="funds-title">Invoke</span>}/>
         <Tab disabled ={this.state.channelstateid !== '' && this.state.openchaining===false?false:true } label={<span className="funds-title">Result</span>}  />
       </Tabs>
-      {valueTab === 0 && <TabContainer> 
-        <div className="row channels-sec">
-      <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Amount:</div>
-      {(this.state.startjobfundinvokeres)?
-      <div className="col-xs-12 col-sm-4 col-md-4"> 
-          <input type="text" className="chennels-amt-field" value={this.state.ocvalue===0?this.setState({ocvalue:parseInt(this.state.modaluser["price"])}):this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} /></div>:
-          <div className="col-xs-12 col-sm-4 col-md-4"><input type="text" className="chennels-amt-field" value={parseInt(this.state.modaluser["price"])} disabled /></div>}
-      <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
-      {(this.state.startjobfundinvokeres)? <div className="col-xs-12 col-sm-4 col-md-4"><input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} /></div>:<div className="col-xs-12 col-sm-4 col-md-4"><input type="text" className="chennels-amt-field" value={this.state.ocexpiration} disabled /></div>}
-      {(this.state.startjobfundinvokeres)?<div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding"><button type="button" className="btn btn-primary width-mobile-100" onClick={() =>this.openchannelhandler(this.state.modaluser,this.state.modalservicestatus)}>Reserve Funds</button></div>:<div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding"><button type="button" className="btn btn-primary width-mobile-100"  disabled>Reserve Funds</button></div>  }     
-      </div>
-
-     <p style={{fontSize:"12px",color:"red"}}>{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
-      </TabContainer>} 
+{
+  valueTab === 0 && <TabContainer> 
+  { (this.state.startjobfundinvokeres)?
+    <div className="row channels-sec">
+    <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Amount:</div>
+    <div className="col-xs-12 col-sm-4 col-md-4"> 
+    <input type="text" className="chennels-amt-field" value={this.state.ocvalue===0?this.setState({ocvalue:parseInt(this.state.modaluser["price"])}):this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} />
+    </div>
+    <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
+    <div className="col-xs-12 col-sm-4 col-md-4"><input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} /></div>
+    <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding"><button type="button" className="btn btn-primary width-mobile-100" onClick={() =>this.openchannelhandler(this.state.modaluser,this.state.modalservicestatus)}>Reserve Funds</button>
+    </div></div>:
+    <div className="row channels-sec-disabled">
+    <div className="col-xs-12 col-sm-4 col-md-4"><input type="text" className="chennels-amt-field" value={parseInt(this.state.modaluser["price"])} disabled /></div>
+    <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
+    <div className="col-xs-12 col-sm-4 col-md-4"><input type="text" className="chennels-amt-field" value={this.state.ocexpiration} disabled /></div>
+    <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding"><button type="button" className="btn btn-primary-disabled width-mobile-100"  disabled>Reserve Funds</button></div></div>  
+  }
+  <p style={{fontSize:"12px",color:"red"}}>{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
+  </TabContainer>
+  } 
       {valueTab === 1 && <TabContainer >
         <div className="row">
         <div  className="col-md-3 col-lg-3" style={{fontSize:"13px",marginLeft:"10px"}}>Service Name</div><div className="col-md-3 col-lg-3"> 
@@ -1284,10 +1259,10 @@ async waitForTransaction(hash) {
      </div>
  <div>
  <Modal
-         open={this.state.open2}
-         onClose={this.onCloseModal2}
+         open={this.state.searchBarOpen}
+         onClose={this.onCloseSearchBar}
        >
-        <Slide direction="down" in={this.state.open2} mountOnEnter unmountOnExit>
+        <Slide direction="down" in={this.state.searchBarOpen} mountOnEnter unmountOnExit>
          <div  className="container popover-wrapper search-panel">                         
             <div className='row'>
             <div className='col-sm-1 col-md-1 col-lg-1  rborder '> 
@@ -1297,7 +1272,7 @@ async waitForTransaction(hash) {
                           <div className="search-title"><label htmlFor='search' >Search</label></div>
                                 <div className="col-sm-12 col-md-12 col-lg-12 no-padding">    
                                         <div className="col-sm-9 col-md-9 col-lg-9 no-padding">
-                                          <input  id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchterm} onChange={this.CaptureSearchterm} onKeyUp={(e) =>this.handlesearchkeyup(e)} />                                                     
+                                          <input  id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchterm} onChange={this.captureSearchterm} onKeyUp={(e) =>this.handlesearchkeyup(e)} />                                                     
                                         </div>
                                         <div className="col-sm-3 col-md-3 col-lg-3">
                                                       <input className='btn btn-primary'  id='phSearchButton' type='button' value='Search' onClick={this.handlesearch} />

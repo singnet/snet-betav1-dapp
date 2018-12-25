@@ -9249,6 +9249,14 @@ body.modal-open .modal .close {
   padding:6px 14px;
   font-size:14px;
 }
+.btn-primary-disabled {
+  color: #fff;
+  background-color: #757577;
+  border-color: #757577;
+  border-radius: 50px;
+  padding:6px 14px;
+  font-size:14px;
+}
 .btn-primary:hover {
   color: #0066ff;
   background-color: #fff;
@@ -10935,6 +10943,12 @@ nav .nav-tabs .nav-link:hover {
   color: #0066ff;
   font-size: 14px;
 }
+.channels-sec-disabled {
+  margin: 15px 0 0 0;
+  padding: 0;
+  color: #757577;
+  font-size: 14px;
+}
 .table-striped>tbody>tr:nth-of-type(odd) {
     background-color: #e3f0ff;
     color: #303030;
@@ -11293,6 +11307,16 @@ h4 { display: inline-block; }
   padding: 7px 14px;
   font-size: 14px;
   background-image: linear-gradient(90deg, #69c5f9, #5551eb);
+  width:100%;
+}
+.btn-start-disabled {
+  color: #fff;
+  background-color: #0066ff;
+  border:0px;
+  border-radius: 50px;
+  padding: 7px 14px;
+  font-size: 14px;
+  background-image: linear-gradient(90deg, #d9dcdf, #757577);
   width:100%;
 }
 .border-top1 {

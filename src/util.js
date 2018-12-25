@@ -111,13 +111,9 @@ export class ERROR_UTILS {
 
     return ERROR_MESSAGE.unknown + " [" + String(error) + "]"
   }
-
 }
 
-
-
 export const isValidAddress = (address, coin, network) => {
-
   if (coin === 'bitcoin') {
     network = network === 'testnet' ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
     try {

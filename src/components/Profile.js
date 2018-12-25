@@ -16,8 +16,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
-import Network from "./Network.js"
-import BigNumber from 'bignumber.js';
+import BlockchainHelper from "./BlockchainHelper.js"
 
 
 const TabContainer = (props) => {
@@ -81,7 +80,7 @@ export class Profile extends Component {
       marginTop: "30px",
     };
 
-    this.network = new Network();
+    this.network = new BlockchainHelper();
     this.state = {
       ethBalance: 0,
       amount: 0,

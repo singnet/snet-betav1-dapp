@@ -7,7 +7,7 @@ import MPEAbi from 'singularitynet-platform-contracts/abi/MultiPartyEscrow.json'
 import MPENetworks from 'singularitynet-platform-contracts/networks/MultiPartyEscrow.json';
 import { NETWORKS} from '../util';
 
-export default class Network {
+export default class BlockchainHelper {
 
     constructor() {
         this.eth = undefined;
