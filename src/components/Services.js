@@ -13,7 +13,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import BlockchainHelper from "./BlockchainHelper.js"
-
+import ChannelHelper from "./ChannelHelper.js"
 
 const TabContainer = (props) => {
   return (
@@ -85,8 +85,6 @@ class SampleServices extends React.Component {
       agents : [],
       healthMerged: false,
       offset:0,
-      //show:false,
-      //open:false,
       jobDetailsSliderOpen:false,
       searchBarOpen:false,
       openAlert:false,
@@ -100,21 +98,10 @@ class SampleServices extends React.Component {
       togleprice: false,
       togleservicename:false,
       togglehealth:false,
-      //ethBalance:0,
-      //amount:0 ,
-      //tokenbalance:0,
-      //tokenallowance:0,
-      //escrowaccountbalance:0,
-      //value:0,
-      //authorizeamount:0,
-      //depositamount:0,
-      //withdrawalamount:0,
-      //signatured:'',
-      channelstateid:'',
+      userAddress: undefined,
       modalservicestatus:[],
       ocvalue:0,
       ocexpiration:0,
-      //opencallserviceinputs:false,
       inputservicename:'',
       inputmethodname:'',
       inputservicejson:{},
@@ -123,23 +110,17 @@ class SampleServices extends React.Component {
       servicegrpcerror:'',
       servicefetcherror: '',  
       openchaining:false,   
-      //percentage:20,
       startjobfundinvokeres:false,
       servicestatenames:[],
       servicemethodnames:[],
       chainId: undefined,
       depositopenchannelerror:'',
-      //depositopenchannelrecpt:'',
-      userchannelstateinfo:[],
-      //depositextenderror:'',
       runjobstate:false,
     };
 
     this.serviceState = {
       serviceSpecJSON : undefined,
-      channels : undefined,
-      groupId : undefined,
-      endpoint : undefined
+      channelHelper : new ChannelHelper()
     }
 
     this.network = new BlockchainHelper();
@@ -149,9 +130,6 @@ class SampleServices extends React.Component {
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
     this.onOpenSearchBar = this.onOpenSearchBar.bind(this)
     this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
-    //this.onOpencallserviceinputs = this.onOpencallserviceinputs.bind(this)
-    //this.onClosecallserviceinputs = this.onClosecallserviceinputs.bind(this)
-    //this.handleCloseserviceinputs = this.handleCloseserviceinputs.bind(this)
     this.changehandlerservicename = this.changehandlerservicename.bind(this)
     this.changehandlermethodname = this.changehandlermethodname.bind(this)
     
@@ -206,38 +184,12 @@ class SampleServices extends React.Component {
    {
      var strmethod = this.refs.methodref.value
     this.setState({inputmethodname:strmethod})
-    /*var el = ReactDOM.findDOMNode(this.refs.methodref)
-    var strmethod = el.options[el.selectedIndex].text;
-    console.log("methodname " + strmethod)*/
      
    }
    changehandlerservicename(e,data)
    {
      var strservice = this.refs.serviceref.value
     this.setState({inputservicename:strservice})
-    /*this.setState({servicemethodnames:[]})
-    var el = ReactDOM.findDOMNode(this.refs.serviceref)
-    var strservice = el.options[el.selectedIndex].text;
-    
-     
-
-     let  _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) +data["org_id"] +"/"+ data["service_idfier"] 
-
-fetch( encodeURI(_urlservicebuf))
-.then( serviceSpecResponse  =>  serviceSpecResponse.json())
-.then( serviceSpec  => {
-  const serviceSpecJSON = Root.fromJSON(serviceSpec[0])
-  console.log(serviceSpecJSON)
-
-
-  //var servicedets = Object.keys(serviceSpecJSON.nested[strservice])
-  //var servicedets = Object.keys(serviceSpecJSON.nested[strservice])
-  var servicedets = Object.keys(servicedets["example_service"].Calculator.methods)
-  console.log(servicedets)
-  this.setState({servicemethodnames:["Select a method",servicedets]})
- 
-}
-)*/
    }
    changehandlerervicejson(e)
    {
@@ -263,40 +215,6 @@ fetch( encodeURI(_urlservicebuf))
   {
     this.setState({ocexpiration:e.target.value})
   }
-
-  matchEvent(evt, error, result, senderAddress,groupidgetter,recipientaddress)
-  {
-    console.log('Watching for events');
-    if(error) {
-      console.log("Error in events" + error);
-      evt.stopWatching();
-      this.onClosechaining();
-    }
-    else {
-      console.log("result from event: " + result);
-      var event = result.event;
-      console.log("event: " + event);
-      var agentGroupID = base64ToHex(groupidgetter);
-      if(event == "ChannelOpen")
-      {
-        var MPEChannelId = result.args.channelId;
-        var channelSender = result.args.sender;
-        var channelRecipient = result.args.recipient;
-        var channelGoupId = result.args.groupId;
-
-        console.log("Channel details - [" + channelGoupId + "] [" + channelRecipient + "] ["+channelSender+"]");
-        console.log("App details - [" + agentGroupID + "] [" + recipientaddress + "] ["+senderAddress+"]");
-        if(channelGoupId === agentGroupID && channelSender.toLowerCase() === senderAddress.toLowerCase() && recipientaddress.toLowerCase() === channelRecipient.toLowerCase())
-        {
-          console.log("Matched channel id " + MPEChannelId)
-          this.setState({channelstateid:MPEChannelId});
-          evt.stopWatching();
-          this.nextJobStep();
-        }
-        console.log("channel id" + MPEChannelId)
-      }
-    } 
-  }  
   
   openchannelhandler(data,dataservicestatus)
   {
@@ -311,24 +229,22 @@ fetch( encodeURI(_urlservicebuf))
     });
 
     this.setState({depositopenchannelerror:''});
-    var user_address = web3.eth.defaultAccount
     let mpeInstance = this.network.getMPEInstance(this.state.chainId);
     var amountInWei = AGI.inWei(web3,this.state.ocvalue);
 
-    console.log('channel object ' + this.state.userchannelstateinfo["endpoint"])
-    mpeInstance.balances(user_address,(err,balance) => {
-    if (balance === 0 && typeof this.state.channelstateid === 'undefined')
+    console.log('channel object ' + this.serviceState.channelHelper.getEndpoint());
+    mpeInstance.balances(this.state.userAddress,(err,balance) => {
+    if (balance === 0 && typeof this.serviceState.channelHelper.getChannelId() === 'undefined')
     {
         this.onOpenModalAlert()
     }
     else
     {
       console.log("MPE has balance but have to check if we need to open a channel or extend one. Balance is " + balance);
-        if (typeof this.state.userchannelstateinfo !== 'undefined')
+        if (typeof this.serviceState.channelHelper.getChannels() !== 'undefined')
         {
-            var senderAddress = web3.eth.defaultAccount;
-            console.log('Examining channels ' +  this.state.userchannelstateinfo["groupId"])
-            var groupidgetter = this.state.userchannelstateinfo["groupId"]
+            console.log('Examining channels ' +  this.serviceState.channelHelper.getGroupId());
+            var groupidgetter = this.serviceState.channelHelper.getGroupId();
             var groupidgetterhex = atob(groupidgetter); 
             var recipientaddress = ''
 
@@ -338,45 +254,55 @@ fetch( encodeURI(_urlservicebuf))
             console.log('groupdidgetter hex is ' + groupidgetterhex)
             console.log('Amount is ' + amountInWei);
             console.log(this.state.ocexpiration);
-            console.log(senderAddress);            
+            console.log(this.state.userAddress);            
         
-            if (this.serviceState.channels.length > 0)
+            if (this.serviceState.channelHelper.getChannels().length > 0)
             {
-              console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannels));
-              var rrchannels = this.serviceState.channels[0]
-              mpeInstance.channelExtendAndAddFunds(rrchannels["channelId"], this.state.ocexpiration, amountInWei, { gas: 210000, gasPrice: 51 }, (error, txnHash) => {
+              var rrchannel = this.serviceState.channelHelper.getChannels()[0];
+              console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));
+              mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInWei, { gas: 210000, gasPrice: 51 }, (error, txnHash) => {
     
               console.log("Channel extended and added funds is TXN Has : " + txnHash);
-              this.onOpenchaining()
+              this.onOpenchaining();
               this.waitForTransaction(txnHash).then(receipt => {
-                  console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + senderAddress + 'receipt is ' + receipt);
-                  this.state.channelstateid = rrchannels["channelId"]; 
-                  console.log('ReUsing channel ' + this.state.channelstateid);
+                  console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + this.state.userAddress + 'receipt is ' + receipt);
+                  this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]); 
+                  console.log('ReUsing channel ' + this.serviceState.channelHelper.getChannelId());
                   this.nextJobStep();
                   })
                 .catch((error) => {
-                    //this.setState({depositextenderror: error })
-                    this.nextJobStep();
+                    console.log("Channel extend failed with error " + error);
+                    this.setState({depositopenchannelerror: error })
+                    this.onClosechaining();
                   })
                 })
             }
             else
             {
               console.log("No Channel found to going to deposit from MPE and open a channel");
-              mpeInstance.openChannel(senderAddress, recipientaddress,groupidgetterhex, amountInWei,this.state.ocexpiration,{ gas: 210000, gasPrice:51 }, (error, txnHash) => 
+              mpeInstance.openChannel(this.state.userAddress, recipientaddress,groupidgetterhex, amountInWei,this.state.ocexpiration,{ gas: 210000, gasPrice:51 }, (error, txnHash) => 
               { 
                 console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
                 this.onOpenchaining()
                 
                 this.waitForTransaction(txnHash).then(receipt => {
-                  console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + senderAddress);
+                  console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
                   //this.setState({depositopenchannelrecpt:receipt})
                 }).then(()=>
                   {
                     console.log("Scanning events from " + startingBlock);
-                    var evt =mpeInstance.ChannelOpen({sender: senderAddress}, {fromBlock: startingBlock, toBlock: 'latest'});
+                    var evt =mpeInstance.ChannelOpen({sender: this.state.userAddress}, {fromBlock: startingBlock, toBlock: 'latest'});
                     console.log('event after channel open is ' + evt);                
-                    evt.watch((error, result) => this.matchEvent(evt, error, result, senderAddress,groupidgetter,recipientaddress));   
+                    evt.watch((error, result) => {
+                      if(error) {
+                        console.log("Reading event for channel open failed with error " + error);
+                        this.onClosechaining();
+                      }
+                      else {
+                        this.serviceState.channelHelper.matchEvent(evt, result, this.state.userAddress,groupidgetter,recipientaddress);
+                        this.nextJobStep();
+                      }
+                    });   
                   })
                 .catch((error) => {
                   this.setState({depositopenchannelerror:error});
@@ -388,8 +314,6 @@ fetch( encodeURI(_urlservicebuf))
     }
   })
 }
-
-
 
 handlehealthsort()
 {
@@ -439,11 +363,8 @@ handlehealthsort()
       pricesort.sort((a, b) => a.price - b.price)
       this.setState({togleprice:false})
     }
-
     this.setState({agents:pricesort})
   }
-
- 
 
   handleservicenamesort()
   {
@@ -476,7 +397,6 @@ handlehealthsort()
       this.web3Initialized = isInitialized;
       if (isInitialized) {
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
-      
       }
     }).catch(err => {
       console.error(err);
@@ -501,7 +421,7 @@ handlehealthsort()
 
   loadDetails() {
     
-    this.setState({useraddress:this.props.account})
+    this.setState({userAddress:web3.eth.coinbase})
     let _url= this.network.getMarketplaceURL(this.state.chainId) + "service"
     fetch(_url,{'mode':'cors',
     'Access-Control-Allow-Origin':'*'})
@@ -517,7 +437,7 @@ handlehealthsort()
       "Content-Type": "application/json",
     },
     method: 'POST',
-    body: JSON.stringify({user_address:web3.eth.coinbase})
+    body: JSON.stringify({user_address:this.state.userAddress})
     }
     
     )
@@ -543,19 +463,6 @@ handlehealthsort()
     this.setState({ offset });
   }
 
-  /*
-  handleCloseserviceinputs()
-  {
-    this.state.closecallserviceinputs = false
-  }  
-  onOpencallserviceinputs()
-  {
-    this.setState({opencallserviceinputs:true})
-  }
-  onClosecallserviceinputs()
-  {
-    this.setState({opencallserviceinputs:false})
-  } */
 
   onOpenJobDetailsSlider(e,data,dataservicestatus) {  
     (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
@@ -565,35 +472,13 @@ handlehealthsort()
     this.setState({jobDetailsSliderOpen: true });
     this.setState({expiryBlockNumber:10000})
     this.setState({valueTab:0})
-    this.setState({channelstateid:'' })
+    //this.setState({channelstateid:'' })
     this.setState({startjobfundinvokeres:false})
     this.setState({runjobstate:false})
     this.setState({inputservicejson:{}})
     this.setState({depositopenchannelerror:''})
 
-    let serviceid = data["service_id"]
-    let orgname = data["organization_name"]
-    let _urlfetchchannelinfo = this.network.getMarketplaceURL(this.state.chainId) +'channel-info'
-    fetch(_urlfetchchannelinfo,{'mode':'cors',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: 'POST',
-      body: JSON.stringify({user_address:web3.eth.coinbase,service_id:serviceid,org_name:orgname})
-    }).then(res => res.json())
-      .then(channeldata => {
-                    channeldata.map(rr => this.setState({userchannelstateinfo:rr}));
-                    this.populateChannelDetails();
-      }).catch(err => console.log(err))
-
-    if (typeof web3 !== 'undefined') {
-      if (typeof web3.eth.getBlockNumber() !== 'undefined')
-      {
-        this.setState({ocexpiration:(web3.eth.getBlockNumber() + BLOCK_OFFSET)});
-      }
-    }
-
-//disabled start job if the service is not up at all - unhealthy agent//
+    //disabled start job if the service is not up at all - unhealthy agent//
     dataservicestatus.map(row =>
         {
           if (row["service_id"]===data["service_id"])
@@ -643,22 +528,10 @@ handlehealthsort()
   handleJobInvocation(data,dataservicestatus)
   {
     console.log("Invoking service " + this.state.inputservicename + " and method name " +  this.state.inputmethodname)
-    var from = web3.eth.defaultAccount
-    var nonce = 0;
-    if(typeof this.serviceState.channels !== 'undefined') {
-      for(let ii=0; ii < this.serviceState.channels.length; ii++) {
-        var rrchannels = this.serviceState.channels[ii];
-        if (rrchannels["channelId"] === this.state.channelstateid)
-        {
-          nonce = rrchannels["nonce"];
-          break;
-        }
-      }
-    }
-
-    var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.state.channelstateid, nonce, data['price']);
+    var nonce = this.serviceState.channelHelper.getNonce(0);
+    var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.serviceState.channelHelper.getChannelId(), nonce, data['price']);
     console.log("Composed message for signing is " + msg)
-    window.ethjs.personal_sign(msg, from)
+    window.ethjs.personal_sign(msg, this.state.userAddress)
     .then((signed) => {
       console.log('Signed!  Result is: ', signed)
       var stripped = signed.substring(2,signed.length)
@@ -673,7 +546,7 @@ handlehealthsort()
       const methodName = this.state.inputmethodname
 
       const requestHeaders = {"snet-payment-type":"escrow",
-                              "snet-payment-channel-id":parseInt(this.state.channelstateid), 
+                              "snet-payment-channel-id":parseInt(this.serviceState.channelHelper.getChannelId()), 
                               "snet-payment-channel-nonce":parseInt(nonce), 
                               "snet-payment-channel-amount":parseInt(data["price"]),
                               "snet-payment-channel-signature-bin": base64data}   
@@ -684,7 +557,7 @@ handlehealthsort()
         hasOwnDefinedProperty(serviceSpecJSON.nested[key], "nested")
       )
 
-      var endpointgetter = this.serviceState.endpoint[0];
+      var endpointgetter = this.serviceState.channelHelper.getEndpoint();
       console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + "endpoint " + endpointgetter);
 
       if(!endpointgetter.startsWith("http"))
@@ -713,56 +586,21 @@ handlehealthsort()
     }); 
   }
 
-  populateChannelDetails() {
-    this.serviceState.channels = this.state.userchannelstateinfo["channelId"];
-    if(typeof this.serviceState.channels !== 'undefined') {
-      this.serviceState.channels.map(rr => { rr["balance"] = AGI.inAGI(rr["balance"])});
-    }
-    
-    this.serviceState.endpoint = this.state.userchannelstateinfo["endpoint"]
-    this.serviceState.groupId = this.state.userchannelstateinfo["groupId"];
-  }
-
- findChannelWithBalance(data) {
-  if (typeof this.state.userchannelstateinfo !== 'undefined')
-  {
-    console.log('channel state information is ' +  this.state.userchannelstateinfo["groupId"])
-    if (this.serviceState.channels.length > 0)
-    {
-      for(let ii=0; ii < this.serviceState.channels.length; ii++) {
-        var rrchannels = this.serviceState.channels[ii];
-        if (parseInt(rrchannels["balance"]) >= parseInt(data["price"]))
-        {
-          console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
-          console.log("Setting channel ID to " + rrchannels["channelId"]);
-          this.state.channelstateid = rrchannels["channelId"];    
-          return true;
-        }  
-      }
-    }
-  }
-  console.log("Did not find a channel with adequate funds");
-  return false;
-}
-
-clearJobState() {
-  this.state.channelstateid = undefined;
-  this.serviceState = {
-    channel : undefined,
-    endpoint : undefined,
-    groupId : undefined
-  };
+reInitializeJobState(data) {
+  let serviceId = data["service_id"];
+  let orgId = data["org_id"];
+  let channelInfoUrl = this.network.getMarketplaceURL(this.state.chainId) +'channel-info';
+  this.serviceState.channelHelper.reInitialize(channelInfoUrl, this.state.userAddress, serviceId, orgId);
+  
+  //this.state.channelstateid = undefined;
   this.setState({servicegrpcerror:''});
-  this.setState({
-    servicestatenames: undefined
-  })
+  this.setState({servicestatenames: undefined})
 }
 
 startjob(data) {
-  this.clearJobState();
-  this.populateChannelDetails(); //TODO HACK - CLEAN THIS UP
-  let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
+  this.reInitializeJobState(data);
 
+  let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
   fetch(encodeURI(_urlservicebuf))
     .then(serviceSpecResponse => serviceSpecResponse.json())
     .then(serviceSpec => {
@@ -782,12 +620,11 @@ startjob(data) {
       })
     })
 
-  let user_address = web3.eth.defaultAccount
   let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
-  mpeTokenInstance.balances(user_address, (err, balance) => {
-    balance = AGI.toDecimal(balance);
+  mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
+    balance = AGI.inAGI(balance);
     console.log("In start job Balance is " + balance + " job cost is " + data['price']);
-    let foundChannel = this.findChannelWithBalance(data);
+    let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data);
     if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) 
     {
       this.onOpenModalAlert();
@@ -1112,7 +949,7 @@ async waitForTransaction(hash) {
                         <div className="text-right border-top1">
                       
                         {((typeof web3 !== 'undefined') &&
-                          (web3.eth.defaultAccount !== null) &&
+                          (this.state.userAddress !== null) &&
                           (this.state.runjobstate === true)) ?
                            <button type="button" className="btn-start" onClick={() => this.startjob(this.state.modaluser)}>Start Job</button>
                         :  <button type="button" className="btn-start-disabled"  disabled>Start Job</button>
@@ -1129,8 +966,8 @@ async waitForTransaction(hash) {
         
         <Tabs value={valueTab}  onChange={(event,valueTab) =>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
         <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title" >Fund</span>}/>
-        <Tab disabled ={this.state.channelstateid !== '' && this.state.openchaining } label={<span className="funds-title">Invoke</span>}/>
-        <Tab disabled ={this.state.channelstateid !== '' && this.state.openchaining } label={<span className="funds-title">Result</span>}  />
+        <Tab disabled ={this.serviceState.channelHelper.getChannelId() !== '' && this.state.openchaining } label={<span className="funds-title">Invoke</span>}/>
+        <Tab disabled ={this.serviceState.channelHelper.getChannelId() !== '' && this.state.openchaining } label={<span className="funds-title">Result</span>}  />
       </Tabs>
 {
   valueTab === 0 && <TabContainer> 
