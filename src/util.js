@@ -48,6 +48,10 @@ export class AGI {
     return agi / 100000000;
   }
 
+  static inAGI(cogs) {
+    return cogs / 100000000;
+  }
+
   static inWei(web3, value) {
     return new BigNumber(web3.toWei(value, "ether") / (10 ** (10))).toNumber();
   }  
@@ -130,3 +134,18 @@ export const isValidAddress = (address, coin, network) => {
 }
 
 export function hasOwnDefinedProperty(object, property) { return object.hasOwnProperty(property) && typeof object[property] !== "undefined" }
+
+
+export function hexToAscii(hexString) { 
+  let asciiString = Eth.toAscii(hexString);
+  return asciiString.substr(0,asciiString.indexOf("\0")); // name is right-padded with null bytes
+}
+
+export function base64ToHex(base64String) {
+  var byteSig = Buffer.from(base64String, 'base64');
+  let buff = new Buffer(byteSig);
+  let hexString = "0x"+buff.toString('hex');
+  return hexString;
+}
+
+export const BLOCK_OFFSET = 6000 //# blocks generated in 25 hrs

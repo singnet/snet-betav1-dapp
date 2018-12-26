@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes, { array } from 'prop-types';
-import Eth from 'ethjs';
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import Pagination from "material-ui-flat-pagination";
 import Typography from '@material-ui/core/Typography';
@@ -9,7 +8,7 @@ import Slide from '@material-ui/core/Slide';
 import {Link,withRouter} from 'react-router-dom';
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs';
-import {  AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util';
+import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS, base64ToHex, BLOCK_OFFSET } from '../util';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -63,12 +62,8 @@ const theme = createMuiTheme({
     useNextVariants: true,
   },
   overrides: {
-    // Name of the component ⚛️ / style sheet
-  
     MuiButton: {
-      // Name of the rule
       root: {
-        // Some CSS
         background: 'white',
         borderRadius: 3,
         border: 0,
@@ -78,13 +73,10 @@ const theme = createMuiTheme({
         boxShadow: '0 3px 5px 2px lightblue',
         fontFamily:"Segoe UI",
         fontSize:"12px",
-
       },
     },
   },
 });
-
-const BLOCK_OFFSET = 6000 //# blocks generated in 25 hrs
 
 class SampleServices extends React.Component {
   constructor(props) {
@@ -93,8 +85,8 @@ class SampleServices extends React.Component {
       agents : [],
       healthMerged: false,
       offset:0,
-      show:false,
-      open:false,
+      //show:false,
+      //open:false,
       jobDetailsSliderOpen:false,
       searchBarOpen:false,
       openAlert:false,
@@ -108,21 +100,21 @@ class SampleServices extends React.Component {
       togleprice: false,
       togleservicename:false,
       togglehealth:false,
-      ethBalance:0,
-      amount:0 ,
-      tokenbalance:0,
-      tokenallowance:0,
-      escrowaccountbalance:0,
-      value:0,
-      authorizeamount:0,
-      depositamount:0,
-      withdrawalamount:0,
-      signatured:'',
+      //ethBalance:0,
+      //amount:0 ,
+      //tokenbalance:0,
+      //tokenallowance:0,
+      //escrowaccountbalance:0,
+      //value:0,
+      //authorizeamount:0,
+      //depositamount:0,
+      //withdrawalamount:0,
+      //signatured:'',
       channelstateid:'',
       modalservicestatus:[],
       ocvalue:0,
       ocexpiration:0,
-      opencallserviceinputs:false,
+      //opencallserviceinputs:false,
       inputservicename:'',
       inputmethodname:'',
       inputservicejson:{},
@@ -131,16 +123,15 @@ class SampleServices extends React.Component {
       servicegrpcerror:'',
       servicefetcherror: '',  
       openchaining:false,   
-      percentage:20,
+      //percentage:20,
       startjobfundinvokeres:false,
       servicestatenames:[],
       servicemethodnames:[],
       chainId: undefined,
-      ethBlockNumber: 900000,
       depositopenchannelerror:'',
-      depositopenchannelrecpt:'',
+      //depositopenchannelrecpt:'',
       userchannelstateinfo:[],
-      depositextenderror:'',
+      //depositextenderror:'',
       runjobstate:false,
     };
 
@@ -158,9 +149,9 @@ class SampleServices extends React.Component {
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
     this.onOpenSearchBar = this.onOpenSearchBar.bind(this)
     this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
-    this.onOpencallserviceinputs = this.onOpencallserviceinputs.bind(this)
-    this.onClosecallserviceinputs = this.onClosecallserviceinputs.bind(this)
-    this.handleCloseserviceinputs = this.handleCloseserviceinputs.bind(this)
+    //this.onOpencallserviceinputs = this.onOpencallserviceinputs.bind(this)
+    //this.onClosecallserviceinputs = this.onClosecallserviceinputs.bind(this)
+    //this.handleCloseserviceinputs = this.handleCloseserviceinputs.bind(this)
     this.changehandlerservicename = this.changehandlerservicename.bind(this)
     this.changehandlermethodname = this.changehandlermethodname.bind(this)
     
@@ -207,9 +198,6 @@ class SampleServices extends React.Component {
       if (chainId !== this.state.chainId) {
         this.setState({ chainId: chainId });
         this.loadDetails();
-        web3.eth.getBlockNumber((error, result) => {
-          this.setState({ethBlockNumber:  result})
-        })
       }
     });
   }
@@ -255,10 +243,7 @@ fetch( encodeURI(_urlservicebuf))
    {
      this.setState({inputservicejson:e.target.value})
    }
- handleCloseserviceinputs()
-    {
-      this.state.closecallserviceinputs = false
-    }
+
   handlesearchclear()
   {
     this.setState({searchterm:''})
@@ -291,7 +276,7 @@ fetch( encodeURI(_urlservicebuf))
       console.log("result from event: " + result);
       var event = result.event;
       console.log("event: " + event);
-      var agentGroupID = this.base64ToHex(groupidgetter);
+      var agentGroupID = base64ToHex(groupidgetter);
       if(event == "ChannelOpen")
       {
         var MPEChannelId = result.args.channelId;
@@ -318,6 +303,13 @@ fetch( encodeURI(_urlservicebuf))
     if(web3 === 'undefined') {
       return;
     }
+    var startingBlock = 900000;
+    web3.eth.getBlockNumber((error, result) => {
+      if(!error) {
+        startingBlock = result;
+      }
+    });
+
     this.setState({depositopenchannelerror:''});
     var user_address = web3.eth.defaultAccount
     let mpeInstance = this.network.getMPEInstance(this.state.chainId);
@@ -363,7 +355,7 @@ fetch( encodeURI(_urlservicebuf))
                   this.nextJobStep();
                   })
                 .catch((error) => {
-                    this.setState({depositextenderror: error })
+                    //this.setState({depositextenderror: error })
                     this.nextJobStep();
                   })
                 })
@@ -371,7 +363,6 @@ fetch( encodeURI(_urlservicebuf))
             else
             {
               console.log("No Channel found to going to deposit from MPE and open a channel");
-              //if (this.state.userchannelstateinfo["channelId"].length === 0)
               mpeInstance.openChannel(senderAddress, recipientaddress,groupidgetterhex, amountInWei,this.state.ocexpiration,{ gas: 210000, gasPrice:51 }, (error, txnHash) => 
               { 
                 console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
@@ -379,15 +370,13 @@ fetch( encodeURI(_urlservicebuf))
                 
                 this.waitForTransaction(txnHash).then(receipt => {
                   console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + senderAddress);
-                  this.setState({depositopenchannelrecpt:receipt})
+                  //this.setState({depositopenchannelrecpt:receipt})
                 }).then(()=>
                   {
-                    //this.getEvent(mpeInstance,senderAddress,groupidgetter,recipientaddress);
-                    var startingBlock = this.state.ethBlockNumber;
                     console.log("Scanning events from " + startingBlock);
                     var evt =mpeInstance.ChannelOpen({sender: senderAddress}, {fromBlock: startingBlock, toBlock: 'latest'});
                     console.log('event after channel open is ' + evt);                
-                    evt.watch((error, result) => this.matchEvent(evt, error, result, senderAddress,groupidgetter,recipientaddress));                    
+                    evt.watch((error, result) => this.matchEvent(evt, error, result, senderAddress,groupidgetter,recipientaddress));   
                   })
                 .catch((error) => {
                   this.setState({depositopenchannelerror:error});
@@ -400,12 +389,7 @@ fetch( encodeURI(_urlservicebuf))
   })
 }
 
-base64ToHex(base64String) {
-  var byteSig = Buffer.from(base64String, 'base64');
-  let buff = new Buffer(byteSig);
-  let hexString = "0x"+buff.toString('hex');
-  return hexString;
-}
+
 
 handlehealthsort()
 {
@@ -558,15 +542,20 @@ handlehealthsort()
   handleClick(offset) {
     this.setState({ offset });
   }
+
+  /*
+  handleCloseserviceinputs()
+  {
+    this.state.closecallserviceinputs = false
+  }  
   onOpencallserviceinputs()
   {
     this.setState({opencallserviceinputs:true})
   }
   onClosecallserviceinputs()
   {
-    
     this.setState({opencallserviceinputs:false})
-  }
+  } */
 
   onOpenJobDetailsSlider(e,data,dataservicestatus) {  
     (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
@@ -667,7 +656,7 @@ handlehealthsort()
       }
     }
 
-    var msg = this.network.composeMessage(this.network.getMPEAddress(this.state.chainId), this.state.channelstateid, nonce, data['price']);
+    var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.state.channelstateid, nonce, data['price']);
     console.log("Composed message for signing is " + msg)
     window.ethjs.personal_sign(msg, from)
     .then((signed) => {
@@ -727,7 +716,7 @@ handlehealthsort()
   populateChannelDetails() {
     this.serviceState.channels = this.state.userchannelstateinfo["channelId"];
     if(typeof this.serviceState.channels !== 'undefined') {
-      this.serviceState.channels.map(rr => { rr["balance"] = AGI.toDecimal(rr["balance"])});
+      this.serviceState.channels.map(rr => { rr["balance"] = AGI.inAGI(rr["balance"])});
     }
     
     this.serviceState.endpoint = this.state.userchannelstateinfo["endpoint"]
@@ -848,11 +837,8 @@ onKeyPressvalidator(event) {
     this.setState({besttagresult:tagresult})
   }
 
-  hexToAscii(hexString) { 
-    let asciiString = Eth.toAscii(hexString);
-    return asciiString.substr(0,asciiString.indexOf("\0")); // name is right-padded with null bytes
-  }
-    
+
+
   captureSearchterm(e)
   {
     this.setState({searchterm:e.target.value})
@@ -1141,10 +1127,10 @@ async waitForTransaction(hash) {
        
         <div className="servicedetailstab"  >
         
-          <Tabs value={valueTab}  onChange={(event,valueTab) =>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
-        <Tab disabled={(this.state.startjobfundinvokeres)?false:true} label={<span className="funds-title" >Fund</span>}/>
-        <Tab disabled ={this.state.channelstateid !== '' && this.state.openchaining===false?false:true } label={<span className="funds-title">Invoke</span>}/>
-        <Tab disabled ={this.state.channelstateid !== '' && this.state.openchaining===false?false:true } label={<span className="funds-title">Result</span>}  />
+        <Tabs value={valueTab}  onChange={(event,valueTab) =>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
+        <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title" >Fund</span>}/>
+        <Tab disabled ={this.state.channelstateid !== '' && this.state.openchaining } label={<span className="funds-title">Invoke</span>}/>
+        <Tab disabled ={this.state.channelstateid !== '' && this.state.openchaining } label={<span className="funds-title">Result</span>}  />
       </Tabs>
 {
   valueTab === 0 && <TabContainer> 
