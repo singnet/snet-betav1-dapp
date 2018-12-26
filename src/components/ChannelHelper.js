@@ -1,4 +1,4 @@
-import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS, base64ToHex, BLOCK_OFFSET } from '../util';
+import { AGI, base64ToHex } from '../util';
 
 export default class ChannelHelper {
   constructor() {
@@ -13,7 +13,6 @@ export default class ChannelHelper {
     this.groupId = undefined;
     this.endpoint = undefined;
     this.channelId = undefined;
-
     this.fetchChannels(channelInfoUrl, userAddress, serviceId, orgName);
   }
 
@@ -95,7 +94,6 @@ export default class ChannelHelper {
   }
 
   matchEvent(evt, result, senderAddress, groupidgetter, recipientaddress) {
-    console.log('Watching for events');
     console.log("result from event: " + result);
     var event = result.event;
     console.log("event: " + event);
@@ -112,13 +110,6 @@ export default class ChannelHelper {
         console.log("Matched channel id " + MPEChannelId)
         this.channelId = MPEChannelId;
         evt.stopWatching();
-
-        /*          
-        this.setState({
-          channelstateid: MPEChannelId
-        });
-        evt.stopWatching();
-        this.nextJobStep();*/
       }
       console.log("channel id" + this.channelId);
     }
