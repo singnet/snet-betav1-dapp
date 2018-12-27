@@ -382,6 +382,11 @@ class SampleServices extends React.Component {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
+      } 
+      else {
+        this.setState({chainId: this.network.getDefaultNetwork()});
+        console.log("Defaulting to " + this.state.chainId);
+        this.loadDetails();
       }
     }).catch(err => {
       console.error(err);
@@ -400,7 +405,6 @@ class SampleServices extends React.Component {
   }
 
   loadDetails() {
-    this.setState({userAddress: web3.eth.coinbase});
     let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
     fetch(_url, {
         'mode': 'cors',
@@ -408,23 +412,6 @@ class SampleServices extends React.Component {
       })
       .then(res => res.json())
       .then(data => this.setState({agents: data})).then(this.handlehealthsort);
-
-    if (typeof web3 !== 'undefined') {
-      let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
-      fetch(_urlfetchvote, {
-          'mode': 'cors',
-          headers: {
-            "Content-Type": "application/json",
-          },
-          method: 'POST',
-          body: JSON.stringify({
-            user_address: this.state.userAddress
-          })
-        })
-        .then(res => res.json())
-        .then(data => this.setState({uservote: data}))
-        .catch(err => console.log(err))
-    }
 
     let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
     fetch(_urlfetchservicestatus, {
@@ -435,8 +422,28 @@ class SampleServices extends React.Component {
       )
       .then(res => res.json())
       .then(data => this.setState({userservicestatus: data}))
-      .catch(err => console.log(err))
+      .catch(err => console.log(err));
     this.state.healthMerged = false;
+
+    if (typeof web3 === 'undefined') {
+      return;
+    }
+
+    this.setState({userAddress: web3.eth.coinbase});
+    let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
+    fetch(_urlfetchvote, {
+        'mode': 'cors',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          user_address: this.state.userAddress
+        })
+      })
+      .then(res => res.json())
+      .then(data => this.setState({uservote: data}))
+      .catch(err => console.log(err));
   }
   
   handleClick(offset) {
@@ -457,7 +464,7 @@ class SampleServices extends React.Component {
     this.setState({depositopenchannelerror:''})
 
     if (typeof web3 === 'undefined' || typeof this.state.userAddress === 'undefined') {
-      this.setState({runjobstate: true});
+      return;
     }
 
     //disabled start job if the service is not up at all - unhealthy agent//

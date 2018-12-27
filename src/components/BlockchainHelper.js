@@ -51,7 +51,7 @@ export default class BlockchainHelper {
     
         return receipt;
       }
-          
+
     getAccount(callBack) {
         if (typeof this.eth === 'undefined') {
             callBack(undefined);
@@ -149,4 +149,13 @@ export default class BlockchainHelper {
         }
         return undefined;
     }
+
+    getDefaultNetwork() {
+        for (var chain in NETWORKS){
+            if('default' in NETWORKS[chain] && NETWORKS[chain]['default'] === true) {
+                return chain;
+            }
+        }
+        return undefined;
+    }    
 }
