@@ -5,7 +5,7 @@ import AGITokenNetworks from 'singularitynet-token-contracts/networks/Singularit
 import AGITokenAbi from 'singularitynet-token-contracts/abi/SingularityNetToken.json';
 import MPEAbi from 'singularitynet-platform-contracts/abi/MultiPartyEscrow.json';
 import MPENetworks from 'singularitynet-platform-contracts/networks/MultiPartyEscrow.json';
-import { NETWORKS} from '../util';
+import { AGI, NETWORKS} from '../util';
 
 export default class BlockchainHelper {
 
@@ -57,7 +57,6 @@ export default class BlockchainHelper {
             callBack(undefined);
         }
 
-        var account = undefined;
         this.eth.accounts().then(accounts => {
             if (accounts.length === 0) {
                 console.log('wallet is locked');
@@ -68,6 +67,20 @@ export default class BlockchainHelper {
             }
         }).catch(err => { console.log(err) });
         callBack(undefined);
+    }
+
+    getAGIBalance(chainId, address, callBack) {
+        if (typeof this.eth === 'undefined') {
+            return callBack(undefined);;
+        }
+
+        var tokenInstance = this.getTokenInstance(chainId);
+        if(typeof tokenInstance !== 'undefined') { 
+            tokenInstance.balanceOf(address, (err, balance) => {
+                callBack(AGI.inAGI(balance));
+            });
+        }
+        return callBack(undefined);
     }
 
     getEThBalance(callBack) {

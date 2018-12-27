@@ -78,7 +78,7 @@ export class Profile extends Component {
 
     this.network = new BlockchainHelper();
     this.state = {
-      ethBalance: 0,
+      agiBalance: 0,
       //amount: 0,
       //tokenbalance: 0,
       escrowaccountbalance: 0,
@@ -119,46 +119,6 @@ export class Profile extends Component {
     this.onClosechaining = this.onClosechaining.bind(this)
   }
 
-  onClosechaining() {
-    this.setState({ openchaining: false })
-  }
-  onOpenchaining() {
-    this.setState({ openchaining: true })
-  }
-
-  Expirationchange(e) {
-    this.setState({ extexp: e.target.value })
-  }
-  extamountchange(e) {
-    this.setState({ extamount: e.target.value })
-  }
-
-  handlerextendadd(channelid) {
-    let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
-    var amountInCogs = AGI.inCogs(web3, this.state.extamount);
-    console.log("Extending channel id:" + channelid, " amount:" + amountInCogs + " expiry: " + this.state.extexp);
-    instanceEscrowContract.channelExtendAndAddFunds(channelid, this.state.extexp, this.state.extamount, {
-      gas: 210000,
-      gasPrice: 51
-    }, (error, txnHash) => {
-
-      console.log("Channel extended and added funds is TXN Has : " + txnHash);
-      this.onOpenchaining()
-      this.network.waitForTransaction(txnHash).then(receipt => {
-          console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + web3.eth.defaultAccount + 'receipt is ' + receipt);
-          this.nextJobStep();
-        })
-        .catch((error) => {
-          this.setState({depositextenderror: error})
-          this.nextJobStep();
-        })
-    })
-  }
-
-  handleChange(event, value) {
-    this.setState({ value });
-  };
-
   componentDidMount() {
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
@@ -177,8 +137,8 @@ export class Profile extends Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        this.watchWalletTimer = setTimeout(() => this.watchWallet(), 500);
         this.watchNetworkTimer = setTimeout(() => this.watchNetwork(), 500);
+        this.watchWalletTimer = setTimeout(() => this.watchWallet(), 500);
       }
     }).catch(err => {
       console.error(err);
@@ -189,50 +149,12 @@ export class Profile extends Component {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
         this.setState({ chainId: chainId });
+        this.network.getAGIBalance(this.state.chainId, web3.eth.coinbase,((balance) => {
+          if (balance !== this.state.agiBalance) {
+            this.setState({ agiBalance: balance });
+          }
+        }));         
         this.loadDetails();
-      }
-    });
-  }
-
-  loadDetails() {
-    if (typeof web3 === 'undefined') {
-      return;
-    }
-
-    var userAddress = web3.eth.defaultAccount;
-    let mpeURL = this.network.getMarketplaceURL(this.state.chainId);
-    if (typeof (mpeURL) !== 'undefined') {
-      let _urlfetchprofile = mpeURL + 'fetch-profile'
-      fetch(_urlfetchprofile, {
-          'mode': 'cors',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          method: 'POST',
-          body: JSON.stringify({userAddress: web3.eth.coinbase})
-        })
-        .then(res => res.json())
-        .then(data => this.setState({userprofile: data}))
-        .catch(err => console.log(err))
-
-      let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
-      mpeTokenInstance.balances(userAddress, ((err, balance) => {
-        if (err) {
-          console.log(err);
-          return;
-        }
-        console.log("balance of user is  " + balance);
-        this.setState({escrowaccountbalance: balance});
-      }));
-    }
-
-    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
-    instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
-      if (err) {
-        console.log(err);
-      }
-      else {
-        this.setState({allowedtokenbalance: parseInt(allowedbalance)})//["c"]
       }
     });
   }
@@ -243,16 +165,90 @@ export class Profile extends Component {
         this.setState({ account: account });
       }
     });
-
-    this.network.getEThBalance((balance) => {
-      if (balance !== this.state.ethBalance) {
-        this.setState({ ethBalance: balance });
-      }
-    }); 
   }
+
+  loadDetails() {
+    if (typeof web3 === 'undefined') {
+      return;
+    }
+
+    let mpeURL = this.network.getMarketplaceURL(this.state.chainId);
+    if (typeof (mpeURL) !== 'undefined') {
+      let _urlfetchprofile = mpeURL + 'fetch-profile'
+      fetch(_urlfetchprofile, {
+          'mode': 'cors',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          method: 'POST',
+          body: JSON.stringify({user_address: web3.eth.coinbase})
+        })
+        .then(res => res.json())
+        .then(data => this.setState({userprofile: data}))
+        .catch(err => console.log(err))
+
+      let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
+      mpeTokenInstance.balances(web3.eth.coinbase, ((err, balance) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log("balance of user is  " + balance);
+        this.setState({escrowaccountbalance: balance});
+      }));
+    }
+
+    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
+    instanceTokenContract.allowance(web3.eth.coinbase, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        this.setState({allowedtokenbalance: parseInt(allowedbalance)})//["c"]
+      }
+    });
+  }
+
+  onKeyPressvalidator(event) {
+    const keyCode = event.keyCode || event.which;
+    //comparing pressed keycodes
+    if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
+      event.preventDefault()
+    } else {
+      let dots = event.target.value.split('.');
+      if (dots.length > 1 && keyCode == 46)
+        event.preventDefault()
+    }
+  }
+
+  onClosechaining() {
+    this.setState({ openchaining: false })
+  }
+  onOpenchaining() {
+    this.setState({ openchaining: true })
+  }
+
+  Expirationchange(e) {
+    this.setState({ extexp: e.target.value })
+  }
+  extamountchange(e) {
+    this.setState({ extamount: e.target.value })
+  }
+
+  handleChange(event, value) {
+    this.setState({ value });
+  };
 
   nextJobStep() {
     this.onClosechaining()
+  }
+
+  changeWithDrawalAmount(e) {
+    this.setState({ withdrawalamount: e.target.value })
+  }
+
+  changeAuthorizeAmount(e) {
+    this.setState({ authorizeamount: e.target.value })
   }
 
   handleAuthorize() {
@@ -281,11 +277,6 @@ export class Profile extends Component {
         })
     })
   }
-
-  changeAuthorizeAmount(e) {
-    this.setState({ authorizeamount: e.target.value })
-  }
-
 
   handleDeposit() {
     if (typeof web3 === undefined) {
@@ -379,27 +370,28 @@ export class Profile extends Component {
     }
   }
 
-  changeWithDrawalAmount(e) {
-    this.setState({ withdrawalamount: e.target.value })
+  handlerextendadd(channelid) {
+    let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
+    var amountInCogs = AGI.inCogs(web3, this.state.extamount);
+    console.log("Extending channel id:" + channelid, " amount:" + amountInCogs + " expiry: " + this.state.extexp);
+    instanceEscrowContract.channelExtendAndAddFunds(channelid, this.state.extexp, this.state.extamount, {
+      gas: 210000,
+      gasPrice: 51
+    }, (error, txnHash) => {
+
+      console.log("Channel extended and added funds is TXN Has : " + txnHash);
+      this.onOpenchaining()
+      this.network.waitForTransaction(txnHash).then(receipt => {
+          console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + web3.eth.defaultAccount + 'receipt is ' + receipt);
+          this.nextJobStep();
+        })
+        .catch((error) => {
+          this.setState({depositextenderror: error})
+          this.nextJobStep();
+        })
+    })
   }
-
-  handleChange(event, value) {
-    this.setState({ value });
-  };
-
-
-  onKeyPressvalidator(event) {
-    const keyCode = event.keyCode || event.which;
-    //comparing pressed keycodes
-    if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
-      event.preventDefault()
-    } else {
-      let dots = event.target.value.split('.');
-      if (dots.length > 1 && keyCode == 46)
-        event.preventDefault()
-    }
-  }
-
+    
   render() {
     const { value } = this.state;
     window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true
@@ -436,11 +428,11 @@ export class Profile extends Component {
                                 </div>
                                 <div className="row">
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
-                                        <label>Wallet Balance</label>
+                                        <label>Token Balance</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Wallet Balance</span>}>
+                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Token Balance</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
-                                            <label>{this.state.ethBalance / 10 ** (18)} ETH</label>
+                                            <label>{this.state.agiBalance} AGI</label>
                                         </div>
                                     </Tooltip>
                                 </div>
@@ -544,31 +536,33 @@ export class Profile extends Component {
                                 </Slide>
                             </Modal>
                         </div>
-                        <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 channel-info ">
+                        <div className="col-xs-12 col-sm-16 col-md-16 col-lg-16 channel-info ">
                             <div className="row channel-header">
-                                <div className="col-sm-3 col-md-2 col-lg-3 hidden-xs">
-                                    <span>Channels</span>
+                                <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
+                                    <span>Channel ID</span>
                                 </div>
-                                <div className="col-sm-3 col-md-3 col-lg-3 hidden-xs">
+                                <div className="col-sm-3 col-md-2 col-lg-3 hidden-xs">
+                                    <span>Organization</span>
+                                </div>
+                                <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
+                                    <span>Service</span>
+                                </div>                                                                
+                                <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
                                     <span>Balance</span>
                                 </div>
-                                <div className="col-sm-3 col-md-3 col-lg-3 hidden-xs">
-                                    <span>Pending</span>
-                                </div>
-                                <div className="col-sm-2 col-md-2 col-lg-2 hidden-xs">
+                                <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
                                     <span>Expiry Time</span>
                                 </div>
-                                <div className="col-sm-1 col-md-2 col-lg-1 hidden-xs">&nbsp;</div>
+                                <div className="col-sm-1 col-md-1 col-lg-1 hidden-xs">&nbsp;</div>
                             </div>
                             {this.state.userprofile.map((row, index) =>
                             <ExpansionPanel key={index} style={{ borderRadius: "5px", backgroundColor: "#E3F0FF", marginBottom: "15px" }}>
                                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} style={{ padding: "0px" }}>
                                 <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["channel_id"]}</span></div>
+                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["nonce"]}</span></div>
+                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["nonce"]}</span></div>                    
                                 <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
                                     <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["balance"]}</span></Typography>
-                                </div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
-                                    <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["pending"]}</span></Typography>
                                 </div>
                                 <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
                                     <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["expiration"]}</span></Typography>
