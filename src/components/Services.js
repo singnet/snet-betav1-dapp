@@ -219,28 +219,23 @@ class SampleServices extends React.Component {
     if (web3 === 'undefined') {
       return;
     }
-    var startingBlock = 900000;
-    web3.eth.getBlockNumber((error, result) => {
-      if (!error) {
-        startingBlock = result;
-      }
-    });
+    console.log("Reading events from ");
 
     this.setState({depositopenchannelerror: ''});
     let mpeInstance = this.network.getMPEInstance(this.state.chainId);
     var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
 
     console.log('channel object ' + this.serviceState.channelHelper.getEndpoint());
-    if (typeof this.serviceState.channelHelper.getChannels() !== 'undefined') {
+    if (typeof this.serviceState.channelHelper.getChannels() === 'undefined') {
       this.onOpenModalAlert()
     } else {
       console.log("MPE has balance but have to check if we need to open a channel or extend one.");
-      var groupidgetterhex = atob(groupthis.serviceState.channelHelper.getGroupId());
+      var groupIDBytes = atob(this.serviceState.channelHelper.getGroupId());
       var recipientaddress = this.serviceState.channelHelper.getRecipient();
 
       console.log("group id is " + this.serviceState.channelHelper.getGroupId())
       console.log("recipient address is " + recipientaddress)
-      console.log('groupdidgetter hex is ' + groupidgetterhex)
+      console.log('groupdidgetter hex is ' + groupIDBytes)
       console.log('Amount is ' + amountInCogs);
       console.log(this.state.ocexpiration);
       console.log(this.state.userAddress);
@@ -248,15 +243,22 @@ class SampleServices extends React.Component {
       if (this.serviceState.channelHelper.getChannels().length > 0) {
         var rrchannel = this.serviceState.channelHelper.getChannels()[0];
         console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));        
-        this.channelExtend(mpeInstance, amountInCogs);
+        this.channelExtend(mpeInstance, rrchannel, amountInCogs);
       } else {
         console.log("No Channel found to going to deposit from MPE and open a channel");
-        this.channelOpen(mpeInstance, startingBlock, recipientaddress, groupIDBytes, amountInCogs);
+        this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
       }
     }
   }
 
-  channelOpen(mpeInstance, startingBlock, recipientaddress, groupIDBytes, amountInCogs) {
+  channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
+    var startingBlock = 900000;
+    web3.eth.getBlockNumber((error, result) => {
+      if (!error) {
+        startingBlock = result;
+      }
+    });
+    console.log("Reading events from " + startingBlock);
     mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
       gas: 210000, gasPrice: 51
     }, (error, txnHash) => {
@@ -291,12 +293,14 @@ class SampleServices extends React.Component {
         this.processChannelErrors(error,"Reading event for channel open failed with error");
       } else {
         this.serviceState.channelHelper.matchEvent(evt, result, this.state.userAddress, this.serviceState.channelHelper.getGroupId(), recipientaddress);
-        this.nextJobStep();
+        if(typeof this.serviceState.channelHelper.getChannelId() !== 'undefined') {
+          this.nextJobStep();
+        }
       }
     });
   }  
 
-  channelExtend(rrchannel, mpeInstance, amountInCogs) {
+  channelExtend(mpeInstance, rrchannel, amountInCogs) {
     mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
       gas: 210000,
       gasPrice: 51
@@ -587,7 +591,7 @@ class SampleServices extends React.Component {
     var currentBlockNumber = 900000;
     web3.eth.getBlockNumber((error, result) => {
       if (!error) {
-        startingBlock = result;
+        currentBlockNumber = result;
       }
     });
 
@@ -900,7 +904,7 @@ onKeyPressvalidator(event) {
                                                     <div className="row channels-sec">
                                                         <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Amount:</div>
                                                         <div className="col-xs-12 col-sm-4 col-md-4">
-                                                            <input type="text" className="chennels-amt-field" value={this.state.ocvalue===0?this.setState({ocvalue:parseInt(this.state.modaluser[ "price"])}):this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} />
+                                                            <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} />
                                                         </div>
                                                         <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
                                                         <div className="col-xs-12 col-sm-4 col-md-4">

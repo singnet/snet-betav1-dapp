@@ -90,6 +90,7 @@ export default class ChannelHelper {
         })
       }).then(res => res.json())
       .then(channeldata => {
+        console.log(channeldata);
         this.populateChannelDetails(channeldata);
       }).catch(err => console.log(err))
   }
