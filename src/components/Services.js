@@ -209,6 +209,12 @@ class SampleServices extends React.Component {
     this.setState({ocexpiration: e.target.value})
   }
   
+  processChannelErrors(error, message) {
+    console.log(message + " " + error);
+    this.setState({depositopenchannelerror: error})
+    this.onClosechaining();
+  }
+
   openchannelhandler(data, dataservicestatus) {
     if (web3 === 'undefined') {
       return;
@@ -222,91 +228,95 @@ class SampleServices extends React.Component {
 
     this.setState({depositopenchannelerror: ''});
     let mpeInstance = this.network.getMPEInstance(this.state.chainId);
-    var amountInWei = AGI.inWei(web3, this.state.ocvalue);
+    var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
 
     console.log('channel object ' + this.serviceState.channelHelper.getEndpoint());
-    mpeInstance.balances(this.state.userAddress, (err, balance) => {
-      if (balance === 0 && typeof this.serviceState.channelHelper.getChannelId() === 'undefined') {
-        this.onOpenModalAlert()
+    if (typeof this.serviceState.channelHelper.getChannels() !== 'undefined') {
+      this.onOpenModalAlert()
+    } else {
+      console.log("MPE has balance but have to check if we need to open a channel or extend one.");
+      var groupidgetterhex = atob(groupthis.serviceState.channelHelper.getGroupId());
+      var recipientaddress = this.serviceState.channelHelper.getRecipient();
+
+      console.log("group id is " + this.serviceState.channelHelper.getGroupId())
+      console.log("recipient address is " + recipientaddress)
+      console.log('groupdidgetter hex is ' + groupidgetterhex)
+      console.log('Amount is ' + amountInCogs);
+      console.log(this.state.ocexpiration);
+      console.log(this.state.userAddress);
+
+      if (this.serviceState.channelHelper.getChannels().length > 0) {
+        var rrchannel = this.serviceState.channelHelper.getChannels()[0];
+        console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));        
+        this.channelExtend(mpeInstance, amountInCogs);
       } else {
-        console.log("MPE has balance but have to check if we need to open a channel or extend one. Balance is " + balance);
-        if (typeof this.serviceState.channelHelper.getChannels() !== 'undefined') {
-          console.log('Examining channels ' + this.serviceState.channelHelper.getGroupId());
-          var groupidgetter = this.serviceState.channelHelper.getGroupId();
-          var groupidgetterhex = atob(groupidgetter);
-          var recipientaddress = ''
-
-          Object.values(data["groups"]).map((rr) => recipientaddress = rr["payment_address"])
-          console.log("group id is " + groupidgetter)
-          console.log("recipient address is " + recipientaddress)
-          console.log('groupdidgetter hex is ' + groupidgetterhex)
-          console.log('Amount is ' + amountInWei);
-          console.log(this.state.ocexpiration);
-          console.log(this.state.userAddress);
-
-          if (this.serviceState.channelHelper.getChannels().length > 0) {
-            var rrchannel = this.serviceState.channelHelper.getChannels()[0];
-            console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));
-            mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInWei, {
-              gas: 210000,
-              gasPrice: 51
-            }, (error, txnHash) => {
-
-              console.log("Channel extended and added funds is TXN Has : " + txnHash);
-              this.onOpenchaining();
-              this.waitForTransaction(txnHash).then(receipt => {
-                  console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + this.state.userAddress + 'receipt is ' + receipt);
-                  this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]);
-                  console.log('ReUsing channel ' + this.serviceState.channelHelper.getChannelId());
-                  this.nextJobStep();
-                })
-                .catch((error) => {
-                  console.log("Channel extend failed with error " + error);
-                  this.setState({
-                    depositopenchannelerror: error
-                  })
-                  this.onClosechaining();
-                })
-            })
-          } else {
-            console.log("No Channel found to going to deposit from MPE and open a channel");
-            mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupidgetterhex, amountInWei, this.state.ocexpiration, {
-              gas: 210000,
-              gasPrice: 51
-            }, (error, txnHash) => {
-              console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
-              this.onOpenchaining()
-
-              this.waitForTransaction(txnHash).then(receipt => {
-                  console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
-                }).then(() => {
-                  console.log("Scanning events from " + startingBlock);
-                  var evt = mpeInstance.ChannelOpen({
-                    sender: this.state.userAddress
-                  }, {
-                    fromBlock: startingBlock,
-                    toBlock: 'latest'
-                  });
-                  console.log('event after channel open is ' + evt);
-                  evt.watch((error, result) => {
-                    if (error) {
-                      console.log("Reading event for channel open failed with error " + error);
-                      this.onClosechaining();
-                    } else {
-                      this.serviceState.channelHelper.matchEvent(evt, result, this.state.userAddress, groupidgetter, recipientaddress);
-                      this.nextJobStep();
-                    }
-                  });
-                })
-                .catch((error) => {
-                  this.setState({depositopenchannelerror: error});
-                  this.onClosechaining();
-                })
-            })
-          }
-        }
+        console.log("No Channel found to going to deposit from MPE and open a channel");
+        this.channelOpen(mpeInstance, startingBlock, recipientaddress, groupIDBytes, amountInCogs);
       }
-    })
+    }
+  }
+
+  channelOpen(mpeInstance, startingBlock, recipientaddress, groupIDBytes, amountInCogs) {
+    mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
+      gas: 210000, gasPrice: 51
+    }, (error, txnHash) => {
+      if(error) {
+        this.processChannelErrors(error,"Unable to invoke the openChannel method");
+      }
+      else {          
+        console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
+        this.onOpenchaining()
+        this.network.waitForTransaction(txnHash).then(receipt => {
+            console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
+          }).then(() => {
+            this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
+          })
+          .catch((error) => {
+            this.processChannelErrors(error,"Open channel failed.");
+          });
+        }
+    }); 
+  }
+
+  getChannelDetails(mpeInstance,startingBlock, recipientaddress) {
+    console.log("Scanning events from " + startingBlock);
+    var evt = mpeInstance.ChannelOpen({
+      sender: this.state.userAddress
+    }, {
+      fromBlock: startingBlock,
+      toBlock: 'latest'
+    });
+    evt.watch((error, result) => {
+      if (error) {
+        this.processChannelErrors(error,"Reading event for channel open failed with error");
+      } else {
+        this.serviceState.channelHelper.matchEvent(evt, result, this.state.userAddress, this.serviceState.channelHelper.getGroupId(), recipientaddress);
+        this.nextJobStep();
+      }
+    });
+  }  
+
+  channelExtend(rrchannel, mpeInstance, amountInCogs) {
+    mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
+      gas: 210000,
+      gasPrice: 51
+    }, (error, txnHash) => {
+      if(error) {
+        this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
+      }
+      else {
+        console.log("Channel extended and added funds is TXN Has : " + txnHash);
+        this.onOpenchaining();
+        this.network.waitForTransaction(txnHash).then(receipt => {
+            this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]);
+            console.log('Re using channel ' + this.serviceState.channelHelper.getChannelId());
+            this.nextJobStep();
+          })
+          .catch((error) => {
+            this.processChannelErrors(error,"Channel extend failed with error");
+          });
+        }
+    });
   }
 
   handlehealthsort() {
@@ -567,6 +577,12 @@ class SampleServices extends React.Component {
 
   startjob(data) {
     this.reInitializeJobState(data);
+    var currentBlockNumber = 900000;
+    web3.eth.getBlockNumber((error, result) => {
+      if (!error) {
+        startingBlock = result;
+      }
+    });
 
     let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
     fetch(encodeURI(_urlservicebuf))
@@ -589,17 +605,17 @@ class SampleServices extends React.Component {
     mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
       balance = AGI.inAGI(balance);
       console.log("In start job Balance is " + balance + " job cost is " + data['price']);
-      let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data);
+      let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data, currentBlockNumber);
       if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
         this.onOpenModalAlert();
       } else if (foundChannel) {
         console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
         this.setState({startjobfundinvokeres: true});
-        this.setState({valueTab: 1})
+        this.setState({valueTab: 1});
       } else {
         console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price']);
         this.setState({startjobfundinvokeres: true})
-        this.setState({valueTab: 0})
+        this.setState({valueTab: 0});
       }
     })
   }
@@ -616,7 +632,6 @@ onKeyPressvalidator(event) {
 }
      
   handlesearch() {
-    //search on service_name, display_name and all tags//
     this.setState({besttagresult: []});
     let searchedagents = []
     searchedagents = this.state.agents.map(row => (row["display_name"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1 || row["service_name"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1) ? row : null)
@@ -635,19 +650,6 @@ onKeyPressvalidator(event) {
 
   captureSearchterm(e) {
     this.setState({searchterm:e.target.value})
-  }
-
-  async waitForTransaction(hash) {
-    let receipt;
-    while (!receipt) {
-      receipt = await window.ethjs.getTransactionReceipt(hash);
-    }
-
-    if (receipt.status === "0x0") {
-      throw receipt
-    }
-
-    return receipt;
   }
 
   nextJobStep() {

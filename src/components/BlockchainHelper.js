@@ -39,6 +39,19 @@ export default class BlockchainHelper {
         window.ethjs = this.eth; //TODO - NETWORK CHANGE
     }
 
+    async waitForTransaction(hash) {
+        let receipt;
+        while (!receipt) {
+          receipt = await window.ethjs.getTransactionReceipt(hash);
+        }
+    
+        if (receipt.status === "0x0") {
+          throw receipt
+        }
+    
+        return receipt;
+      }
+          
     getAccount(callBack) {
         if (typeof this.eth === 'undefined') {
             callBack(undefined);
@@ -92,6 +105,10 @@ export default class BlockchainHelper {
             console.log(err);
             callBack(undefined);
         });
+    }
+
+    getEtherScanAddressURL(chainId, address) {
+        return (chainId in NETWORKS ? NETWORKS[chainId]['etherscan'] +"/address/" + address : undefined);
     }
 
     getMarketplaceURL(chainId) {
