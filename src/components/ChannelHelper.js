@@ -1,4 +1,4 @@
-import { AGI, base64ToHex } from '../util';
+import { AGI, base64ToHex, BLOCK_OFFSET } from '../util';
 
 export default class ChannelHelper {
   constructor() {
@@ -6,6 +6,7 @@ export default class ChannelHelper {
     this.groupId = undefined;
     this.endpoint = undefined;
     this.channelId = undefined;    
+    this.recipient = undefined;
   }
 
   reInitialize(channelInfoUrl, userAddress, serviceId, orgName) {
@@ -13,6 +14,7 @@ export default class ChannelHelper {
     this.groupId = undefined;
     this.endpoint = undefined;
     this.channelId = undefined;
+    this.recipient = undefined;
     this.fetchChannels(channelInfoUrl, userAddress, serviceId, orgName);
   }
 
@@ -35,6 +37,23 @@ export default class ChannelHelper {
     return this.endpoint[0];
   }
 
+  getExpiryBlock() {
+    let channels = this.getChannels();    
+    for(let ii=0; ii < channels.length; ii++) {
+      var rrchannels = channels[ii];
+      if (rrchannels["channelId"] === this.channelId)
+      {
+        nonce = rrchannels["expiration"];
+        break;
+      }
+    }
+    return nonce;
+  }
+
+  getRecipient() {
+    return this.recipient;
+  }
+
   getNonce(defaultValue) {
     let nonce = defaultValue;
     let channels = this.getChannels();    
@@ -54,7 +73,6 @@ export default class ChannelHelper {
     if (typeof channels === 'undefined'){
       channels = [];
     }
-
     return channels
   }
 
@@ -72,6 +90,7 @@ export default class ChannelHelper {
         })
       }).then(res => res.json())
       .then(channeldata => {
+        console.log(channeldata);
         this.populateChannelDetails(channeldata);
       }).catch(err => console.log(err))
   }
@@ -91,6 +110,7 @@ export default class ChannelHelper {
 
     this.endpoint = channels[0]["endpoint"]
     this.groupId = channels[0]["groupId"];
+    this.recipient = channels[0]["recipient"];
   }
 
   matchEvent(evt, result, senderAddress, groupidgetter, recipientaddress) {
@@ -115,7 +135,7 @@ export default class ChannelHelper {
     }
   }
 
-  findChannelWithBalance(data) {
+  findChannelWithBalance(data, currentBlockNumber) {
     if (typeof this.channels !== 'undefined')
     {
       console.log('channel state information is ' +  this.groupId);
@@ -123,7 +143,8 @@ export default class ChannelHelper {
       {
         for(let ii=0; ii < this.channels.length; ii++) {
           var rrchannels = this.channels[ii];
-          if (parseInt(rrchannels["balance"]) >= parseInt(data["price"]))
+          if (parseInt(rrchannels["balance"]) >= parseInt(data["price"]) && 
+              parseInt(rrchannels["expiration"]) >= (currentBlockNumber + BLOCK_OFFSET))
           {
             console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
             console.log("Setting channel ID to " + rrchannels["channelId"]);

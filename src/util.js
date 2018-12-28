@@ -28,7 +28,8 @@ export const NETWORKS = {
     etherscan: 'https://kovan.etherscan.io',
     infura: 'https:/kovan.infura.io',
     marketplace:'https://nhsdguu656.execute-api.us-east-1.amazonaws.com/kovan/',
-    protobufjs:'http://protobufjs.singularitynet.io/'
+    protobufjs:'http://protobufjs.singularitynet.io/',
+    default:true
   },
 };
 
@@ -52,7 +53,7 @@ export class AGI {
     return cogs / 100000000;
   }
 
-  static inWei(web3, value) {
+  static inCogs(web3, value) {
     return new BigNumber(web3.toWei(value, "ether") / (10 ** (10))).toNumber();
   }  
 }
@@ -127,9 +128,6 @@ export const isValidAddress = (address, coin, network) => {
       return false
     }
   } 
-  
-  //TODO Add other future coins address validation here 
-
   return false
 }
 
@@ -148,4 +146,4 @@ export function base64ToHex(base64String) {
   return hexString;
 }
 
-export const BLOCK_OFFSET = 6000 //# blocks generated in 25 hrs
+export const BLOCK_OFFSET = 5760 //# blocks generated in 24 hrs
