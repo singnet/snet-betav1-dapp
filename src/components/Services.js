@@ -116,7 +116,6 @@ class SampleServices extends React.Component {
       chainId: undefined,
       depositopenchannelerror:'',
       runjobstate:false,
-      jobtopper:false,
     };
 
     this.serviceOrgIDToComponent = [];
@@ -398,7 +397,6 @@ class SampleServices extends React.Component {
 
   componentDidMount() {
     window.addEventListener('load', () => this.handleWindowLoad());
-    
     this.handleWindowLoad();
   }
 
@@ -656,7 +654,8 @@ onKeyPressvalidator(event) {
 
   nextJobStep() {
     this.onClosechaining()
- 
+    this.setState({valueTab:(this.state.valueTab + 1)})
+    console.log("Job step " + this.state.valueTab);
   }
 
   render() {
@@ -890,10 +889,10 @@ onKeyPressvalidator(event) {
                                         <div className="col-xs-12 col-sm-12 col-md-12 funds no-padding">
                                             <i className="up"></i>
                                             <div className="servicedetailstab">
-                                                <Tabs value={valueTab}  onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
+                                                <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
                                                     <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Fund</span>}/>
-                                                        <Tab  disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Invoke</span>}/>
-                                                            <Tab  disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Result</span>} />
+                                                        <Tab disabled={this.serviceState.channelHelper.getChannelId() !=='' && this.state.openchaining} label={<span className="funds-title">Invoke</span>}/>
+                                                            <Tab disabled={this.state.servicegrpcresponse !=='' && this.state.openchaining } label={<span className="funds-title">Result</span>} />
                                                 </Tabs>
                                                 { valueTab === 0 &&
                                                 <TabContainer>
@@ -929,9 +928,7 @@ onKeyPressvalidator(event) {
                                                     <div className="row">
                                                     <p style={{fontSize:"14px"}}>
                                                     The first step in invoking the API is to open a payment. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a channel or extend a pre-existing channel. You can view the channel details in the profile page
-                                                    
                                                     </p>
-                                                    
                                                     </div>
                                                 </TabContainer>
                                                 } {(valueTab === 1) &&
@@ -941,7 +938,6 @@ onKeyPressvalidator(event) {
                                                   </React.Fragment>
                                                   <div className="row">
                                                     <p style={{fontSize:"14px"}}>Now that the channel has been funded you are able to call the API on the Agent. Agents take different inputs, so may have their own UI. Once you've provided inputs, click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
-                                                    
                                                     </div>
                                                 </TabContainer>
                                                 } {(valueTab === 2) &&
@@ -951,8 +947,7 @@ onKeyPressvalidator(event) {
                                                   </React.Fragment>
                                                   <div className="row">
                                                    <p></p>
-                                                    <p style={{fontSize:"14px"}}>Your request has been completed. You can now vote for the agent below.</p>
-                                                  
+                                                    <p style={{fontSize:"14px"}}>Your request has been completed. You can now vote for the agent below.</p>                                                  
                                                     </div>
                                                 </TabContainer>}
                                             </div>
