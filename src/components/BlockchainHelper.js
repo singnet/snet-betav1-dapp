@@ -5,9 +5,9 @@ import AGITokenNetworks from 'singularitynet-token-contracts/networks/Singularit
 import AGITokenAbi from 'singularitynet-token-contracts/abi/SingularityNetToken.json';
 import MPEAbi from 'singularitynet-platform-contracts/abi/MultiPartyEscrow.json';
 import MPENetworks from 'singularitynet-platform-contracts/networks/MultiPartyEscrow.json';
-import { NETWORKS} from '../util';
+import { AGI, NETWORKS} from '../util';
 
-export default class Network {
+export default class BlockchainHelper {
 
     constructor() {
         this.eth = undefined;
@@ -39,12 +39,24 @@ export default class Network {
         window.ethjs = this.eth; //TODO - NETWORK CHANGE
     }
 
+    async waitForTransaction(hash) {
+        let receipt;
+        while (!receipt) {
+          receipt = await window.ethjs.getTransactionReceipt(hash);
+        }
+    
+        if (receipt.status === "0x0") {
+          throw receipt
+        }
+    
+        return receipt;
+      }
+
     getAccount(callBack) {
         if (typeof this.eth === 'undefined') {
             callBack(undefined);
         }
 
-        var account = undefined;
         this.eth.accounts().then(accounts => {
             if (accounts.length === 0) {
                 console.log('wallet is locked');
@@ -55,6 +67,20 @@ export default class Network {
             }
         }).catch(err => { console.log(err) });
         callBack(undefined);
+    }
+
+    getAGIBalance(chainId, address, callBack) {
+        if (typeof this.eth === 'undefined') {
+            return callBack(undefined);;
+        }
+
+        var tokenInstance = this.getTokenInstance(chainId);
+        if(typeof tokenInstance !== 'undefined') { 
+            tokenInstance.balanceOf(address, (err, balance) => {
+                callBack(AGI.inAGI(balance));
+            });
+        }
+        return callBack(undefined);
     }
 
     getEThBalance(callBack) {
@@ -92,6 +118,10 @@ export default class Network {
             console.log(err);
             callBack(undefined);
         });
+    }
+
+    getEtherScanAddressURL(chainId, address) {
+        return (chainId in NETWORKS ? NETWORKS[chainId]['etherscan'] +"/address/" + address : undefined);
     }
 
     getMarketplaceURL(chainId) {
@@ -132,4 +162,13 @@ export default class Network {
         }
         return undefined;
     }
+
+    getDefaultNetwork() {
+        for (var chain in NETWORKS){
+            if('default' in NETWORKS[chain] && NETWORKS[chain]['default'] === true) {
+                return chain;
+            }
+        }
+        return undefined;
+    }    
 }

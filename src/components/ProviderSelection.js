@@ -18,7 +18,7 @@ export default class ProviderSelection extends React.Component {
 
 			<React.Fragment>
 				<div className="inner">
-					<div className="header">
+					<div className="overview-header">
 						<div className="col-xs-6 col-sm-4 col-md-6 col-lg-6 logo">
 							<h1><img src="./img/singularity-logo.png" alt="SingularityNET" /></h1>
 						</div>
@@ -51,8 +51,8 @@ export default class ProviderSelection extends React.Component {
 									<YouTube videoId="RvXoZ9qAo-o" opts={opts} />
 								</div>
 							</div>
-							<div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 overview-text"><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean in lacus bibendum mi rutrum dignissim a sit amet velit. Fusce in risus id orcieuismod consectetur eu quis purus.</p>
-								<Link to="/SampleServices"><div className="btn btn-secondary">LET'S GET STARTED</div></Link>
+							<div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 overview-text"><p>SingularityNET is an open and decentralized network of AI services made accessible through blockchain. AI developers publish their services onto the SingularityNET network where they can be used by anyone with an internet connection. This Dapp is a front-end for exploring available AI services and interacting with them through a web-UI</p>
+								<Link to="/ConnectWallet"><div className="btn btn-secondary">LET'S GET STARTED</div></Link>
 							</div>
 						</div>
 					</div>

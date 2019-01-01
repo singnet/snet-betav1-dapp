@@ -36,11 +36,14 @@ async function processResponse(response, callback) {
     }
   }
 
-  callback(error, chunk && chunk.data ? new Uint8Array(chunk.data) : null)
-    .catch(err => {
+  try
+  {
+    callback(error, chunk && chunk.data ? new Uint8Array(chunk.data) : null);
+  }
+  catch(err) {
       console.log(err);
-      callback(err)
-    })
+      callback(err);
+  }
 }
 
 export function rpcImpl(host, packageName, serviceName, methodName, requestHeaders) {
