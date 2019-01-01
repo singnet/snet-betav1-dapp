@@ -117,7 +117,6 @@ export class Profile extends Component {
     this.extamountchange = this.extamountchange.bind(this)
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
-    
   }
 
   componentDidMount() {
@@ -222,7 +221,6 @@ export class Profile extends Component {
     }
   }
 
- 
   onClosechaining() {
     this.setState({ openchaining: false })
   }

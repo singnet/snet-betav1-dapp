@@ -929,9 +929,7 @@ onKeyPressvalidator(event) {
                                                     <div className="row">
                                                     <p style={{fontSize:"14px"}}>
                                                     The first step in invoking the API is to open a payment. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a channel or extend a pre-existing channel. You can view the channel details in the profile page
-                                                    
                                                     </p>
-                                                    
                                                     </div>
                                                 </TabContainer>
                                                 } {(valueTab === 1) &&
@@ -941,7 +939,6 @@ onKeyPressvalidator(event) {
                                                   </React.Fragment>
                                                   <div className="row">
                                                     <p style={{fontSize:"14px"}}>Now that the channel has been funded you are able to call the API on the Agent. Agents take different inputs, so may have their own UI. Once you've provided inputs, click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
-                                                    
                                                     </div>
                                                 </TabContainer>
                                                 } {(valueTab === 2) &&
@@ -951,8 +948,7 @@ onKeyPressvalidator(event) {
                                                   </React.Fragment>
                                                   <div className="row">
                                                    <p></p>
-                                                    <p style={{fontSize:"14px"}}>Your request has been completed. You can now vote for the agent below.</p>
-                                                  
+                                                    <p style={{fontSize:"14px"}}>Your request has been completed. You can now vote for the agent below.</p>                                                  
                                                     </div>
                                                 </TabContainer>}
                                             </div>
