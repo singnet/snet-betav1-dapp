@@ -117,6 +117,7 @@ export class Profile extends Component {
     this.extamountchange = this.extamountchange.bind(this)
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
+    
   }
 
   componentDidMount() {
@@ -221,6 +222,7 @@ export class Profile extends Component {
     }
   }
 
+ 
   onClosechaining() {
     this.setState({ openchaining: false })
   }
@@ -462,9 +464,9 @@ export class Profile extends Component {
                             <h3>Manage your Escrow account</h3>
                             <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
                                 <Tabs style={{ padding: "0" }} value={value} onChange={(event, value)=> this.handleChange(event, value)} indicatorColor='primary'>
-                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
-                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
-                                            <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
+                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>}><img src="./img/info-4.png" alt="User" name="imghelperAuthorize"  /></Tooltip></span></span>} />
+                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Deposit</span>}><img src="./img/info-4.png" alt="User" name="imghelperDeposit" /></Tooltip></span></span>} />
+                                            <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>}><img src="./img/info-4.png" alt="User" name="imghelperWithdraw"  /></Tooltip></span></span>} />
                                 </Tabs>
                                 {value === 0 &&
                                 <TabContainer>
