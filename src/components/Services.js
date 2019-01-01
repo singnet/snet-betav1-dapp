@@ -21,7 +21,7 @@ const exampleServiceID = generateUniqueID("snet","example-service");
 
 const TabContainer = (props) => {
   return (
-    <Typography component="div" style={{padding:"10px"}}>
+    <Typography component="div" style={{padding:"10px", height:"240px"}}>
       {props.children}
     </Typography>
   );
@@ -924,19 +924,38 @@ onKeyPressvalidator(event) {
                                                         </div>
                                                     </div>
                                                     }
+
                                                     <p style={{fontSize: "12px",color: "red"}}>{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
+                                                    <div className="row">
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    </div>
                                                 </TabContainer>
                                                 } {(valueTab === 1) &&
                                                 <TabContainer>
                                                   <React.Fragment>
                                                     <CallComponent serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.servicegrpcresponse}/>
                                                   </React.Fragment>
+                                                  <div className="row">
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    </div>
                                                 </TabContainer>
                                                 } {(valueTab === 2) &&
                                                 <TabContainer>
                                                   <React.Fragment>
                                                     <CallComponent serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.servicegrpcresponse}/>
                                                   </React.Fragment>
+                                                  <div className="row">
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    <p style={{fontSize:"12px"}}>lorem ipsum</p>
+                                                    </div>
                                                 </TabContainer>}
                                             </div>
                                         </div>

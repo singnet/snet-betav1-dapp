@@ -484,6 +484,7 @@ export class Profile extends Component {
                                                 }
                                             </div>
                                         </div>
+                                   
                                 </TabContainer>} {value === 1 &&
                                 <TabContainer>
                                     <TextField id="depositamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" onChange={this.changeDepositAmount} value={this.state.depositamount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
@@ -500,6 +501,7 @@ export class Profile extends Component {
                                                 }
                                             </div>
                                         </div>
+                                       
                                         <p style={{ color: "red", fontSize: "14px" }}>{this.state.depositwarning}</p>
                                 </TabContainer>} {value === 2 &&
                                 <TabContainer>
@@ -519,6 +521,7 @@ export class Profile extends Component {
                                             </div>
                                         </div>
                                         <p></p>
+                                      
                                 </TabContainer>}
                             </div>
                         </div>
