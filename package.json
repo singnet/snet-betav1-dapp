@@ -1,5 +1,5 @@
 {
-  "name": "alpha-dapp",
+  "name": "beta-dapp",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -7,18 +7,18 @@
     "build": "webpack --config ./config/webpack.prod.js -p --progress --colors",
     "build-analyze": "webpack --config ./config/webpack.prod-analyze.js -p --progress --colors",
     "serve-dist": "node scripts/serveDist.js",
-    "deploy": "node scripts/deploy.js beta-dapp-poc us-east-1"
+    "deploy": "node scripts/deploy.js beta.singularitynet.io us-east-1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/singnet/alpha-dapp.git"
+    "url": "git+https://github.com/singnet/snet-dapp.git"
   },
   "author": "SingularityNET Foundation",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/singnet/alpha-dapp/issues"
+    "url": "https://github.com/singnet/snet-dapp/issues"
   },
-  "homepage": "https://github.com/singnet/alpha-dapp#readme",
+  "homepage": "https://github.com/singnet/snet-dapp#readme",
   "dependencies": {
     "abi-decoder": "^1.1.0",
     "bitcoinjs-lib": "^3.3.2",

@@ -28,7 +28,8 @@ export const NETWORKS = {
     etherscan: 'https://kovan.etherscan.io',
     infura: 'https:/kovan.infura.io',
     marketplace:'https://nhsdguu656.execute-api.us-east-1.amazonaws.com/kovan/',
-    protobufjs:'http://protobufjs.singularitynet.io/'
+    protobufjs:'http://protobufjs.singularitynet.io/',
+    default:true
   },
 };
 
@@ -43,12 +44,20 @@ export const STRINGS = {
   "NULL_ADDRESS": "0x0000000000000000000000000000000000000000"
 };
 
+export function generateUniqueID(orgId,serviceId) {
+  return orgId + "__$%^^%$__" + serviceId;
+};
+
 export class AGI {
   static toDecimal(agi) {
     return agi / 100000000;
   }
 
-  static inWei(web3, value) {
+  static inAGI(cogs) {
+    return cogs / 100000000;
+  }
+
+  static inCogs(web3, value) {
     return new BigNumber(web3.toWei(value, "ether") / (10 ** (10))).toNumber();
   }  
 }
@@ -111,13 +120,9 @@ export class ERROR_UTILS {
 
     return ERROR_MESSAGE.unknown + " [" + String(error) + "]"
   }
-
 }
 
-
-
 export const isValidAddress = (address, coin, network) => {
-
   if (coin === 'bitcoin') {
     network = network === 'testnet' ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
     try {
@@ -127,10 +132,22 @@ export const isValidAddress = (address, coin, network) => {
       return false
     }
   } 
-  
-  //TODO Add other future coins address validation here 
-
   return false
 }
 
 export function hasOwnDefinedProperty(object, property) { return object.hasOwnProperty(property) && typeof object[property] !== "undefined" }
+
+
+export function hexToAscii(hexString) { 
+  let asciiString = Eth.toAscii(hexString);
+  return asciiString.substr(0,asciiString.indexOf("\0")); // name is right-padded with null bytes
+}
+
+export function base64ToHex(base64String) {
+  var byteSig = Buffer.from(base64String, 'base64');
+  let buff = new Buffer(byteSig);
+  let hexString = "0x"+buff.toString('hex');
+  return hexString;
+}
+
+export const BLOCK_OFFSET = 5760 //# blocks generated in 24 hrs
