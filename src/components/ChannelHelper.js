@@ -15,7 +15,7 @@ export default class ChannelHelper {
     this.endpoint = undefined;
     this.channelId = undefined;
     this.recipient = undefined;
-    this.fetchChannels(channelInfoUrl, userAddress, serviceId, orgName);
+    return this.fetchChannels(channelInfoUrl, userAddress, serviceId, orgName);
   }
 
   getChannelId() {
@@ -77,7 +77,8 @@ export default class ChannelHelper {
   }
 
   fetchChannels(channelInfoUrl, userAddress, serviceId, orgName) {
-    fetch(channelInfoUrl, {
+    var caller = this;
+    return fetch(channelInfoUrl, {
         'mode': 'cors',
         headers: {
           "Content-Type": "application/json",
@@ -89,10 +90,12 @@ export default class ChannelHelper {
           org_name: orgName
         })
       }).then(res => res.json())
-      .then(channeldata => {
+      .then(channeldata => new Promise(function(resolve) {
         console.log(channeldata);
-        this.populateChannelDetails(channeldata);
-      }).catch(err => console.log(err))
+        caller.populateChannelDetails(channeldata);
+        resolve();
+        })
+      );//.catch(err => console.log(err))
   }
 
   populateChannelDetails(channels) {
@@ -143,8 +146,8 @@ export default class ChannelHelper {
       {
         for(let ii=0; ii < this.channels.length; ii++) {
           var rrchannels = this.channels[ii];
-          if (parseInt(rrchannels["balance"]) >= parseInt(data["price"]) && 
-              parseInt(rrchannels["expiration"]) >= (currentBlockNumber + BLOCK_OFFSET))
+          if (parseInt(rrchannels["balance"]) >= parseInt(data["price"])) 
+              //&& parseInt(rrchannels["expiration"]) >= (currentBlockNumber + BLOCK_OFFSET))
           {
             console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
             console.log("Setting channel ID to " + rrchannels["channelId"]);

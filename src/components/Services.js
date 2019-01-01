@@ -8,12 +8,16 @@ import Slide from '@material-ui/core/Slide'
 import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
-import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
+import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import BlockchainHelper from "./BlockchainHelper.js"
 import ChannelHelper from "./ChannelHelper.js"
+import ExampleService from './service/ExampleService.js';
+import DefaultService from './service/DefaultService.js';
+
+const exampleServiceID = generateUniqueID("snet","example-service");
 
 const TabContainer = (props) => {
   return (
@@ -106,20 +110,21 @@ class SampleServices extends React.Component {
       inputmethodname:'',
       inputservicejson:{},
       valueTab:0,
-      servicegrpcresponse:'',
-      servicegrpcerror:'',
-      servicefetcherror: '',  
+      servicegrpcresponse:undefined,
       openchaining:false,   
       startjobfundinvokeres:false,
-      servicestatenames:[],
-      servicemethodnames:[],
       chainId: undefined,
       depositopenchannelerror:'',
       runjobstate:false,
     };
 
+    this.serviceOrgIDToComponent = [];
+    this.serviceOrgIDToComponent[exampleServiceID] = ExampleService
+
     this.serviceState = {
       serviceSpecJSON : undefined,
+      uniqueID: undefined,
+      price : undefined,
       channelHelper : new ChannelHelper()
     }
 
@@ -129,10 +134,11 @@ class SampleServices extends React.Component {
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
     this.onOpenSearchBar = this.onOpenSearchBar.bind(this)
     this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
-    this.changehandlerservicename = this.changehandlerservicename.bind(this)
+
+    /*this.changehandlerservicename = this.changehandlerservicename.bind(this)
     this.changehandlermethodname = this.changehandlermethodname.bind(this)
-    
     this.changehandlerervicejson= this.changehandlerervicejson.bind(this)
+    */
     this.handlesearch = this.handlesearch.bind(this)
     this.startjob = this.startjob.bind(this)
     this.CaptureSearchterm = this.captureSearchterm.bind(this)
@@ -176,20 +182,6 @@ class SampleServices extends React.Component {
     });
   }
  
-  changehandlermethodname() {
-    var strmethod = this.refs.methodref.value
-    this.setState({inputmethodname: strmethod});
-  }
-
-  changehandlerservicename(e, data) {
-    var strservice = this.refs.serviceref.value
-    this.setState({inputservicename: strservice});
-  }
-
-  changehandlerervicejson(e) {
-    this.setState({inputservicejson: e.target.value});
-  }
-
   handlesearchclear() {
     this.setState({searchterm: ''})
   }
@@ -454,7 +446,7 @@ class SampleServices extends React.Component {
     this.setState({ offset });
   }
 
-  onOpenJobDetailsSlider(e,data,dataservicestatus) {
+  onOpenJobDetailsSlider(data,dataservicestatus) {
     (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
 
     this.setState({modaluser:data})
@@ -470,6 +462,11 @@ class SampleServices extends React.Component {
     if (typeof web3 === 'undefined' || typeof this.state.userAddress === 'undefined') {
       return;
     }
+   
+    this.serviceState.uniqueID = generateUniqueID(data["org_id"],data["service_name"]);
+    console.log(this.serviceState.uniqueID);
+    console.log(this.serviceOrgIDToComponent[this.serviceState.uniqueID]);
+    console.log(this.serviceOrgIDToComponent);
 
     //disabled start job if the service is not up at all - unhealthy agent//
     dataservicestatus.map(row => {
@@ -515,10 +512,12 @@ class SampleServices extends React.Component {
     return msg;
   }
 
-  handleJobInvocation(data, dataservicestatus) {
+  handleJobInvocation(serviceName, methodName, requestObject) {
     console.log("Invoking service " + this.state.inputservicename + " and method name " + this.state.inputmethodname)
     var nonce = this.serviceState.channelHelper.getNonce(0);
-    var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.serviceState.channelHelper.getChannelId(), nonce, data['price']);
+    var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.serviceState.channelHelper.getChannelId(), nonce, this.serviceState.price);
+    this.setState({servicegrpcresponse: undefined})
+
     console.log("Composed message for signing is " + msg)
     window.ethjs.personal_sign(msg, this.state.userAddress)
       .then((signed) => {
@@ -529,15 +528,12 @@ class SampleServices extends React.Component {
         let base64data = buff.toString('base64')
         console.log("Using signature " + base64data)
 
-        //this.serviceSpecJSON =>>> Root.fromJSON(serviceSpec[0])
-        const serviceSpecJSON = this.serviceSpecJSON
-        const serviceName = this.state.inputservicename
-        const methodName = this.state.inputmethodname
+        const serviceSpecJSON = this.serviceState.serviceSpecJSON
         const requestHeaders = {
           "snet-payment-type": "escrow",
           "snet-payment-channel-id": parseInt(this.serviceState.channelHelper.getChannelId()),
           "snet-payment-channel-nonce": parseInt(nonce),
-          "snet-payment-channel-amount": parseInt(data["price"]),
+          "snet-payment-channel-amount": parseInt(this.serviceState.price),
           "snet-payment-channel-signature-bin": base64data
         }
         console.log(requestHeaders);
@@ -548,26 +544,24 @@ class SampleServices extends React.Component {
         )
 
         var endpointgetter = this.serviceState.channelHelper.getEndpoint();
-        console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + "endpoint " + endpointgetter);
+        console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + " endpoint " + endpointgetter + " request " + JSON.stringify(requestObject));
 
         if (!endpointgetter.startsWith("http")) {
           endpointgetter = "http://" + endpointgetter;
         }
         const Service = serviceSpecJSON.lookup(serviceName)
         const serviceObject = Service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
-        const requestObject = JSON.parse(this.state.inputservicejson)
-        console.log('service object is ' + serviceObject)
-        console.log('requestObject is ' + requestObject)
+
         grpcRequest(serviceObject, methodName, requestObject)
           .then(response => {
             console.log("Got a GRPC response")
-            this.setState({servicegrpcresponse: response.value})
+            this.setState({servicegrpcresponse: response})
             console.log("jobResult" + response.value);
             this.nextJobStep();
           })
           .catch((err) => {
             console.log("GRPC call failed")
-            this.setState({servicegrpcerror: 'GRPC call failed ' + err});
+            this.setState({servicegrpcresponse: 'GRPC call failed ' + err});
             console.log(err);
             this.nextJobStep();
           })
@@ -578,56 +572,51 @@ class SampleServices extends React.Component {
   reInitializeJobState(data) {
     let serviceId = data["service_id"];
     let orgId = data["org_id"];
-    let channelInfoUrl = this.network.getMarketplaceURL(this.state.chainId) + 'channel-info';
-    this.serviceState.channelHelper.reInitialize(channelInfoUrl, this.state.userAddress, serviceId, orgId);
+    this.serviceState.price = data["price"];
+    //this.serviceState.uniqueID = generateUniqueID(orgId,serviceId);
 
-    //this.state.channelstateid = undefined;
-    this.setState({servicegrpcerror: ''});
-    this.setState({servicestatenames: undefined});
+    let channelInfoUrl = this.network.getMarketplaceURL(this.state.chainId) + 'channel-info';
+    return this.serviceState.channelHelper.reInitialize(channelInfoUrl, this.state.userAddress, serviceId, orgId);
+  }
+
+  fetchServiceSpec(data) {
+    var caller = this;
+    let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
+    return fetch(encodeURI(_urlservicebuf))
+      .then(serviceSpecResponse => serviceSpecResponse.json())
+      .then(serviceSpec => new Promise(function(resolve) {
+        caller.serviceState.serviceSpecJSON = Root.fromJSON(serviceSpec[0])
+        resolve();
+      }));
   }
 
   startjob(data) {
-    this.reInitializeJobState(data);
     var currentBlockNumber = 900000;
-    web3.eth.getBlockNumber((error, result) => {
-      if (!error) {
-        currentBlockNumber = result;
-      }
-    });
+    (async ()=> { await web3.eth.getBlockNumber((error, result) => {currentBlockNumber = result}) })()
 
-    let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
-    fetch(encodeURI(_urlservicebuf))
-      .then(serviceSpecResponse => serviceSpecResponse.json())
-      .then(serviceSpec => {
-        this.serviceSpecJSON = Root.fromJSON(serviceSpec[0])
-        var objservice = Object.keys(this.serviceSpecJSON.nested)
-        var serviceobject = []
-        objservice.map(rr => {
-          if (this.serviceSpecJSON.nested[rr].hasOwnProperty("methods")) {
-            serviceobject.push(rr)
-          } else if (this.serviceSpecJSON.nested[rr].hasOwnProperty("nested")) {
-            serviceobject = Object.keys(this.serviceSpecJSON.nested[rr].nested);
-          }
-        })
-        this.setState({servicestatenames: serviceobject})
+    var reInitialize = this.reInitializeJobState(data);
+    var serviceSpec = this.fetchServiceSpec(data);
+
+    Promise.all([reInitialize, serviceSpec]).then(() => {
+      console.log(this.serviceState.serviceSpecJSON);
+      console.log(this.serviceState.channelHelper);
+      let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
+      mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
+        balance = AGI.inAGI(balance);
+        console.log("In start job Balance is " + balance + " job cost is " + data['price']);
+        let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data, currentBlockNumber);
+        if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
+          this.onOpenModalAlert();
+        } else if (foundChannel) {
+          console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
+          this.setState({startjobfundinvokeres: true});
+          this.setState({valueTab: 1});
+        } else {
+          console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price']);
+          this.setState({startjobfundinvokeres: true})
+          this.setState({valueTab: 0});
+        }
       });
-
-    let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
-    mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
-      balance = AGI.inAGI(balance);
-      console.log("In start job Balance is " + balance + " job cost is " + data['price']);
-      let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data, currentBlockNumber);
-      if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
-        this.onOpenModalAlert();
-      } else if (foundChannel) {
-        console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
-        this.setState({startjobfundinvokeres: true});
-        this.setState({valueTab: 1});
-      } else {
-        console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price']);
-        this.setState({startjobfundinvokeres: true})
-        this.setState({valueTab: 0});
-      }
     })
   }
 
@@ -665,7 +654,8 @@ onKeyPressvalidator(event) {
 
   nextJobStep() {
     this.onClosechaining()
-    this.setState({valueTab:(this.state.valueTab + 1)})   
+    this.setState({valueTab:(this.state.valueTab + 1)})
+    console.log("Job step " + this.state.valueTab);
   }
 
   render() {
@@ -723,7 +713,7 @@ onKeyPressvalidator(event) {
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Action</div>
           <div className="col-sm-12 col-md-2 col-lg-2 action-align">
-              <button className="btn btn-primary" onClick={(e)=>this.onOpenJobDetailsSlider(e,rown,this.state.userservicestatus)} id={rown["service_id"]}>Details</button>
+              <button className="btn btn-primary" onClick={(e)=>this.onOpenJobDetailsSlider(rown,this.state.userservicestatus)} id={rown["service_id"]}>Details</button>
           </div>
           <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
@@ -739,6 +729,13 @@ onKeyPressvalidator(event) {
           </div>
       </div>
     );
+    
+    let CallComponent = DefaultService;
+    let customComponent = this.serviceOrgIDToComponent[this.serviceState.uniqueID];
+    console.log("Examining component " + customComponent + " with key " + this.serviceState.uniqueID);
+    if(typeof customComponent !== 'undefined') {
+      CallComponent = customComponent;
+    }
 
     return(
           <React.Fragment>
@@ -862,8 +859,7 @@ onKeyPressvalidator(event) {
                                             Your transaction is being mined.
                                         </div>
                                         <div style={{ width: '50px' }} className="col-sm-12 col-md-6 col-lg-6">
-                                            <CircularProgress background backgroundpadding={6} styles={{ background: { fill: '#3e98c7', }, text: { fill: '#fff', }, path: { stroke: '#fff', }, trail: { stroke: 'transparent' }, }} />
-
+                                            <CircularProgress backgroundpadding={6} styles={{ background: { fill: '#3e98c7', }, text: { fill: '#fff', }, path: { stroke: '#fff', }, trail: { stroke: 'transparent' }, }} />
                                         </div>
                                     </div>
                                 </Typography>
@@ -895,8 +891,8 @@ onKeyPressvalidator(event) {
                                             <div className="servicedetailstab">
                                                 <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
                                                     <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Fund</span>}/>
-                                                        <Tab disabled={this.serviceState.channelHelper.getChannelId() !=='' && this.state.openchaining } label={<span className="funds-title">Invoke</span>}/>
-                                                            <Tab disabled={this.serviceState.channelHelper.getChannelId() !=='' && this.state.openchaining } label={<span className="funds-title">Result</span>} />
+                                                        <Tab disabled={this.serviceState.channelHelper.getChannelId() !=='' && this.state.openchaining} label={<span className="funds-title">Invoke</span>}/>
+                                                            <Tab disabled={this.state.servicegrpcresponse !=='' && this.state.openchaining } label={<span className="funds-title">Result</span>} />
                                                 </Tabs>
                                                 { valueTab === 0 &&
                                                 <TabContainer>
@@ -929,36 +925,17 @@ onKeyPressvalidator(event) {
                                                     }
                                                     <p style={{fontSize: "12px",color: "red"}}>{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                                 </TabContainer>
-                                                } {valueTab === 1 &&
+                                                } {(valueTab === 1) &&
                                                 <TabContainer>
-                                                    <div className="row">
-                                                        <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Service Name</div>
-                                                        <div className="col-md-3 col-lg-3">
-                                                            <input type="text" ref="serviceref" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} onChange={(e)=>this.changehandlerservicename(e,this.state.modaluser)}></input>
-                                                        </div>
-                                                    </div>
-                                                    <div className="row">
-                                                        <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Method Name</div>
-                                                        <div className="col-md-3 col-lg-3">
-                                                            <input type="text" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} ref="methodref" onChange={()=>this.changehandlermethodname()} ></input>
-                                                        </div>
-                                                    </div>
-                                                    <div className="row">
-                                                        <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Json Input</div>
-                                                        <div className="col-md-3 col-lg-3">
-                                                            <textarea placeholder="JSON format..." style={{rows: "4", cols: "50",width: "250px",fontSize: "13px"}} value={this.state.inputservicejson} onChange={(e)=>this.changehandlerervicejson(e)}/></div>
-                                                    </div>
-                                                    <div className="row">
-                                                        <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                                                            <button type="button" className="btn btn-primary" onClick={()=>this.handleJobInvocation(this.state.modaluser,this.state.modalservicestatus)}>Invoke</button>
-                                                        </div>
-                                                    </div>
-                                                </TabContainer>} {valueTab === 2 &&
+                                                  <React.Fragment>
+                                                    <CallComponent serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.servicegrpcresponse}/>
+                                                  </React.Fragment>
+                                                </TabContainer>
+                                                } {(valueTab === 2) &&
                                                 <TabContainer>
-                                                    {this.state.servicegrpcresponse?
-                                                    <p style={{fontSize: "13px"}}>Response from service is {this.state.servicegrpcresponse} </p>:null} {this.state.servicegrpcerror?
-                                                    <p style={{fontSize: "13px",color: "red"}}>Response from service is {this.state.servicegrpcerror}</p>:null} {this.state.servicefetcherror?
-                                                    <p style={{fontSize: "13px",color: "red"}}>Response from service is {this.state.servicefetcherror}</p>:null}
+                                                  <React.Fragment>
+                                                    <CallComponent serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.servicegrpcresponse}/>
+                                                  </React.Fragment>
                                                 </TabContainer>}
                                             </div>
                                         </div>
