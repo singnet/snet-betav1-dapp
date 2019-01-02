@@ -16,6 +16,7 @@ import BlockchainHelper from "./BlockchainHelper.js"
 import ChannelHelper from "./ChannelHelper.js"
 import ExampleService from './service/ExampleService.js';
 import DefaultService from './service/DefaultService.js';
+import {Carddeckers} from './CardDeckers.js';
 
 const exampleServiceID = generateUniqueID("snet","example-service");
 
@@ -116,7 +117,6 @@ class SampleServices extends React.Component {
       chainId: undefined,
       depositopenchannelerror:'',
       runjobstate:false,
-      jobtopper:false,
     };
 
     this.serviceOrgIDToComponent = [];
@@ -398,7 +398,6 @@ class SampleServices extends React.Component {
 
   componentDidMount() {
     window.addEventListener('load', () => this.handleWindowLoad());
-    
     this.handleWindowLoad();
   }
 
@@ -656,7 +655,8 @@ onKeyPressvalidator(event) {
 
   nextJobStep() {
     this.onClosechaining()
- 
+    this.setState({valueTab:(this.state.valueTab + 1)})
+    console.log("Job step " + this.state.valueTab);
   }
 
   render() {
@@ -740,6 +740,7 @@ onKeyPressvalidator(event) {
 
     return(
           <React.Fragment>
+            
             <div className="inner">
                 <div className="header">
                     <div className="col-xs-6 col-sm-4 col-md-6 col-lg-6 logo">
@@ -760,47 +761,10 @@ onKeyPressvalidator(event) {
             </div>
             <main role="content" className="content-area">
                 <div className="container-fluid p-4  ">
-                    <div className="blue-boxes-head">
-                        <h4 className="align-self-center text-uppercase ">New &amp; Hot in Community</h4>
-                    </div>
-                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 card-deck">
-                        <div className="col-xs-12 col-sm-6 col-md-3 col-lg-3 card">
-                            <div className="card-body">
-                                <h3 className="text-uppercase">Joe Rogan Learns About Blockchain</h3>
-                                <p>Revisiting the basics of blockchain technology on the Joe Rogan Experience podcast.</p>
-                                <a href="https://blog.singularitynet.io/joe-rogan-learns-about-blockchain-technology-with-dr-ben-goertzel-a9c17566d994" target="_blank">
-                                    <button type="button" className="btn btn-primary">Read</button>
-                                </a>
-                            </div>
-                        </div>
-                        <div className="col-xs-12 col-sm-6 col-md-3 col-lg-3 card">
-                            <div className="card-body">
-                                <h3 className="text-uppercase">Singularity Studio</h3>
-                                <p>SingularityNET &amp; Singularity Studio Blitzscaling Toward the Singularity</p>
-                                <a href="https://blog.singularitynet.io/singularitynet-singularity-studio-blitzscaling-toward-the-singularity-2c27919e6c76" target="_blank">
-                                    <button type="button" className="btn btn-primary">Read</button>
-                                </a>
-                            </div>
-                        </div>
-                        <div className="col-xs-12 col-sm-6 col-md-3 col-lg-3 card">
-                            <div className="card-body">
-                                <h3 className="text-uppercase">Data as Labor</h3>
-                                <p>Rethinking Jobs In The Information age as AI gets more prevalant and ubiqutious</p>
-                                <a href="https://blog.singularitynet.io/data-as-labour-cfed2e2dc0d4" target="_blank">
-                                    <button type="button" className="btn btn-primary">Read</button>
-                                </a>
-                            </div>
-                        </div>
-                        <div className="col-xs-12 col-sm-6 col-md-3 col-lg-3 card">
-                            <div className="card-body">
-                                <h3 className="text-uppercase">AGI &amp; The New Space Frontier</h3>
-                                <p>Exploring the evolution of technologies that will shape our lives</p>
-                                <a href="https://blog.singularitynet.io/room-for-innovation-403511a264a6" target="_blank">
-                                    <button type="button" className="btn btn-primary">Read</button>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                   
+                    
+                     <Carddeckers/>
+                    
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 head-txt-sec">
                         <div className="col-sm-2 col-md-2 col-lg-2">
                             <h3>Agent</h3>
@@ -890,10 +854,10 @@ onKeyPressvalidator(event) {
                                         <div className="col-xs-12 col-sm-12 col-md-12 funds no-padding">
                                             <i className="up"></i>
                                             <div className="servicedetailstab">
-                                                <Tabs value={valueTab}  onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
+                                                <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
                                                     <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Fund</span>}/>
-                                                        <Tab  disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Invoke</span>}/>
-                                                            <Tab  disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Result</span>} />
+                                                        <Tab disabled={this.serviceState.channelHelper.getChannelId() !=='' && this.state.openchaining} label={<span className="funds-title">Invoke</span>}/>
+                                                            <Tab disabled={this.state.servicegrpcresponse !=='' && this.state.openchaining } label={<span className="funds-title">Result</span>} />
                                                 </Tabs>
                                                 { valueTab === 0 &&
                                                 <TabContainer>

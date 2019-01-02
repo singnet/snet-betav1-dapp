@@ -462,9 +462,9 @@ export class Profile extends Component {
                             <h3>Manage your Escrow account</h3>
                             <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
                                 <Tabs style={{ padding: "0" }} value={value} onChange={(event, value)=> this.handleChange(event, value)} indicatorColor='primary'>
-                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>}><img src="./img/info-4.png" alt="User" name="imghelperAuthorize"  /></Tooltip></span></span>} />
-                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Deposit</span>}><img src="./img/info-4.png" alt="User" name="imghelperDeposit" /></Tooltip></span></span>} />
-                                            <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>}><img src="./img/info-4.png" alt="User" name="imghelperWithdraw"  /></Tooltip></span></span>} />
+                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
+                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
+                                            <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
                                 </Tabs>
                                 {value === 0 &&
                                 <TabContainer>
@@ -482,7 +482,6 @@ export class Profile extends Component {
                                                 }
                                             </div>
                                         </div>
-                                   
                                 </TabContainer>} {value === 1 &&
                                 <TabContainer>
                                     <TextField id="depositamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" onChange={this.changeDepositAmount} value={this.state.depositamount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
@@ -499,7 +498,6 @@ export class Profile extends Component {
                                                 }
                                             </div>
                                         </div>
-                                       
                                         <p style={{ color: "red", fontSize: "14px" }}>{this.state.depositwarning}</p>
                                 </TabContainer>} {value === 2 &&
                                 <TabContainer>
@@ -519,7 +517,6 @@ export class Profile extends Component {
                                             </div>
                                         </div>
                                         <p></p>
-                                      
                                 </TabContainer>}
                             </div>
                         </div>
