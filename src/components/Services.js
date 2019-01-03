@@ -8,7 +8,7 @@ import Slide from '@material-ui/core/Slide'
 import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
-import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
+import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS,postApi,getApi } from '../util'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -416,57 +416,12 @@ fetch(_urlfetchvote, {
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }
-
-  async postApi(url){
-    const settings = 
-    { 
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    },  
-      method: 'POST',
-      body: JSON.stringify({
-        user_address: this.state.userAddress
-      })
-    }
-
-    try{
-          
-          const data = await fetch(url, settings)
-          .then(response => response.json())
-          .then(json => {
-              return json;
-          })
-          .catch(err => {
-              return err
-          });
-          return data
-
-    }
-    catch(err)
-    {
-     console.log(err)
-    }
-  }
-  async getApi (url) {
-    try{
-      // wait for a response
-      // after response it will assign it to the variable 'resp' and continue
-           const resp = await fetch(url)
-      // only run if response has been asssigned
-           const data = await resp.json() 
-      // this code only runs when data is assigned.
-           return data
-         } catch (err) {
-              console.log(err)
-           }
-      }
   loadDetails() {
     let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
     let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
     let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
     this.setState({userAddress: web3.eth.coinbase});
-    Promise.all([this.getApi(_url),this.getApi(_urlfetchservicestatus),this.postApi(_urlfetchvote)])
+    Promise.all([getApi(_url),getApi(_urlfetchservicestatus),postApi(_urlfetchvote,this.state.userAddress)])
     .then((values) =>
     {
       this.setState({agents: values[0]})
