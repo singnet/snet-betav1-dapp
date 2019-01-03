@@ -443,12 +443,13 @@ fetch(_urlfetchvote, {
 
   loadDetails() {
     let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
-    this.getApi(_url,"service")
     
     let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
-    this.getApi(_urlfetchservicestatus,"group-info")
-    this.state.healthMerged = false;
 
+    Promise.all([this.getApi(_url,"service"),this.getApi(_urlfetchservicestatus,"group-info")])
+    
+    this.state.healthMerged = false;
+    
     if (typeof web3 === 'undefined') {
       return;
     }
