@@ -417,57 +417,67 @@ fetch(_urlfetchvote, {
     this.handleWindowLoad();
   }
 
-  async getApi (url,apiname) {
+  async postApi(url){
+    const settings = 
+    { 
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+    },  
+      method: 'POST',
+      body: JSON.stringify({
+        user_address: this.state.userAddress
+      })
+    }
+
+    try{
+          
+          const data = await fetch(url, settings)
+          .then(response => response.json())
+          .then(json => {
+              return json;
+          })
+          .catch(err => {
+              return err
+          });
+          return data
+
+    }
+    catch(err)
+    {
+     console.log(err)
+    }
+  }
+  async getApi (url) {
     try{
       // wait for a response
       // after response it will assign it to the variable 'resp' and continue
            const resp = await fetch(url)
-      
       // only run if response has been asssigned
-           const data = await resp.json()
-       
+           const data = await resp.json() 
       // this code only runs when data is assigned.
            return data
          } catch (err) {
               console.log(err)
            }
       }
-
   loadDetails() {
     let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
-    
     let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
-
-    Promise.all([this.getApi(_url,"service"),this.getApi(_urlfetchservicestatus,"group-info")])
+    let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
+    this.setState({userAddress: web3.eth.coinbase});
+    Promise.all([this.getApi(_url),this.getApi(_urlfetchservicestatus),this.postApi(_urlfetchvote)])
     .then((values) =>
     {
       this.setState({agents: values[0]})
       this.setState({userservicestatus: values[1]})
+      this.setState({uservote: values[2]})
     }
-    )
-    
-    
+    ).catch((err)=> console.log(err))
     this.state.healthMerged = false;
-    
     if (typeof web3 === 'undefined') {
       return;
     }
-    this.setState({userAddress: web3.eth.coinbase});
-
-    let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
-    fetch(_urlfetchvote, {
-        'mode': 'cors',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: 'POST',
-        body: JSON.stringify({
-          user_address: this.state.userAddress
-        })
-      })
-      .then(res => res.json())
-      .then(data => this.setState({uservote: data}))
-      .catch(err => console.log(err));
   }
   handleClick(offset) {
     this.setState({ offset });
