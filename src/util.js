@@ -28,6 +28,7 @@ export const NETWORKS = {
     etherscan: 'https://kovan.etherscan.io',
     infura: 'https:/kovan.infura.io',
     marketplace:'https://nhsdguu656.execute-api.us-east-1.amazonaws.com/kovan/',
+   // marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/kovan/',
     protobufjs:'http://protobufjs.singularitynet.io/',
     default:true
   },

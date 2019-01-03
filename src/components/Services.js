@@ -17,6 +17,7 @@ import ChannelHelper from "./ChannelHelper.js"
 import ExampleService from './service/ExampleService.js';
 import DefaultService from './service/DefaultService.js';
 import {Carddeckers} from './CardDeckers.js';
+import axios from 'axios';
 const exampleServiceID = generateUniqueID("snet","example-service");
 const TabContainer = (props) => {
   return (
@@ -111,6 +112,7 @@ class SampleServices extends React.Component {
       chainId: undefined,
       depositopenchannelerror:'',
       runjobstate:false,
+      userkeepsvote:'',
     };
     this.serviceOrgIDToComponent = [];
     this.serviceOrgIDToComponent[exampleServiceID] = ExampleService
@@ -149,7 +151,54 @@ class SampleServices extends React.Component {
     this.handleJobInvocation = this.handleJobInvocation.bind(this)
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
+    this.handleonvote = this.handleonvote.bind(this)
+    this.handledownvote = this.handledownvote.bind(this)
     this.watchNetworkTimer = undefined;
+  }
+handleonvote(orgname,servicename)
+  {
+  //this.setState({userAddress: web3.eth.coinbase});
+  console.log(this.state.userAddress + "," + orgname + "," + servicename)
+  let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
+  fetch(_urlfetchvote, {
+      'mode': 'cors',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        user_address: this.state.userAddress,
+        organization_name:orgname,
+        service_name:servicename,
+        up_vote:1,
+        down_vote:0
+      })
+    })
+    .then(res => res.json())
+    .then(data => this.setState({userkeepsvote: data}))
+    .catch(err => console.log(err));
+  }
+handledownvote(orgname,servicename)
+  {
+//this.setState({userAddress: web3.eth.coinbase});
+let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
+fetch(_urlfetchvote, {
+    'mode': 'cors',
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: 'POST',
+    body: JSON.stringify({
+      user_address: this.state.userAddress,
+      organization_name:orgname,
+      service_name:servicename,
+      up_vote:0,
+      down_vote:1
+    })
+  })
+  .then(res => res.json())
+  .then(data => this.setState({userkeepsvote: data}))
+  .catch(err => console.log(err));
   }
   onClosechaining() {
     this.setState({openchaining:false})
@@ -368,31 +417,43 @@ class SampleServices extends React.Component {
     this.handleWindowLoad();
   }
 
+  async getApi (url,apiname) {
+    try{
+      // wait for a response
+      // after response it will assign it to the variable 'resp' and continue
+           const resp = await fetch(url)
+      
+      // only run if response has been asssigned
+           const data = await resp.json()
+           if (apiname==="service")
+           {
+           this.setState({agents: data})
+           }
+           else if (apiname==="group-info")
+           {
+            this.setState({userservicestatus: data})
+           }
+      // this code only runs when data is assigned.
+           return data
+         } catch (err) {
+              console.log(err)
+           }
+      }
+
+
   loadDetails() {
     let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
-    fetch(_url, {
-        'mode': 'cors',
-        'Access-Control-Allow-Origin': '*'
-      })
-      .then(res => res.json())
-      .then(data => this.setState({agents: data})).then(this.handlehealthsort);
-
+    this.getApi(_url,"service")
+    
     let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
-    fetch(_urlfetchservicestatus, {
-          'mode': 'cors',
-          method: 'GET',
-          'Access-Control-Allow-Origin': '*',
-        }
-      )
-      .then(res => res.json())
-      .then(data => this.setState({userservicestatus: data}))
-      .catch(err => console.log(err));
+    this.getApi(_urlfetchservicestatus,"group-info")
     this.state.healthMerged = false;
 
     if (typeof web3 === 'undefined') {
       return;
     }
     this.setState({userAddress: web3.eth.coinbase});
+
     let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
     fetch(_urlfetchvote, {
         'mode': 'cors',
@@ -861,13 +922,13 @@ onKeyPressvalidator(event) {
                                             <h3>Votes</h3>
                                             <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
                                                 <div className="thumbsup-icon float-none">
-                                                    <div className="thumbsup-img"><img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" /></div>
-                                                    <div className="votes-likes-text">40</div>
+                                                    <div className="thumbsup-img">
+                                                    <img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" onClick={()=>this.handleonvote(this.state.modaluser["organization_name"],this.state.modaluser["service_name"])} /></div>                   
                                                 </div>
                                             </div>
                                             <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
-                                                <div className="thumbsdown-icon float-none"><img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" />
-                                                    <div className="vote-dislikes-text">20</div>
+                                                <div className="thumbsdown-icon float-none">
+                                                <img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" onClick={()=>this.handledownvote(this.state.modaluser["organization_name"],this.state.modaluser["service_name"])}/>                                                   
                                                 </div>
                                             </div>
                                         </div>

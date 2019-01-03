@@ -16,8 +16,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
 import BlockchainHelper from "./BlockchainHelper.js"
-
-
 const TabContainer = (props) => {
   return (
     <Typography component="div" style={{padding:"21px"}}>
@@ -25,11 +23,9 @@ const TabContainer = (props) => {
     </Typography>
   );
 }
-
 TabContainer.propTypes = {
   children: PropTypes.node.isRequired,
 };
-
 const ModalStylesAlertWait = {
   position: 'absolute',
   borderRadius: 3,
@@ -45,14 +41,12 @@ const ModalStylesAlertWait = {
   top: 150,
   left: 350,
 }
-
 const styles = theme => ({
   root: {
     flexGrow: 1,
     backgroundColor: theme.palette.background.paper,
   },
 });
-
 export class Profile extends Component {
   constructor(props) {
     super(props)
@@ -75,7 +69,6 @@ export class Profile extends Component {
       padding: "0px 120px 0px",
       marginTop: "30px",
     };
-
     this.network = new BlockchainHelper();
     this.state = {
       agiBalance: 0,
@@ -104,7 +97,6 @@ export class Profile extends Component {
     this.account = undefined;
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
-
     this.handleAuthorize = this.handleAuthorize.bind(this)
     this.handleDeposit = this.handleDeposit.bind(this)
     this.handlewithdraw = this.handlewithdraw.bind(this)
@@ -118,12 +110,10 @@ export class Profile extends Component {
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
   }
-
   componentDidMount() {
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }
-
   componentWillUnmount() {
     if (this.watchWalletTimer) {
       clearInterval(this.watchWalletTimer);
@@ -133,7 +123,6 @@ export class Profile extends Component {
       clearInterval(this.watchNetworkTimer);
     }
   }
-
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
@@ -144,7 +133,6 @@ export class Profile extends Component {
       console.error(err);
     })
   }
-
   watchNetwork() {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
@@ -158,7 +146,6 @@ export class Profile extends Component {
       }
     });
   }
-
   watchWallet() {
     this.network.getAccount((account) => {
       if (account !== this.state.account) {
@@ -166,12 +153,10 @@ export class Profile extends Component {
       }
     });
   }
-
   loadDetails() {
     if (typeof web3 === 'undefined') {
       return;
     }
-
     let mpeURL = this.network.getMarketplaceURL(this.state.chainId);
     if (typeof (mpeURL) !== 'undefined') {
       let _urlfetchprofile = mpeURL + 'fetch-profile'
@@ -186,7 +171,6 @@ export class Profile extends Component {
         .then(res => res.json())
         .then(data => this.setState({userprofile: data}))
         .catch(err => console.log(err))
-
       let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
       mpeTokenInstance.balances(web3.eth.coinbase, ((err, balance) => {
         if (err) {
@@ -197,7 +181,6 @@ export class Profile extends Component {
         this.setState({escrowaccountbalance: balance});
       }));
     }
-
     let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
     instanceTokenContract.allowance(web3.eth.coinbase, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
       if (err) {
@@ -208,7 +191,6 @@ export class Profile extends Component {
       }
     });
   }
-
   onKeyPressvalidator(event) {
     const keyCode = event.keyCode || event.which;
     //comparing pressed keycodes
@@ -220,47 +202,38 @@ export class Profile extends Component {
         event.preventDefault()
     }
   }
-
   onClosechaining() {
     this.setState({ openchaining: false })
   }
   onOpenchaining() {
     this.setState({ openchaining: true })
   }
-
   Expirationchange(e) {
     this.setState({ extexp: e.target.value })
   }
   extamountchange(e) {
     this.setState({ extamount: e.target.value })
   }
-
   handleChange(event, value) {
     this.setState({ value });
   };
-
   nextJobStep() {
     this.onClosechaining()
   }
-
   changeWithDrawalAmount(e) {
     this.setState({ withdrawalamount: e.target.value })
   }
-
   changeAuthorizeAmount(e) {
     this.setState({ authorizeamount: e.target.value })
   }
-
   handleAuthorize() {
     if (typeof web3 === 'undefined') {
       return;
     }
-
     let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
     var userAddress = web3.eth.defaultAccount
     var amount = this.state.authorizeamount;
     var amountInCogs = AGI.inCogs(web3, amount);
-
     instanceTokenContract.approve(this.network.getMPEAddress(this.state.chainId), amountInCogs, {
       gas: 210000,
       gasPrice: 23
@@ -277,22 +250,18 @@ export class Profile extends Component {
         })
     })
   }
-
   handleDeposit() {
     if (typeof web3 === undefined) {
       return;
     }
-
     var userAddress = web3.eth.defaultAccount;
     let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
-  
     //in balanceof takes user_address is the owner address as input parameter
     /*
     instanceTokenContract.balanceOf(web3.eth.defaultAccount, (err, balance) => {
       user_balance = balance
       console.log("balance of user is on " + balance / 10 ** 6)
     })*/
-
     //In allowance owner is useraddress and spender is the MPE address
     instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
       let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
@@ -334,16 +303,13 @@ export class Profile extends Component {
       }
     })
   }
-
   changeDepositAmount(e) {
     this.setState({ depositamount: e.target.value })
   }
-
   handlewithdraw() {
     if (typeof web3 !== undefined) {
       var amount = this.state.withdrawalamount
       var amountInCogs = AGI.inCogs(web3,amount);
-
       let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
       var gasPrice;
       web3.eth.getGasPrice((err, price) => {
@@ -369,7 +335,6 @@ export class Profile extends Component {
       });
     }
   }
-
   handlerextendadd(channelid) {
     let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
     var amountInCogs = AGI.inCogs(web3, this.state.extamount);
@@ -378,7 +343,6 @@ export class Profile extends Component {
       gas: 210000,
       gasPrice: 51
     }, (error, txnHash) => {
-
       console.log("Channel extended and added funds is TXN Has : " + txnHash);
       this.onOpenchaining()
       this.network.waitForTransaction(txnHash).then(receipt => {
@@ -391,11 +355,9 @@ export class Profile extends Component {
         })
     })
   }
-    
   render() {
     const { value } = this.state;
     window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true
-
     return (
             <React.Fragment>
                 <App />
