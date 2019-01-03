@@ -425,14 +425,7 @@ fetch(_urlfetchvote, {
       
       // only run if response has been asssigned
            const data = await resp.json()
-           if (apiname==="service")
-           {
-           this.setState({agents: data})
-           }
-           else if (apiname==="group-info")
-           {
-            this.setState({userservicestatus: data})
-           }
+       
       // this code only runs when data is assigned.
            return data
          } catch (err) {
@@ -440,13 +433,19 @@ fetch(_urlfetchvote, {
            }
       }
 
-
   loadDetails() {
     let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
     
     let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
 
     Promise.all([this.getApi(_url,"service"),this.getApi(_urlfetchservicestatus,"group-info")])
+    .then((values) =>
+    {
+      this.setState({agents: values[0]})
+      this.setState({userservicestatus: values[1]})
+    }
+    )
+    
     
     this.state.healthMerged = false;
     
