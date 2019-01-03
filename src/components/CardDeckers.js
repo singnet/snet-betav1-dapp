@@ -1,18 +1,12 @@
 import React from 'react';
-
-
 export  class Carddeckers extends React.Component {
-
     render()
     {
-        return(
-        
-            <React.Fragment>
-            
+        return(  
+            <React.Fragment>      
             <div className="blue-boxes-head">
                 <h4 className="align-self-center text-uppercase ">New &amp; Hot in Community</h4>
-            </div>
-               
+            </div>    
             <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 card-deck">
                 <div className="col-xs-12 col-sm-6 col-md-3 col-lg-3 card">
                                 <div className="card-body">
@@ -52,8 +46,6 @@ export  class Carddeckers extends React.Component {
                             </div>
                 </div>
         </React.Fragment>
-    
-    
         )
     }
 }
