@@ -462,9 +462,9 @@ export class Profile extends Component {
                             <h3>Manage your Escrow account</h3>
                             <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
                                 <Tabs style={{ padding: "0" }} value={value} onChange={(event, value)=> this.handleChange(event, value)} indicatorColor='primary'>
-                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
-                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
-                                            <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><img src="./img/info-4.png" alt="User" /></span></span>} />
+                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgauthorize "alt="User" /></Tooltip></span></span>} />
+                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Deposit</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgdeposit" alt="User" /></Tooltip></span></span>} />
+                                            <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgwithdraw" alt="User" /></Tooltip></span></span>} />
                                 </Tabs>
                                 {value === 0 &&
                                 <TabContainer>
