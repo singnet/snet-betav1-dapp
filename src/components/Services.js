@@ -8,7 +8,8 @@ import Slide from '@material-ui/core/Slide'
 import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
-import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS,postApi,getApi } from '../util'
+import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
+import {postApi,getApi} from '../requests'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -155,10 +156,10 @@ class SampleServices extends React.Component {
     this.handledownvote = this.handledownvote.bind(this)
     this.watchNetworkTimer = undefined;
   }
-handleonvote(orgname,servicename)
+handleonvote(orgid,serviceid)
   {
   //this.setState({userAddress: web3.eth.coinbase});
-  console.log(this.state.userAddress + "," + orgname + "," + servicename)
+  console.log(this.state.userAddress + "," + orgid + "," + serviceid)
   let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
   fetch(_urlfetchvote, {
       'mode': 'cors',
@@ -166,19 +167,20 @@ handleonvote(orgname,servicename)
         "Content-Type": "application/json",
       },
       method: 'POST',
-      body: JSON.stringify({
+      body: JSON.stringify(
+       { vote:{
         user_address: this.state.userAddress,
-        organization_name:orgname,
-        service_name:servicename,
-        up_vote:1,
-        down_vote:0
-      })
+        org_id:orgid,
+        service_id:serviceid,
+        up_vote:true,
+        down_vote:false
+      }})
     })
     .then(res => res.json())
     .then(data => this.setState({userkeepsvote: data}))
     .catch(err => console.log(err));
   }
-handledownvote(orgname,servicename)
+handledownvote(orgid,serviceid)
   {
 //this.setState({userAddress: web3.eth.coinbase});
 let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
@@ -188,13 +190,14 @@ fetch(_urlfetchvote, {
       "Content-Type": "application/json",
     },
     method: 'POST',
-    body: JSON.stringify({
+    body: JSON.stringify(
+      {vote:{
       user_address: this.state.userAddress,
-      organization_name:orgname,
-      service_name:servicename,
-      up_vote:0,
-      down_vote:1
-    })
+      org_id:orgid,
+      service_id:serviceid,
+      up_vote:false,
+      down_vote:true
+    }})
   })
   .then(res => res.json())
   .then(data => this.setState({userkeepsvote: data}))
@@ -451,7 +454,7 @@ fetch(_urlfetchvote, {
     if (typeof web3 === 'undefined' || typeof this.state.userAddress === 'undefined') {
       return;
     }
-    this.serviceState.uniqueID = generateUniqueID(data["org_id"],data["service_name"]);
+    this.serviceState.uniqueID = generateUniqueID(data["org_id"],data["service_id"]);
     console.log(this.serviceState.uniqueID);
     console.log(this.serviceOrgIDToComponent[this.serviceState.uniqueID]);
     console.log(this.serviceOrgIDToComponent);
@@ -601,7 +604,7 @@ onKeyPressvalidator(event) {
   handlesearch() {
     this.setState({besttagresult: []});
     let searchedagents = []
-    searchedagents = this.state.agents.map(row => (row["display_name"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1 || row["service_name"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1) ? row : null)
+    searchedagents = this.state.agents.map(row => (row["display_name"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1 || row["service_id"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1) ? row : null)
     let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
     this.setState({bestestsearchresults: bestsearchresults})
   }
@@ -639,7 +642,7 @@ onKeyPressvalidator(event) {
       row["up_vote"] = 0, row["down_vote"] = 0
     });
     this.state.agents.map(row =>
-      this.state.uservote.map(rown => ((rown["service_name"] === row["service_name"] && rown["organization_name"] === row["organization_name"]) ?
+      this.state.uservote.map(rown => ((rown["service_id"] === row["service_id"] && rown["org_id"] === row["org_id"]) ?
         ((rown["up_vote"] === 1 ? row["up_vote"] = 1 : row["up_vote"] = 0) || (rown["down_vote"] === 1 ? row["down_vote"] = 1 : row["down_vote"] = 0)) : null))
     );
     const agents = agentsample.slice(this.state.offset, this.state.offset + 5).map((rown,index) =>  
@@ -677,13 +680,13 @@ onKeyPressvalidator(event) {
           <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
                   <div className="thumbsup-img "><img src="./img/thumbs-up.png" /></div>
-                  {this.state.uservote.length===0?
-                  <div className="likes-text">0</div>:this.state.uservote.map(rowu => (rowu["service_name"]===rown["service_name"])?
+                  {(this.state.uservote.length === 0)?<div className="likes-text">0</div>:
+                  (this.state.uservote.map(rowu => (rowu["service_id"]===rown["service_id"])?
                   <div className="likes-text">{rowu["up_vote_count"]}</div>:
-                  <div className="likes-text">0</div>)}
+                  <div className="likes-text"></div>))}
               </div>
               <div className="col-md-6 thumbsdown-icon"><img src="./img/thumbs-down.png" />
-                  <br/> {this.state.uservote.length===0? 0:this.state.uservote.map(rowu => (rowu["service_name"]===rown["service_name"])? rowu["down_vote_count"]:0)}
+                  <br/> {this.state.uservote.length===0? <div className="likes-text">0</div>:(this.state.uservote.map(rowu => (rowu["service_id"]===rown["service_id"])? rowu["down_vote_count"]:null))}
               </div>
           </div>
       </div>
@@ -792,7 +795,7 @@ onKeyPressvalidator(event) {
                                 <Typography component={ 'div'}>
                                     <div className="right-panel agentdetails-sec p-3 pb-5">
                                         <div className="col-xs-12 col-sm-12 col-md-12 name no-padding">
-                                            <h3>{this.state.modaluser["service_name"]} </h3>
+                                            <h3>{this.state.modaluser["service_id"]} </h3>
                                             <p> {this.state.tagsall.map(rowtags =>
                                                 <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
                                             <div className="text-right border-top1">
@@ -879,7 +882,7 @@ onKeyPressvalidator(event) {
                                         </a>
                                                 </div>
                                                 <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 text-center border-left-1">
-                                                    <p style={{fontSize: "14px"}}>{this.state.modaluser["organization_name"]}</p>
+                                                    <p style={{fontSize: "14px"}}>{this.state.modaluser["org_id"]}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -888,12 +891,12 @@ onKeyPressvalidator(event) {
                                             <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
                                                 <div className="thumbsup-icon float-none">
                                                     <div className="thumbsup-img">
-                                                    <img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" onClick={()=>this.handleonvote(this.state.modaluser["organization_name"],this.state.modaluser["service_name"])} /></div>                   
+                                                    <a href="#"><img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" onClick={()=>this.handleonvote(this.state.modaluser["org_id"],this.state.modaluser["service_id"])} /></a></div>                   
                                                 </div>
                                             </div>
                                             <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
                                                 <div className="thumbsdown-icon float-none">
-                                                <img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" onClick={()=>this.handledownvote(this.state.modaluser["organization_name"],this.state.modaluser["service_name"])}/>                                                   
+                                                <a href="#"><img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" onClick={()=>this.handledownvote(this.state.modaluser["org_id"],this.state.modaluser["service_id"])}/></a>                                                 
                                                 </div>
                                             </div>
                                         </div>
