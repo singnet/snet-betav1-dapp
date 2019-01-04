@@ -9,7 +9,7 @@ import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
 import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
-import {postApi,getApi} from '../requests'
+import {postApi,getApi,configrequests} from '../requests'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -160,22 +160,9 @@ handleonvote(orgid,serviceid)
   {
   //this.setState({userAddress: web3.eth.coinbase});
   console.log(this.state.userAddress + "," + orgid + "," + serviceid)
+  applyToonvoteconfigrequests
   let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
-  fetch(_urlfetchvote, {
-      'mode': 'cors',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: 'POST',
-      body: JSON.stringify(
-       { vote:{
-        user_address: this.state.userAddress,
-        org_id:orgid,
-        service_id:serviceid,
-        up_vote:true,
-        down_vote:false
-      }})
-    })
+  postApi(_urlfetchvote,configrequests.applyToonvoteconfigrequests(this.state.userAddress,orgid,serviceid,true,false))
     .then(res => res.json())
     .then(data => this.setState({userkeepsvote: data}))
     .catch(err => console.log(err));
@@ -184,21 +171,8 @@ handledownvote(orgid,serviceid)
   {
 //this.setState({userAddress: web3.eth.coinbase});
 let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
-fetch(_urlfetchvote, {
-    'mode': 'cors',
-    headers: {
-      "Content-Type": "application/json",
-    },
-    method: 'POST',
-    body: JSON.stringify(
-      {vote:{
-      user_address: this.state.userAddress,
-      org_id:orgid,
-      service_id:serviceid,
-      up_vote:false,
-      down_vote:true
-    }})
-  })
+postApi(_urlfetchvote,configrequests.applyToonvoteconfigrequests(this.state.userAddress,orgid,serviceid,false,true))
+
   .then(res => res.json())
   .then(data => this.setState({userkeepsvote: data}))
   .catch(err => console.log(err));
@@ -423,8 +397,9 @@ fetch(_urlfetchvote, {
     let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
     let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
     let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
+   
     this.setState({userAddress: web3.eth.coinbase});
-    Promise.all([getApi(_url),getApi(_urlfetchservicestatus),postApi(_urlfetchvote,this.state.userAddress)])
+    Promise.all([getApi(_url),getApi(_urlfetchservicestatus),postApi(_urlfetchvote,configrequests.applyTovoteconfigrequests(this.state.userAddress))])
     .then((values) =>
     {
       this.setState({agents: values[0].data})

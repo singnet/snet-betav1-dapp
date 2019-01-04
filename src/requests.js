@@ -1,15 +1,48 @@
-export async function postApi(url,useraddress){
-    const settings = 
-    { 
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    },  
-      method: 'POST',
-      body: JSON.stringify({
-        user_address: useraddress
-      })
-    }
+
+export class configrequests{
+    static applyTovoteconfigrequests(useraddress)
+        {
+          const configvoterequests ={
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },  
+              method: 'POST',
+              body: JSON.stringify({
+                user_address: useraddress
+              })
+        }
+        return configvoterequests
+      }
+
+      static applyToonvoteconfigrequests(useraddress,orgid,serviceid,upvote,downvote)
+      {
+
+      
+        const configonvoterequests =
+        {
+          'mode': 'cors',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: 'POST',
+          body: JSON.stringify(
+           { vote:{
+            user_address: useraddress,
+            org_id:orgid,
+            service_id:serviceid,
+            up_vote:upvote,
+            down_vote:downvote
+          }})
+        }
+
+        return configonvoterequests
+      }
+
+}
+
+export async function postApi(url,settings){
+   
     try{
           const data = await fetch(url, settings)
           .then(response => response.json())
