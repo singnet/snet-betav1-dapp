@@ -8,7 +8,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AGI,ERROR_UTILS } from '../util';
+import { AGI,ERROR_UTILS,getApi,postApi } from '../util';
 import App from "../App.js";
 import Tooltip from '@material-ui/core/Tooltip';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -160,17 +160,13 @@ export class Profile extends Component {
     let mpeURL = this.network.getMarketplaceURL(this.state.chainId);
     if (typeof (mpeURL) !== 'undefined') {
       let _urlfetchprofile = mpeURL + 'fetch-profile'
-      fetch(_urlfetchprofile, {
-          'mode': 'cors',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          method: 'POST',
-          body: JSON.stringify({user_address: web3.eth.coinbase})
-        })
-        .then(res => res.json())
-        .then(data => this.setState({userprofile: data}))
-        .catch(err => console.log(err))
+      const user_address = web3.eth.coinbase
+      postApi(_urlfetchprofile,user_address)
+      .then((values)=>
+      this.setState({userprofile: values.data})
+      )
+      .catch(err => console.log(err))
+  
       let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
       mpeTokenInstance.balances(web3.eth.coinbase, ((err, balance) => {
         if (err) {

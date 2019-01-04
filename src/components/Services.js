@@ -17,7 +17,7 @@ import ChannelHelper from "./ChannelHelper.js"
 import ExampleService from './service/ExampleService.js';
 import DefaultService from './service/DefaultService.js';
 import {Carddeckers} from './CardDeckers.js';
-import axios from 'axios';
+
 const exampleServiceID = generateUniqueID("snet","example-service");
 const TabContainer = (props) => {
   return (
@@ -369,11 +369,11 @@ fetch(_urlfetchvote, {
     var pricesort = this.state.agents
     if (this.state.togleprice === false) {
 
-      pricesort.sort((a, b) => b.price - a.price)
+      pricesort.sort((a, b) => b.price_in_cogs - a.price_in_cogs)
       this.setState({togleprice: true})
     } else if (this.state.togleprice === true) {
 
-      pricesort.sort((a, b) => a.price - b.price)
+      pricesort.sort((a, b) => a.price_in_cogs - b.price_in_cogs)
       this.setState({togleprice: false})
     }
     this.setState({agents: pricesort})
@@ -424,9 +424,9 @@ fetch(_urlfetchvote, {
     Promise.all([getApi(_url),getApi(_urlfetchservicestatus),postApi(_urlfetchvote,this.state.userAddress)])
     .then((values) =>
     {
-      this.setState({agents: values[0]})
-      this.setState({userservicestatus: values[1]})
-      this.setState({uservote: values[2]})
+      this.setState({agents: values[0].data})
+      this.setState({userservicestatus: values[1].data})
+      this.setState({uservote: values[2].data})
     }
     ).catch((err)=> console.log(err))
     this.state.healthMerged = false;
@@ -546,7 +546,7 @@ fetch(_urlfetchvote, {
   reInitializeJobState(data) {
     let serviceId = data["service_id"];
     let orgId = data["org_id"];
-    this.serviceState.price = data["price"];
+    this.serviceState.price = data["price_in_cogs"];
     let channelInfoUrl = this.network.getMarketplaceURL(this.state.chainId) + 'channel-info';
     return this.serviceState.channelHelper.reInitialize(channelInfoUrl, this.state.userAddress, serviceId, orgId);
   }
@@ -571,7 +571,7 @@ fetch(_urlfetchvote, {
       let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
       mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
         balance = AGI.inAGI(balance);
-        console.log("In start job Balance is " + balance + " job cost is " + data['price']);
+        console.log("In start job Balance is " + balance + " job cost is " + data['price_in_cogs']);
         let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data, currentBlockNumber);
         if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
           this.onOpenModalAlert();
@@ -580,7 +580,7 @@ fetch(_urlfetchvote, {
           this.setState({startjobfundinvokeres: true});
           this.setState({valueTab: 1});
         } else {
-          console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price']);
+          console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price_in_cogs']);
           this.setState({startjobfundinvokeres: true})
           this.setState({valueTab: 0});
         }
@@ -653,12 +653,12 @@ onKeyPressvalidator(event) {
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Organization</div>
           <div className="col-sm-12 col-md-2 col-lg-2 org-name-align">
-              <Typography className="m-0" style={{fontSize: "14px",fontFamily: "Arial", }}>{rown["organization_name"]}</Typography>
+              <Typography className="m-0" style={{fontSize: "14px",fontFamily: "Arial", }}>{rown["org_id"]}</Typography>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Price</div>
           <div className="col-sm-12 col-md-2 col-lg-2 price-align">
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{rown["price"]} AGI</Typography>
+                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{rown["price_in_cogs"]} AGI</Typography>
               </label>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
@@ -829,7 +829,7 @@ onKeyPressvalidator(event) {
                                                     </div>:
                                                     <div className="row channels-sec-disabled">
                                                         <div className="col-xs-12 col-sm-4 col-md-4">
-                                                            <input type="text" className="chennels-amt-field" value={parseInt(this.state.modaluser[ "price"])} disabled />
+                                                            <input type="text" className="chennels-amt-field" value={parseInt(this.state.modaluser[ "price_in_cogs"])} disabled />
                                                         </div>
                                                         <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
                                                         <div className="col-xs-12 col-sm-4 col-md-4">
@@ -901,7 +901,7 @@ onKeyPressvalidator(event) {
                                             <h3>Job Cost Preview</h3>
                                             <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-light" style={{fontSize: "14px"}}>Current Price</div>
-                                                <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}> {parseInt(this.state.modaluser["price"])} AGI</div>
+                                                <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}> {parseInt(this.state.modaluser["price_in_cogs"])} AGI</div>
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-light" style={{fontSize: "14px"}}>Price Model</div>
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}>{this.state.modaluser["price_model"]}</div>
                                             </div>
