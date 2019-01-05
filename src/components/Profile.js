@@ -9,7 +9,7 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { AGI,ERROR_UTILS } from '../util';
-import {postApi,configrequests} from '../requests'
+import {PostApi,ConfigRequests} from '../requests'
 import App from "../App.js";
 import Tooltip from '@material-ui/core/Tooltip';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -162,7 +162,7 @@ export class Profile extends Component {
     if (typeof (mpeURL) !== 'undefined') {
       let _urlfetchprofile = mpeURL + 'fetch-profile'
       const user_address = web3.eth.coinbase
-      postApi(_urlfetchprofile,configrequests.applyTovoteconfigrequests(user_address))
+      PostApi(_urlfetchprofile,ConfigRequests.ApplyToVoteConfigRequests(user_address))
       .then((values)=>
       this.setState({userprofile: values.data})
       )

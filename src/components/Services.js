@@ -9,7 +9,7 @@ import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
 import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
-import {postApi,getApi,configrequests} from '../requests'
+import {PostApi,GetApi,ConfigRequests} from '../requests'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -160,9 +160,8 @@ handleonvote(orgid,serviceid)
   {
   //this.setState({userAddress: web3.eth.coinbase});
   console.log(this.state.userAddress + "," + orgid + "," + serviceid)
-  applyToonvoteconfigrequests
   let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
-  postApi(_urlfetchvote,configrequests.applyToonvoteconfigrequests(this.state.userAddress,orgid,serviceid,true,false))
+  PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.userAddress,orgid,serviceid,true,false))
     .then(res => res.json())
     .then(data => this.setState({userkeepsvote: data}))
     .catch(err => console.log(err));
@@ -171,7 +170,7 @@ handledownvote(orgid,serviceid)
   {
 //this.setState({userAddress: web3.eth.coinbase});
 let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
-postApi(_urlfetchvote,configrequests.applyToonvoteconfigrequests(this.state.userAddress,orgid,serviceid,false,true))
+PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.userAddress,orgid,serviceid,false,true))
 
   .then(res => res.json())
   .then(data => this.setState({userkeepsvote: data}))
@@ -399,7 +398,7 @@ postApi(_urlfetchvote,configrequests.applyToonvoteconfigrequests(this.state.user
     let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
    
     this.setState({userAddress: web3.eth.coinbase});
-    Promise.all([getApi(_url),getApi(_urlfetchservicestatus),postApi(_urlfetchvote,configrequests.applyTovoteconfigrequests(this.state.userAddress))])
+    Promise.all([GetApi(_url),GetApi(_urlfetchservicestatus),PostApi(_urlfetchvote,ConfigRequests.applyTovoteconfigrequests(this.state.userAddress))])
     .then((values) =>
     {
       this.setState({agents: values[0].data})
