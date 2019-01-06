@@ -78,9 +78,9 @@ export class Profile extends Component {
       escrowaccountbalance: 0,
       allowedtokenbalance:[],
       value: 0, //WHAT IS THIS FOR??
-      authorizeamount: 0,
-      depositamount: 0,
-      withdrawalamount: 0,
+      authorizeAmount: 0,
+      depositAmount: 0,
+      withdrawalAmount: 0,
       userprofile: [],
       userAddress: '',
       account: '',
@@ -101,9 +101,7 @@ export class Profile extends Component {
     this.handleAuthorize = this.handleAuthorize.bind(this)
     this.handleDeposit = this.handleDeposit.bind(this)
     this.handlewithdraw = this.handlewithdraw.bind(this)
-    this.changeAuthorizeAmount = this.changeAuthorizeAmount.bind(this)
-    this.changeDepositAmount = this.changeDepositAmount.bind(this)
-    this.changeWithDrawalAmount = this.changeWithDrawalAmount.bind(this)
+    this.handleAmountChange = this.handleAmountChange.bind(this)
     this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this)
     this.handlerextendadd = this.handlerextendadd.bind(this)
     this.Expirationchange = this.Expirationchange.bind(this)
@@ -143,10 +141,11 @@ export class Profile extends Component {
             this.setState({ agiBalance: balance });
           }
         }));         
-        this.loadDetails();
+        this.loadDetails(chainId);
       }
     });
   }
+
   watchWallet() {
     this.network.getAccount((account) => {
       if (account !== this.state.account) {
@@ -155,11 +154,11 @@ export class Profile extends Component {
     });
   }
 
-  loadDetails() {
+  loadDetails(chainId) {
     if (typeof web3 === 'undefined') {
       return;
     }
-    let mpeURL = this.network.getMarketplaceURL(this.state.chainId);
+    let mpeURL = this.network.getMarketplaceURL(chainId);
     if (typeof (mpeURL) !== 'undefined') {
       let _urlfetchprofile = mpeURL + 'fetch-profile'
       const requestObject = {user_address: web3.eth.coinbase}
@@ -169,7 +168,7 @@ export class Profile extends Component {
       )
       .catch(err => console.log(err))
   
-      let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
+      let mpeTokenInstance = this.network.getMPEInstance(chainId);
       mpeTokenInstance.balances(web3.eth.coinbase, ((err, balance) => {
         if (err) {
           console.log(err);
@@ -179,8 +178,8 @@ export class Profile extends Component {
         this.setState({escrowaccountbalance: balance});
       }));
     }
-    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
-    instanceTokenContract.allowance(web3.eth.coinbase, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
+    let instanceTokenContract = this.network.getTokenInstance(chainId);
+    instanceTokenContract.allowance(web3.eth.coinbase, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
       if (err) {
         console.log(err);
       }
@@ -189,6 +188,7 @@ export class Profile extends Component {
       }
     });
   }
+
   onKeyPressvalidator(event) {
     const keyCode = event.keyCode || event.which;
     //comparing pressed keycodes
@@ -200,15 +200,19 @@ export class Profile extends Component {
         event.preventDefault()
     }
   }
+
   onClosechaining() {
     this.setState({ openchaining: false })
   }
+
   onOpenchaining() {
     this.setState({ openchaining: true })
   }
+
   Expirationchange(e) {
     this.setState({ extexp: e.target.value })
   }
+  
   extamountchange(e) {
     this.setState({ extamount: e.target.value })
   }
@@ -221,35 +225,46 @@ export class Profile extends Component {
     this.onClosechaining()
   }
 
-  changeWithDrawalAmount(e) {
-    this.setState({ withdrawalamount: e.target.value })
+  handleAmountChange(e) {
+    const { name, value } = e.target;
+    console.log("Operation " + name + " " + value);
+    this.setState({[name]: value,})
   }
 
-  changeAuthorizeAmount(e) {
-    this.setState({ authorizeamount: e.target.value })
-  }
-
-  handleAuthorize() {
-    if (typeof web3 === 'undefined') {
-      return;
-    }
-    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
-    var userAddress = web3.eth.defaultAccount
-    var amountInCogs = AGI.inCogs(web3, this.state.authorizeamount);
-    instanceTokenContract.approve(this.network.getMPEAddress(this.state.chainId), amountInCogs, {
-      gas: 210000,
-      gasPrice: 23
-    }, (error, txnHash) => {
+  executeContractMethod(operation, err, estimatedGas, gasPrice, parameters) {
+    console.log("Operation " + operation + " " + estimatedGas + " gasPrice " + gasPrice);
+    
+    parameters.push({
+      gas: estimatedGas,
+      gasPrice: gasPrice
+    });
+    parameters.push((error, txnHash) => {
       console.log("Txn Hash for approved transaction is : " + txnHash);
       this.onOpenchaining();
       this.network.waitForTransaction(txnHash).then(receipt => {
-          console.log('Opened channel and deposited ' + this.state.ocvalue + ' from: ' + userAddress + 'reciept object is ' + receipt);
           this.nextJobStep();
         })
         .catch((error) => {
           this.setState({approveerror: error})
           this.nextJobStep();
         })
+    });
+
+    operation.apply(this,parameters);
+  }
+
+  handleAuthorize() {
+    if (typeof web3 === 'undefined') {
+      return;
+    }
+
+    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
+    var amountInCogs = AGI.inCogs(web3, this.state.authorizeAmount);
+
+    web3.eth.getGasPrice((err, gasPrice) => {
+      instanceTokenContract.approve.estimateGas(this.network.getMPEAddress(this.state.chainId),amountInCogs, (err, estimatedGas) => {
+        this.executeContractMethod(instanceTokenContract.approve, err, estimatedGas, gasPrice, [this.network.getMPEAddress(this.state.chainId),amountInCogs]);
+      })
     })
   }
 
@@ -257,75 +272,35 @@ export class Profile extends Component {
     if (typeof web3 === undefined) {
       return;
     }
-    var userAddress = web3.eth.defaultAccount;
+
     let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
     instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
-      let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
-      var amountInCogs = AGI.inCogs(web3, this.state.depositamount);
-      console.log("allowedbalance is " + allowedbalance + ", deposit " + amountInCogs)
-      if (Number(amountInCogs) <= Number(allowedbalance)) {
+      var amountInCogs = AGI.inCogs(web3, this.state.depositAmount);
+      if (Number(amountInCogs) > Number(allowedbalance)) {
+        this.setState({depositwarning: 'Deposit amount should be less than approved balance ' + allowedbalance});
+      }
+      else {
+        let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
         this.setState({depositwarning: ''})
-        var gasPrice;
-        web3.eth.getGasPrice((err, price) => {
-          console.log("Gas Price : " + price);
-          gasPrice = price;
+        web3.eth.getGasPrice((err, gasPrice) => {
+          instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
+            this.executeContractMethod(instanceEscrowContract.deposit, err, estimatedGas, gasPrice, [amountInCogs]);
+          })
         })
-
-        instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
-          console.log("Estimated Gas Limit: " + estimatedGas);
-          //gasPrice: web3.toWei(23, 'gwei') // For hardcoded to 23 Gas Price as most of the time gas Price is low
-          instanceEscrowContract.deposit(amountInCogs, {
-            gas: 2100000,
-            gasPrice: 23
-          }, (error, txnHash) => {
-            console.log("TXN Has : " + txnHash);
-            this.onOpenchaining()
-            this.network.waitForTransaction(txnHash).then(receipt => {
-                console.log('Opened channel and deposited ' + amountInCogs + ' from: ' + userAddress);
-                this.nextJobStep();
-              })
-              .catch((error) => {
-                this.setState({depositerror: error})
-                this.nextJobStep();
-              })
-          });
-        });
-      } else {
-        this.setState({depositwarning: 'Deposit amount should be less than approved balance ' + allowedbalance})
       }
     })
   }
   
-  changeDepositAmount(e) {
-    this.setState({ depositamount: e.target.value })
-  }
-
   handlewithdraw() {
     if (typeof web3 !== undefined) {
-      var amountInCogs = AGI.inCogs(web3,this.state.withdrawalamount);
+      var amountInCogs = AGI.inCogs(web3,this.state.withdrawalAmount);
       let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
-      var gasPrice;
-      web3.eth.getGasPrice((err, price) => {
-        console.log("Gas Price : " + price);
-        gasPrice = price;
+
+      web3.eth.getGasPrice((err, gasPrice) => {
+        instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
+          this.executeContractMethod(instanceEscrowContract.withdraw, err, estimatedGas, gasPrice, [amountInCogs]);
+        })
       })
-      // Getting the Estimated Gas Price & Executing the transaction
-      instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
-        console.log("Estimated Gas Limit: " + estimatedGas);
-        instanceEscrowContract.withdraw(amountInCogs, { gas: 210000, gasPrice: 23 }, (error, txnHash) => {
-          console.log("TXN Has : " + txnHash);
-          this.onOpenchaining()
-          this.network.waitForTransaction(txnHash).then(receipt => {
-            console.log('Withdrawal of  ' + amountInCogs + ' for: ' + web3.eth.defaultAccount);
-            this.nextJobStep();
-          })
-          .catch((error)=>
-          {
-            this.setState({withdrawalerror:'There is a error in withdrawal with status ' + error.status})
-            this.nextJobStep();
-          })
-        });
-      });
     }
   }
 
@@ -425,7 +400,7 @@ export class Profile extends Component {
                                 </Tabs>
                                 {value === 0 &&
                                 <TabContainer>
-                                    <TextField id="standard-name" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" onChange={this.changeAuthorizeAmount} value={this.state.authorizeamount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
+                                    <TextField id="standard-name" name="authorizeAmount" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" onChange={this.handleAmountChange} value={this.state.authorizeAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.approveerror!== '' ?ERROR_UTILS.sanitizeError(this.state.approveerror):''}</div>
@@ -441,7 +416,7 @@ export class Profile extends Component {
                                         </div>
                                 </TabContainer>} {value === 1 &&
                                 <TabContainer>
-                                    <TextField id="depositamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" onChange={this.changeDepositAmount} value={this.state.depositamount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
+                                    <TextField id="depositamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="depositAmount" onChange={this.handleAmountChange} value={this.state.depositAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.depositerror!== '' ?ERROR_UTILS.sanitizeError(this.state.depositerror):''}</div>
@@ -458,7 +433,7 @@ export class Profile extends Component {
                                         <p style={{ color: "red", fontSize: "14px" }}>{this.state.depositwarning}</p>
                                 </TabContainer>} {value === 2 &&
                                 <TabContainer>
-                                    <TextField id="withdrawamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" onChange={this.changeWithDrawalAmount} value={this.state.withdrawalamount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
+                                    <TextField id="withdrawamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="withdrawalAmount" onChange={this.handleAmountChange} value={this.state.withdrawalAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.withdrawalerror!== '' ?ERROR_UTILS.sanitizeError(this.state.withdrawalerror):''}</div>
@@ -478,7 +453,7 @@ export class Profile extends Component {
                             </div>
                         </div>
                         <div>
-                            <Modal style={ModalStylesAlertWait} open={this.state.openchaining} onClose={this.onClosechaining}>
+                            <Modal style={ModalStylesAlertWait} open={this.state.openchaining} onClose={this.onClosechaining} >
                                 <Slide direction="left" in={this.state.openchaining} mountonEnter unmountOnExit>
                                     <React.Fragment>
                                         <Typography component={ 'div'} style={{ fontSize: "13px", lineHeight: "15px" }}>
