@@ -9,7 +9,7 @@ import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
 import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
-import {PostApi,GetApi,ConfigRequests} from '../requests'
+import { Requests } from '../requests'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -27,9 +27,11 @@ const TabContainer = (props) => {
     </Typography>
   );
 }
+
 TabContainer.propTypes = {
   children: PropTypes.node.isRequired,
 };
+
 const ModalStylesAlertWait ={
   position:'absolute',
   borderRadius: 3,
@@ -129,10 +131,6 @@ class SampleServices extends React.Component {
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
     this.onOpenSearchBar = this.onOpenSearchBar.bind(this)
     this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
-    /*this.changehandlerservicename = this.changehandlerservicename.bind(this)
-    this.changehandlermethodname = this.changehandlermethodname.bind(this)
-    this.changehandlerervicejson= this.changehandlerervicejson.bind(this)
-    */
     this.handlesearch = this.handlesearch.bind(this)
     this.startjob = this.startjob.bind(this)
     this.CaptureSearchterm = this.captureSearchterm.bind(this)
@@ -152,67 +150,77 @@ class SampleServices extends React.Component {
     this.handleJobInvocation = this.handleJobInvocation.bind(this)
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
-    this.handleonvote = this.handleonvote.bind(this)
-    this.handledownvote = this.handledownvote.bind(this)
+    this.handleVote = this.handleVote.bind(this)
     this.watchNetworkTimer = undefined;
   }
-handleonvote(orgid,serviceid)
+  
+  handleVote(orgid,serviceid,upVote)
   {
-  //this.setState({userAddress: web3.eth.coinbase});
-  console.log(this.state.userAddress + "," + orgid + "," + serviceid)
-  let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
-  PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.userAddress,orgid,serviceid,true,false))
-    .then(res => res.json())
-    .then(data => this.setState({userkeepsvote: data}))
-    .catch(err => console.log(err));
-  }
-handledownvote(orgid,serviceid)
-  {
-//this.setState({userAddress: web3.eth.coinbase});
-let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
-PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.userAddress,orgid,serviceid,false,true))
+    console.log(this.state.userAddress + "," + orgid + "," + serviceid)
+    const urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
+    const requestObject = {
+      vote: {
+        user_address: this.state.userAddress,
+        org_id: orgid,
+        service_id: serviceid,
+        up_vote: upVote,
+        down_vote: (!upVote)
+      }
+    }
 
-  .then(res => res.json())
-  .then(data => this.setState({userkeepsvote: data}))
-  .catch(err => console.log(err));
+    Requests.post(urlfetchvote,requestObject)
+      .then(res => res.json())
+      .then(data => this.setState({userkeepsvote: data}))
+      .catch(err => console.log(err));
   }
+
   onClosechaining() {
     this.setState({openchaining:false})
   }
+
   onOpenchaining() {
     this.setState({openchaining:true})
   }
+
   handleChangeTabs (event, valueTab) {
     this.setState({ valueTab });
-  };
+  }
+
   watchNetwork() {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
         this.setState({ chainId: chainId });
-        this.loadDetails();
+        console.log("Defaulting to " + this.state.chainId);
+        this.loadDetails(chainId);
       }
     });
   }
+
   handlesearchclear() {
     this.setState({searchterm: ''})
   }
+
   handlesearchkeyup(e) {
     e.preventDefault();
     if (e.keyCode === 13) {
       this.handlesearch()
     }
   }
+
   changeocvalue(e) {
     this.setState({ocvalue: e.target.value})
   }
+
   changeocexpiration(e) {
     this.setState({ocexpiration: e.target.value})
   } 
+
   processChannelErrors(error, message) {
     console.log(message + " " + error);
     this.setState({depositopenchannelerror: error})
     this.onClosechaining();
   }
+
   openchannelhandler(data, dataservicestatus) {
     if (web3 === 'undefined') {
       return;
@@ -245,6 +253,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
       }
     }
   }
+
   channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
     var startingBlock = 900000;
     web3.eth.getBlockNumber((error, result) => {
@@ -273,6 +282,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
         }
     }); 
   }
+
   getChannelDetails(mpeInstance,startingBlock, recipientaddress) {
     console.log("Scanning events from " + startingBlock);
     var evt = mpeInstance.ChannelOpen({
@@ -292,6 +302,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
       }
     });
   }  
+
   channelExtend(mpeInstance, rrchannel, amountInCogs) {
     mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
       gas: 210000,
@@ -314,6 +325,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
         }
     });
   }
+
   handlehealthsort() {
     if (!this.state.healthMerged) {
       for (var ii in this.state.agents) {
@@ -354,6 +366,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
     }
     this.setState({agents: pricesort})
   }
+  
   handleservicenamesort() {
     var servicenamesort = this.state.agents
     if (this.state.togleservicename === false) {
@@ -369,6 +382,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
     }
     this.setState({agents: servicenamesort})
   }
+
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
@@ -377,30 +391,37 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
       else {
         this.setState({chainId: this.network.getDefaultNetwork()});
         console.log("Defaulting to " + this.state.chainId);
-        this.loadDetails();
+        this.loadDetails(this.network.getDefaultNetwork());
       }
     }).catch(err => {
       console.error(err);
     })
   }
+
   componentWillUnmount() {
     if (this.watchNetworkTimer) {
       clearInterval(this.watchNetworkTimer);
     }
   }
+
   componentDidMount() {
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }
-  loadDetails() {
-    let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
-    let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
-    let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
-   
+
+  loadDetails(chainId) {
     this.setState({userAddress: web3.eth.coinbase});
-    Promise.all([GetApi(_url),GetApi(_urlfetchservicestatus),PostApi(_urlfetchvote,ConfigRequests.applyTovoteconfigrequests(this.state.userAddress))])
+
+    const url = this.network.getMarketplaceURL(chainId) + "service"
+    const urlfetchservicestatus = this.network.getMarketplaceURL(chainId) + 'group-info'
+    const urlfetchvote = this.network.getMarketplaceURL(chainId) + 'fetch-vote'
+    const fetchVoteBody = {user_address: web3.eth.coinbase}
+    Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.post(urlfetchvote,fetchVoteBody)])
     .then((values) =>
     {
+      values[0].data.map(rr => {
+        rr["price_in_agi"] = AGI.inAGI(rr["price_in_cogs"])
+      });    
       this.setState({agents: values[0].data})
       this.setState({userservicestatus: values[1].data})
       this.setState({uservote: values[2].data})
@@ -411,9 +432,11 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
       return;
     }
   }
+
   handleClick(offset) {
     this.setState({ offset });
   }
+
   onOpenJobDetailsSlider(data,dataservicestatus) {
     (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
     this.setState({modaluser:data})
@@ -442,23 +465,29 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
       }
     })
   }
+
   onCloseJobDetailsSlider(){
     this.setState({ jobDetailsSliderOpen: false });
   }
+
   onOpenSearchBar(e) {
     this.setState({ searchBarOpen: true });
   }
+
   onCloseSearchBar(){
     this.setState({ searchBarOpen: false });
   }
+
   onOpenModalAlert() {
     this.setState({openAlert: true})
   }
+
   onCloseModalAlert() {
     this.setState({openAlert: false})
     this.onCloseJobDetailsSlider()
     this.props.history.push("/Profile")
   }
+
   composeMessage(contract, channelID, nonce, price) {
     //web3.sha3(contractAddrForMPE, this.state.channelstateid, 0, data['price']);
     var ethereumjsabi = require('ethereumjs-abi');
@@ -469,6 +498,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
     console.log(msg);
     return msg;
   }
+
   handleJobInvocation(serviceName, methodName, requestObject) {
     console.log("Invoking service " + this.state.inputservicename + " and method name " + this.state.inputmethodname)
     var nonce = this.serviceState.channelHelper.getNonce(0);
@@ -520,6 +550,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
         return window.ethjs.personal_ecRecover(msg, signed);
       });
   }
+
   reInitializeJobState(data) {
     let serviceId = data["service_id"];
     let orgId = data["org_id"];
@@ -527,6 +558,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
     let channelInfoUrl = this.network.getMarketplaceURL(this.state.chainId) + 'channel-info';
     return this.serviceState.channelHelper.reInitialize(channelInfoUrl, this.state.userAddress, serviceId, orgId);
   }
+
   fetchServiceSpec(data) {
     var caller = this;
     let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
@@ -537,6 +569,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
         resolve();
       }));
   }
+
   startjob(data) {
     var currentBlockNumber = 900000;
     (async ()=> { await web3.eth.getBlockNumber((error, result) => {currentBlockNumber = result}) })()
@@ -548,7 +581,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
       let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
       mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
         balance = AGI.inAGI(balance);
-        console.log("In start job Balance is " + balance + " job cost is " + data['price_in_cogs']);
+        console.log("In start job Balance is " + balance + " job cost is " + data['price_in_agi']);
         let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data, currentBlockNumber);
         if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
           this.onOpenModalAlert();
@@ -557,7 +590,7 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
           this.setState({startjobfundinvokeres: true});
           this.setState({valueTab: 1});
         } else {
-          console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price_in_cogs']);
+          console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price_in_agi']);
           this.setState({startjobfundinvokeres: true})
           this.setState({valueTab: 0});
         }
@@ -565,16 +598,17 @@ PostApi(_urlfetchvote,ConfigRequests.ApplyToOnVoteConfigRequests(this.state.user
     })
   }
 
-onKeyPressvalidator(event) {
-  const keyCode = event.keyCode || event.which;
-  if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
-    event.preventDefault()
-  } else {
-    let dots = event.target.value.split('.');
-    if (dots.length > 1 && keyCode == 46)
+  onKeyPressvalidator(event) {
+    const keyCode = event.keyCode || event.which;
+    if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
       event.preventDefault()
+    } else {
+      let dots = event.target.value.split('.');
+      if (dots.length > 1 && keyCode == 46)
+        event.preventDefault()
+    }
   }
-}
+
   handlesearch() {
     this.setState({besttagresult: []});
     let searchedagents = []
@@ -582,6 +616,7 @@ onKeyPressvalidator(event) {
     let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
     this.setState({bestestsearchresults: bestsearchresults})
   }
+  
   handlesearchbytag(e, data) {
     let tagresult = [];
     this.state.agents.map(rowagents =>
@@ -590,24 +625,25 @@ onKeyPressvalidator(event) {
     //inner loop trap//
     this.setState({besttagresult: tagresult})
   }
+
   captureSearchterm(e) {
     this.setState({searchterm:e.target.value})
   }
+
   nextJobStep() {
     this.onClosechaining()
     this.setState({valueTab:(this.state.valueTab + 1)})
     console.log("Job step " + this.state.valueTab);
   }
+
   render() {
     const {open} = this.state;
     var agentsample = this.state.agents
     const {valueTab} = this.state;
     if (this.state.searchterm !== '') {
-      //this.setState({besttagresult:[]})
       agentsample = this.state.bestestsearchresults
     }
     if (this.state.besttagresult.length > 0) {
-      //this.setState({searchterm:''})
       agentsample = this.state.besttagresult
     }
     let servicestatus = this.state.userservicestatus
@@ -635,7 +671,7 @@ onKeyPressvalidator(event) {
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Price</div>
           <div className="col-sm-12 col-md-2 col-lg-2 price-align">
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{rown["price_in_cogs"]} AGI</Typography>
+                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{(rown["price_in_agi"])} AGI</Typography>
               </label>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
@@ -665,9 +701,9 @@ onKeyPressvalidator(event) {
           </div>
       </div>
     );
+
     let CallComponent = DefaultService;
     let customComponent = this.serviceOrgIDToComponent[this.serviceState.uniqueID];
-    console.log("Examining component " + customComponent + " with key " + this.serviceState.uniqueID);
     if(typeof customComponent !== 'undefined') {
       CallComponent = customComponent;
     }
@@ -806,7 +842,7 @@ onKeyPressvalidator(event) {
                                                     </div>:
                                                     <div className="row channels-sec-disabled">
                                                         <div className="col-xs-12 col-sm-4 col-md-4">
-                                                            <input type="text" className="chennels-amt-field" value={parseInt(this.state.modaluser[ "price_in_cogs"])} disabled />
+                                                            <input type="text" className="chennels-amt-field" value={parseInt(this.state.modaluser["price_in_agi"])} disabled />
                                                         </div>
                                                         <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
                                                         <div className="col-xs-12 col-sm-4 col-md-4">
@@ -865,12 +901,12 @@ onKeyPressvalidator(event) {
                                             <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
                                                 <div className="thumbsup-icon float-none">
                                                     <div className="thumbsup-img">
-                                                    <a href="#"><img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" onClick={()=>this.handleonvote(this.state.modaluser["org_id"],this.state.modaluser["service_id"])} /></a></div>                   
+                                                    <a href="#"><img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" onClick={()=>this.handleVote(this.state.modaluser["org_id"],this.state.modaluser["service_id"],true)} /></a></div>                   
                                                 </div>
                                             </div>
                                             <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
                                                 <div className="thumbsdown-icon float-none">
-                                                <a href="#"><img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" onClick={()=>this.handledownvote(this.state.modaluser["org_id"],this.state.modaluser["service_id"])}/></a>                                                 
+                                                <a href="#"><img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" onClick={()=>this.handleVote(this.state.modaluser["org_id"],this.state.modaluser["service_id"], false)}/></a>                                                 
                                                 </div>
                                             </div>
                                         </div>
@@ -878,7 +914,7 @@ onKeyPressvalidator(event) {
                                             <h3>Job Cost Preview</h3>
                                             <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-light" style={{fontSize: "14px"}}>Current Price</div>
-                                                <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}> {parseInt(this.state.modaluser["price_in_cogs"])} AGI</div>
+                                                <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}> {this.state.modaluser["price_in_agi"]} AGI</div>
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-light" style={{fontSize: "14px"}}>Price Model</div>
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}>{this.state.modaluser["price_model"]}</div>
                                             </div>
@@ -948,6 +984,7 @@ onKeyPressvalidator(event) {
      );
   }
 }
+
 SampleServices.propTypes = {
   account: PropTypes.string
 };

@@ -9,7 +9,7 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { AGI,ERROR_UTILS } from '../util';
-import {PostApi,ConfigRequests} from '../requests'
+import { Requests } from '../requests'
 import App from "../App.js";
 import Tooltip from '@material-ui/core/Tooltip';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -154,6 +154,7 @@ export class Profile extends Component {
       }
     });
   }
+
   loadDetails() {
     if (typeof web3 === 'undefined') {
       return;
@@ -161,8 +162,8 @@ export class Profile extends Component {
     let mpeURL = this.network.getMarketplaceURL(this.state.chainId);
     if (typeof (mpeURL) !== 'undefined') {
       let _urlfetchprofile = mpeURL + 'fetch-profile'
-      const user_address = web3.eth.coinbase
-      PostApi(_urlfetchprofile,ConfigRequests.ApplyToVoteConfigRequests(user_address))
+      const requestObject = {user_address: web3.eth.coinbase}
+      Requests.post(_urlfetchprofile,requestObject)
       .then((values)=>
       this.setState({userprofile: values.data})
       )
@@ -211,26 +212,30 @@ export class Profile extends Component {
   extamountchange(e) {
     this.setState({ extamount: e.target.value })
   }
+
   handleChange(event, value) {
     this.setState({ value });
   };
+
   nextJobStep() {
     this.onClosechaining()
   }
+
   changeWithDrawalAmount(e) {
     this.setState({ withdrawalamount: e.target.value })
   }
+
   changeAuthorizeAmount(e) {
     this.setState({ authorizeamount: e.target.value })
   }
+
   handleAuthorize() {
     if (typeof web3 === 'undefined') {
       return;
     }
     let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
     var userAddress = web3.eth.defaultAccount
-    var amount = this.state.authorizeamount;
-    var amountInCogs = AGI.inCogs(web3, amount);
+    var amountInCogs = AGI.inCogs(web3, this.state.authorizeamount);
     instanceTokenContract.approve(this.network.getMPEAddress(this.state.chainId), amountInCogs, {
       gas: 210000,
       gasPrice: 23
@@ -247,35 +252,25 @@ export class Profile extends Component {
         })
     })
   }
+
   handleDeposit() {
     if (typeof web3 === undefined) {
       return;
     }
     var userAddress = web3.eth.defaultAccount;
     let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
-    //in balanceof takes user_address is the owner address as input parameter
-    /*
-    instanceTokenContract.balanceOf(web3.eth.defaultAccount, (err, balance) => {
-      user_balance = balance
-      console.log("balance of user is on " + balance / 10 ** 6)
-    })*/
-    //In allowance owner is useraddress and spender is the MPE address
     instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
       let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
-      var amount = this.state.depositamount
-      console.log("allowedbalance is " + allowedbalance + "," + typeof allowedbalance)
-      console.log("amount is " + amount + "," + typeof amount)
-      if (Number(amount) < Number(allowedbalance)) {
+      var amountInCogs = AGI.inCogs(web3, this.state.depositamount);
+      console.log("allowedbalance is " + allowedbalance + ", deposit " + amountInCogs)
+      if (Number(amountInCogs) <= Number(allowedbalance)) {
         this.setState({depositwarning: ''})
-        var amountInCogs = AGI.inCogs(web3, amount);
-        // UnComment the code for real execution 
-        // Getting the Gas Price
         var gasPrice;
         web3.eth.getGasPrice((err, price) => {
           console.log("Gas Price : " + price);
           gasPrice = price;
         })
-        // Getting the Estimated Gas Price & Executing the transaction
+
         instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
           console.log("Estimated Gas Limit: " + estimatedGas);
           //gasPrice: web3.toWei(23, 'gwei') // For hardcoded to 23 Gas Price as most of the time gas Price is low
@@ -295,18 +290,19 @@ export class Profile extends Component {
               })
           });
         });
-      } else if (Number(amount) > Number(allowedbalance)) {
+      } else {
         this.setState({depositwarning: 'Deposit amount should be less than approved balance ' + allowedbalance})
       }
     })
   }
+  
   changeDepositAmount(e) {
     this.setState({ depositamount: e.target.value })
   }
+
   handlewithdraw() {
     if (typeof web3 !== undefined) {
-      var amount = this.state.withdrawalamount
-      var amountInCogs = AGI.inCogs(web3,amount);
+      var amountInCogs = AGI.inCogs(web3,this.state.withdrawalamount);
       let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
       var gasPrice;
       web3.eth.getGasPrice((err, price) => {
@@ -316,7 +312,7 @@ export class Profile extends Component {
       // Getting the Estimated Gas Price & Executing the transaction
       instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
         console.log("Estimated Gas Limit: " + estimatedGas);
-        instanceEscrowContract.withdraw(amount, { gas: 210000, gasPrice: 23 }, (error, txnHash) => {
+        instanceEscrowContract.withdraw(amountInCogs, { gas: 210000, gasPrice: 23 }, (error, txnHash) => {
           console.log("TXN Has : " + txnHash);
           this.onOpenchaining()
           this.network.waitForTransaction(txnHash).then(receipt => {
@@ -332,6 +328,7 @@ export class Profile extends Component {
       });
     }
   }
+
   handlerextendadd(channelid) {
     let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
     var amountInCogs = AGI.inCogs(web3, this.state.extamount);
@@ -352,6 +349,7 @@ export class Profile extends Component {
         })
     })
   }
+
   render() {
     const { value } = this.state;
     window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true
