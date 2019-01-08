@@ -9,13 +9,13 @@ export default class ChannelHelper {
     this.recipient = undefined;
   }
 
-  reInitialize(channelInfoUrl, userAddress, serviceId, orgName) {
+  reInitialize(channelInfoUrl, userAddress, serviceId, orgId) {
     this.channels = undefined;
     this.groupId = undefined;
     this.endpoint = undefined;
     this.channelId = undefined;
     this.recipient = undefined;
-    return this.fetchChannels(channelInfoUrl, userAddress, serviceId, orgName);
+    return this.fetchChannels(channelInfoUrl, userAddress, serviceId, orgId);
   }
 
   getChannelId() {
@@ -76,7 +76,7 @@ export default class ChannelHelper {
     return channels
   }
 
-  fetchChannels(channelInfoUrl, userAddress, serviceId, orgName) {
+  fetchChannels(channelInfoUrl, userAddress, serviceId, orgId) {
     var caller = this;
     return fetch(channelInfoUrl, {
         'mode': 'cors',
@@ -87,19 +87,18 @@ export default class ChannelHelper {
         body: JSON.stringify({
           user_address: userAddress,
           service_id: serviceId,
-          org_name: orgName
+          org_id: orgId
         })
       }).then(res => res.json())
       .then(channeldata => new Promise(function(resolve) {
-        console.log(channeldata);
-        caller.populateChannelDetails(channeldata);
+        caller.populateChannelDetails(channeldata["data"]);
         resolve();
         })
       );//.catch(err => console.log(err))
   }
 
   populateChannelDetails(channels) {
-    if(typeof channels !== 'array' && channels.length === 0) {
+    if(typeof channels === 'undefined' || channels.length === 0) {
       console.log("Unable to get channel information");
       return;
     }

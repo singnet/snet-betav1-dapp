@@ -46,10 +46,6 @@ export const STRINGS = {
   "NULL_ADDRESS": "0x0000000000000000000000000000000000000000"
 };
 
-export function generateUniqueID(orgId,serviceId) {
-  return orgId + "__$%^^%$__" + serviceId;
-};
-
 export class AGI {
   static toDecimal(agi) {
     return agi / 100000000;

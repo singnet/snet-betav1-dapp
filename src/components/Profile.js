@@ -17,64 +17,18 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Modal from '@material-ui/core/Modal';
 import Slide from '@material-ui/core/Slide';
 import BlockchainHelper from "./BlockchainHelper.js"
-const TabContainer = (props) => {
-  return (
-    <Typography component="div" style={{padding:"21px"}}>
-      {props.children}
-    </Typography>
-  );
-}
-TabContainer.propTypes = {
-  children: PropTypes.node.isRequired,
-};
-const ModalStylesAlertWait = {
-  position: 'absolute',
-  borderRadius: 3,
-  border: 5,
-  backgroundColor: 'white',
-  fontSize: "13px",
-  color: 'black',
-  lineHeight: 40,
-  height: 100,
-  width: 750,
-  padding: '0 10px',
-  boxShadow: '0 3px 5px 2px gray',
-  top: 150,
-  left: 350,
-}
-const styles = theme => ({
-  root: {
-    flexGrow: 1,
-    backgroundColor: theme.palette.background.paper,
-  },
-});
+import {ProfileTabContainer, ModalStylesAlertWait} from './ReactStyles.js';
+
 export class Profile extends Component {
   constructor(props) {
     super(props)
     this.state = {
       value: 0,
     }
-    this.styleheader = {
-      fontSize: "15px",
-      overflow: "auto",
-      fontWeight: "bold",
-      borderRadius: "5px",
-      padding: "0px 120px 0px",
-      marginTop: "30px",
-    };
-    this.stylerows = {
-      fontSize: "15px",
-      overflow: "auto",
-      fontWeight: "Regular",
-      borderRadius: "5px",
-      padding: "0px 120px 0px",
-      marginTop: "30px",
-    };
+
     this.network = new BlockchainHelper();
     this.state = {
       agiBalance: 0,
-      //amount: 0,
-      //tokenbalance: 0,
       escrowaccountbalance: 0,
       allowedtokenbalance:[],
       value: 0, //WHAT IS THIS FOR??
@@ -88,13 +42,10 @@ export class Profile extends Component {
       extexp: 0,
       openchaining: false,
       chainId: undefined,
-      depositwarning: '',
-      approveerror:'',
-      depositerror:'',
-      withdrawalerror:'',
+      contractError: '',
       depositextenderror:'',
     }
-    //this.eth = undefined;
+    
     this.account = undefined;
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
@@ -109,10 +60,12 @@ export class Profile extends Component {
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
   }
+
   componentDidMount() {
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }
+
   componentWillUnmount() {
     if (this.watchWalletTimer) {
       clearInterval(this.watchWalletTimer);
@@ -122,6 +75,7 @@ export class Profile extends Component {
       clearInterval(this.watchNetworkTimer);
     }
   }
+
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
@@ -132,6 +86,7 @@ export class Profile extends Component {
       console.error(err);
     })
   }
+
   watchNetwork() {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
@@ -164,7 +119,7 @@ export class Profile extends Component {
       const requestObject = {user_address: web3.eth.coinbase}
       Requests.post(_urlfetchprofile,requestObject)
       .then((values)=>
-      this.setState({userprofile: values.data})
+        this.setState({userprofile: values.data})
       )
       .catch(err => console.log(err))
   
@@ -178,6 +133,7 @@ export class Profile extends Component {
         this.setState({escrowaccountbalance: balance});
       }));
     }
+
     let instanceTokenContract = this.network.getTokenInstance(chainId);
     instanceTokenContract.allowance(web3.eth.coinbase, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
       if (err) {
@@ -245,7 +201,7 @@ export class Profile extends Component {
           this.nextJobStep();
         })
         .catch((error) => {
-          this.setState({approveerror: error})
+          this.setState({contractError: error})
           this.nextJobStep();
         })
     });
@@ -277,11 +233,11 @@ export class Profile extends Component {
     instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
       var amountInCogs = AGI.inCogs(web3, this.state.depositAmount);
       if (Number(amountInCogs) > Number(allowedbalance)) {
-        this.setState({depositwarning: 'Deposit amount should be less than approved balance ' + allowedbalance});
+        this.setState({contractError: 'Deposit amount should be less than approved balance ' + allowedbalance});
       }
       else {
         let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
-        this.setState({depositwarning: ''})
+        this.setState({contractError: ''})
         web3.eth.getGasPrice((err, gasPrice) => {
           instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
             this.executeContractMethod(instanceEscrowContract.deposit, err, estimatedGas, gasPrice, [amountInCogs]);
@@ -399,11 +355,11 @@ export class Profile extends Component {
                                             <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgwithdraw" alt="User" /></Tooltip></span></span>} />
                                 </Tabs>
                                 {value === 0 &&
-                                <TabContainer>
+                                <ProfileTabContainer>
                                     <TextField id="standard-name" name="authorizeAmount" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" onChange={this.handleAmountChange} value={this.state.authorizeAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
-                                            <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.approveerror!== '' ?ERROR_UTILS.sanitizeError(this.state.approveerror):''}</div>
+                                            <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
                                                 {(typeof web3 !== 'undefined') ? (web3.eth.coinbase !== null) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>} style={{ fontsize: "15px" }}>
@@ -414,12 +370,12 @@ export class Profile extends Component {
                                                 }
                                             </div>
                                         </div>
-                                </TabContainer>} {value === 1 &&
-                                <TabContainer>
+                                </ProfileTabContainer>} {value === 1 &&
+                                <ProfileTabContainer>
                                     <TextField id="depositamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="depositAmount" onChange={this.handleAmountChange} value={this.state.depositAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
-                                            <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.depositerror!== '' ?ERROR_UTILS.sanitizeError(this.state.depositerror):''}</div>
+                                            <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
                                                 {(typeof web3 !== 'undefined') ? (web3.eth.coinbase !== null) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Deposit</span>}>
@@ -430,13 +386,13 @@ export class Profile extends Component {
                                                 }
                                             </div>
                                         </div>
-                                        <p style={{ color: "red", fontSize: "14px" }}>{this.state.depositwarning}</p>
-                                </TabContainer>} {value === 2 &&
-                                <TabContainer>
+                                        <p style={{ color: "red", fontSize: "14px" }}>{this.state.contractError}</p>
+                                </ProfileTabContainer>} {value === 2 &&
+                                <ProfileTabContainer>
                                     <TextField id="withdrawamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="withdrawalAmount" onChange={this.handleAmountChange} value={this.state.withdrawalAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
-                                            <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.withdrawalerror!== '' ?ERROR_UTILS.sanitizeError(this.state.withdrawalerror):''}</div>
+                                            <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
                                                 {(typeof web3 !== 'undefined') ? (web3.eth.coinbase !== null) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>} >
@@ -449,7 +405,7 @@ export class Profile extends Component {
                                             </div>
                                         </div>
                                         <p></p>
-                                </TabContainer>}
+                                </ProfileTabContainer>}
                             </div>
                         </div>
                         <div>

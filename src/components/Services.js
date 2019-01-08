@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles"
+import { MuiThemeProvider } from "@material-ui/core/styles"
 import Pagination from "material-ui-flat-pagination"
 import Typography from '@material-ui/core/Typography'
 import Modal from '@material-ui/core/Modal'
@@ -8,79 +8,18 @@ import Slide from '@material-ui/core/Slide'
 import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
-import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
+import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
 import { Requests } from '../requests'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import BlockchainHelper from "./BlockchainHelper.js"
+import ServiceMappings from "./service/ServiceMappings.js"
 import ChannelHelper from "./ChannelHelper.js"
-import ExampleService from './service/ExampleService.js';
-import DefaultService from './service/DefaultService.js';
 import {Carddeckers} from './CardDeckers.js';
+import {TabContainer, ModalStylesAlertWait, ModalStylesAlert, theme} from './ReactStyles.js';
 
-const exampleServiceID = generateUniqueID("snet","example-service");
-const TabContainer = (props) => {
-  return (
-    <Typography component="div" style={{padding:"10px", height:"240px"}}>
-      {props.children}
-    </Typography>
-  );
-}
 
-TabContainer.propTypes = {
-  children: PropTypes.node.isRequired,
-};
-
-const ModalStylesAlertWait ={
-  position:'absolute',
-  borderRadius: 3,
-  border: 5,
-  backgroundColor:'white',
-  fontSize:"13px",
-  color: 'black',
-  lineHeight:40,
-  height: 100,
-  width: 750,
-  padding: '0 10px',
-  boxShadow: '0 3px 5px 2px gray',
-  top:150,
-  left:350,
-}
-//Get modalstyles for alert//
-const ModalStylesAlert ={
-  position:'relative',
-  borderRadius: 3,
-  border: 5,
-  color: 'white',
-  lineHeight:40,
-  height: 100,
-  width: 750,
-  padding: '0 10px',
-  boxShadow: '0 3px 5px 2px gray',
-  top:450,
-  left:350,
-}
-const theme = createMuiTheme({
-  typography: {
-    useNextVariants: true,
-  },
-  overrides: {
-    MuiButton: {
-      root: {
-        background: 'white',
-        borderRadius: 3,
-        border: 0,
-        color: 'white',
-        height: 38,
-        padding: '0 30px',
-        boxShadow: '0 3px 5px 2px lightblue',
-        fontFamily:"Segoe UI",
-        fontSize:"12px",
-      },
-    },
-  },
-});
 class SampleServices extends React.Component {
   constructor(props) {
     super(props);
@@ -105,11 +44,9 @@ class SampleServices extends React.Component {
       modalservicestatus:[],
       ocvalue:0,
       ocexpiration:0,
-      inputservicename:'',
-      inputmethodname:'',
-      inputservicejson:{},
       valueTab:0,
-      servicegrpcresponse:undefined,
+      grpcResponse:undefined,
+      grpcErrorOccurred:false,
       openchaining:false,   
       startjobfundinvokeres:false,
       chainId: undefined,
@@ -117,15 +54,16 @@ class SampleServices extends React.Component {
       runjobstate:false,
       userkeepsvote:'',
     };
-    this.serviceOrgIDToComponent = [];
-    this.serviceOrgIDToComponent[exampleServiceID] = ExampleService
+
     this.serviceState = {
       serviceSpecJSON : undefined,
-      uniqueID: undefined,
+      serviceId: undefined,
+      orgId: undefined,
       price : undefined,
       channelHelper : new ChannelHelper()
     }
     this.network = new BlockchainHelper();
+    this.serviceMappings = new ServiceMappings();
     this.account = undefined;
     this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
@@ -190,7 +128,6 @@ class SampleServices extends React.Component {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
         this.setState({ chainId: chainId });
-        console.log("Defaulting to " + this.state.chainId);
         this.loadDetails(chainId);
       }
     });
@@ -221,37 +158,81 @@ class SampleServices extends React.Component {
     this.onClosechaining();
   }
 
-  openchannelhandler(data, dataservicestatus) {
+  openchannelhandler() {
     if (web3 === 'undefined') {
       return;
     }
-    console.log("Reading events from ");
-    this.setState({depositopenchannelerror: ''});
-    let mpeInstance = this.network.getMPEInstance(this.state.chainId);
-    var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
 
-    console.log('channel object ' + this.serviceState.channelHelper.getEndpoint());
-    if (typeof this.serviceState.channelHelper.getChannels() === 'undefined') {
-      this.onOpenModalAlert()
-    } else {
-      console.log("MPE has balance but have to check if we need to open a channel or extend one.");
-      var groupIDBytes = atob(this.serviceState.channelHelper.getGroupId());
-      var recipientaddress = this.serviceState.channelHelper.getRecipient();
-      console.log("group id is " + this.serviceState.channelHelper.getGroupId())
-      console.log("recipient address is " + recipientaddress)
-      console.log('groupdidgetter hex is ' + groupIDBytes)
-      console.log('Amount is ' + amountInCogs);
-      console.log(this.state.ocexpiration);
-      console.log(this.state.userAddress);
-      if (this.serviceState.channelHelper.getChannels().length > 0) {
-        var rrchannel = this.serviceState.channelHelper.getChannels()[0];
-        console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));        
-        this.channelExtend(mpeInstance, rrchannel, amountInCogs);
+    try
+    {
+      console.log("Reading events from ");
+      this.setState({depositopenchannelerror: ''});
+      let mpeInstance = this.network.getMPEInstance(this.state.chainId);
+      var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
+
+      console.log('channel object ' + this.serviceState.channelHelper.getEndpoint());
+      if (typeof this.serviceState.channelHelper.getChannels() === 'undefined') {
+        this.onOpenModalAlert()
       } else {
-        console.log("No Channel found to going to deposit from MPE and open a channel");
-        this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+        console.log("MPE has balance but have to check if we need to open a channel or extend one.");
+        var groupIDBytes = atob(this.serviceState.channelHelper.getGroupId());
+        var recipientaddress = this.serviceState.channelHelper.getRecipient();
+        console.log("group id is " + this.serviceState.channelHelper.getGroupId())
+        console.log("recipient address is " + recipientaddress)
+        console.log('groupdidgetter hex is ' + groupIDBytes)
+        console.log('Amount is ' + amountInCogs);
+        console.log(this.state.ocexpiration);
+        console.log(this.state.userAddress);
+        if (this.serviceState.channelHelper.getChannels().length > 0) {
+          var rrchannel = this.serviceState.channelHelper.getChannels()[0];
+          console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));        
+          this.channelExtend(mpeInstance, rrchannel, amountInCogs);
+        } else {
+          console.log("No Channel found to going to deposit from MPE and open a channel");
+          this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+        }
       }
     }
+    catch(e) {
+      this.processChannelErrors(e.message);
+    }
+  }
+
+  channelExtend(mpeInstance, rrchannel, amountInCogs) {
+    web3.eth.getGasPrice((err, gasPrice) => {   
+      if(err) {
+        gasPrice = 4700000;
+      }
+
+      mpeInstance.channelExtendAndAddFunds.estimateGas(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, (err, estimatedGas) => 
+      {
+        if(err) {
+          this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
+        }
+        else {
+          mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
+            gas: estimatedGas,
+            gasPrice: gasPrice
+          }, (error, txnHash) => {
+            if(error) {
+              this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
+            }
+            else {
+              console.log("Channel extended and added funds is TXN Has : " + txnHash);
+              this.onOpenchaining();
+              this.network.waitForTransaction(txnHash).then(receipt => {
+                  this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]);
+                  console.log('Re using channel ' + this.serviceState.channelHelper.getChannelId());
+                  this.nextJobStep();
+                })
+                .catch((error) => {
+                  this.processChannelErrors(error,"Channel extend failed with error");
+                });
+              }
+            });
+          }
+        });
+    });
   }
 
   channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
@@ -262,25 +243,40 @@ class SampleServices extends React.Component {
       }
     });
     console.log("Reading events from " + startingBlock);
-    mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
-      gas: 210000, gasPrice: 51
-    }, (error, txnHash) => {
-      if(error) {
-        this.processChannelErrors(error,"Unable to invoke the openChannel method");
+
+    web3.eth.getGasPrice((err, gasPrice) => {   
+      if(err) {
+        gasPrice = 4700000;
       }
-      else {          
-        console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
-        this.onOpenchaining()
-        this.network.waitForTransaction(txnHash).then(receipt => {
-            console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
-          }).then(() => {
-            this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
-          })
-          .catch((error) => {
-            this.processChannelErrors(error,"Open channel failed.");
-          });
+
+      mpeInstance.openChannel.estimateGas(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) => 
+      {
+        if(err) {
+          this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
         }
-    }); 
+        else {    
+            mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
+              gas: estimatedGas, gasPrice: gasPrice
+            }, (error, txnHash) => {
+              if(error) {
+                this.processChannelErrors(error,"Unable to invoke the openChannel method");
+              }
+              else {          
+                console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
+                this.onOpenchaining()
+                this.network.waitForTransaction(txnHash).then(receipt => {
+                    console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
+                  }).then(() => {
+                    this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
+                  })
+                  .catch((error) => {
+                    this.processChannelErrors(error,"Open channel failed.");
+                  });
+                }
+            }); 
+          }
+      });
+    });
   }
 
   getChannelDetails(mpeInstance,startingBlock, recipientaddress) {
@@ -302,29 +298,6 @@ class SampleServices extends React.Component {
       }
     });
   }  
-
-  channelExtend(mpeInstance, rrchannel, amountInCogs) {
-    mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
-      gas: 210000,
-      gasPrice: 51
-    }, (error, txnHash) => {
-      if(error) {
-        this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
-      }
-      else {
-        console.log("Channel extended and added funds is TXN Has : " + txnHash);
-        this.onOpenchaining();
-        this.network.waitForTransaction(txnHash).then(receipt => {
-            this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]);
-            console.log('Re using channel ' + this.serviceState.channelHelper.getChannelId());
-            this.nextJobStep();
-          })
-          .catch((error) => {
-            this.processChannelErrors(error,"Channel extend failed with error");
-          });
-        }
-    });
-  }
 
   handlehealthsort() {
     if (!this.state.healthMerged) {
@@ -446,15 +419,13 @@ class SampleServices extends React.Component {
     this.setState({valueTab:0})
     this.setState({startjobfundinvokeres:false})
     this.setState({runjobstate:false})
-    this.setState({inputservicejson:{}})
     this.setState({depositopenchannelerror:''})
     if (typeof web3 === 'undefined' || typeof this.state.userAddress === 'undefined') {
       return;
     }
-    this.serviceState.uniqueID = generateUniqueID(data["org_id"],data["service_id"]);
-    console.log(this.serviceState.uniqueID);
-    console.log(this.serviceOrgIDToComponent[this.serviceState.uniqueID]);
-    console.log(this.serviceOrgIDToComponent);
+    this.serviceState.serviceId = data["service_id"];
+    this.serviceState.orgId = data["org_id"];
+
     //disabled start job if the service is not up at all - unhealthy agent//
     dataservicestatus.map(row => {
       if (row["service_id"] === data["service_id"]) {
@@ -489,25 +460,21 @@ class SampleServices extends React.Component {
   }
 
   composeMessage(contract, channelID, nonce, price) {
-    //web3.sha3(contractAddrForMPE, this.state.channelstateid, 0, data['price']);
     var ethereumjsabi = require('ethereumjs-abi');
     var sha3Message = ethereumjsabi.soliditySHA3(
       ["address", "uint256", "uint256", "uint256"],
       [contract, parseInt(channelID), parseInt(nonce), parseInt(price)]);
     var msg = "0x" + sha3Message.toString("hex");
-    console.log(msg);
     return msg;
   }
 
   handleJobInvocation(serviceName, methodName, requestObject) {
-    console.log("Invoking service " + this.state.inputservicename + " and method name " + this.state.inputmethodname)
     var nonce = this.serviceState.channelHelper.getNonce(0);
     var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.serviceState.channelHelper.getChannelId(), nonce, this.serviceState.price);
-    this.setState({servicegrpcresponse: undefined})
-    console.log("Composed message for signing is " + msg)
+    this.setState({grpcResponse: undefined})
+    this.setState({grpcErrorOccurred: false})
     window.ethjs.personal_sign(msg, this.state.userAddress)
       .then((signed) => {
-        console.log('Signed!  Result is: ', signed)
         var stripped = signed.substring(2, signed.length)
         var byteSig = Buffer.from(stripped, 'hex');
         let buff = new Buffer(byteSig);
@@ -521,8 +488,6 @@ class SampleServices extends React.Component {
           "snet-payment-channel-amount": parseInt(this.serviceState.price),
           "snet-payment-channel-signature-bin": base64data
         }
-        console.log(requestHeaders);
-        console.log(serviceSpecJSON);
         const packageName = Object.keys(serviceSpecJSON.nested).find(key =>
           typeof serviceSpecJSON.nested[key] === "object" &&
           hasOwnDefinedProperty(serviceSpecJSON.nested[key], "nested")
@@ -537,13 +502,14 @@ class SampleServices extends React.Component {
         grpcRequest(serviceObject, methodName, requestObject)
           .then(response => {
             console.log("Got a GRPC response")
-            this.setState({servicegrpcresponse: response})
+            this.setState({grpcResponse: response})
             console.log("jobResult" + response.value);
             this.nextJobStep();
           })
           .catch((err) => {
             console.log("GRPC call failed")
-            this.setState({servicegrpcresponse: 'GRPC call failed ' + err});
+            this.setState({grpcResponse: err});
+            this.setState({grpcErrorOccurred: true})
             console.log(err);
             this.nextJobStep();
           })
@@ -561,7 +527,8 @@ class SampleServices extends React.Component {
 
   fetchServiceSpec(data) {
     var caller = this;
-    let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
+    let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_id"];
+
     return fetch(encodeURI(_urlservicebuf))
       .then(serviceSpecResponse => serviceSpecResponse.json())
       .then(serviceSpec => new Promise(function(resolve) {
@@ -576,8 +543,6 @@ class SampleServices extends React.Component {
     var reInitialize = this.reInitializeJobState(data);
     var serviceSpec = this.fetchServiceSpec(data);
     Promise.all([reInitialize, serviceSpec]).then(() => {
-      console.log(this.serviceState.serviceSpecJSON);
-      console.log(this.serviceState.channelHelper);
       let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
       mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
         balance = AGI.inAGI(balance);
@@ -702,11 +667,11 @@ class SampleServices extends React.Component {
       </div>
     );
 
-    let CallComponent = DefaultService;
-    let customComponent = this.serviceOrgIDToComponent[this.serviceState.uniqueID];
-    if(typeof customComponent !== 'undefined') {
-      CallComponent = customComponent;
-    }
+    let CallComponent = this.serviceMappings.getComponent(this.serviceState.orgId, this.serviceState.serviceId);//DefaultService;
+    //let customComponent = this.serviceOrgIDToComponent[this.serviceState.uniqueID];
+    //if(typeof customComponent !== 'undefined') {
+    //  CallComponent = customComponent;
+    //}
     return(
           <React.Fragment>            
             <div className="inner">
@@ -837,7 +802,7 @@ class SampleServices extends React.Component {
                                                             <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} />
                                                         </div>
                                                         <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
-                                                            <button type="button" className="btn btn-primary width-mobile-100" onClick={()=>this.openchannelhandler(this.state.modaluser,this.state.modalservicestatus)}>Reserve Funds</button>
+                                                            <button type="button" className="btn btn-primary width-mobile-100" onClick={()=>this.openchannelhandler()}>Reserve Funds</button>
                                                         </div>
                                                     </div>:
                                                     <div className="row channels-sec-disabled">
@@ -864,7 +829,7 @@ class SampleServices extends React.Component {
                                                 } {(valueTab === 1) &&
                                                 <TabContainer>
                                                   <React.Fragment>
-                                                    <CallComponent serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.servicegrpcresponse}/>
+                                                    <CallComponent isComplete={false} serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation}/>
                                                   </React.Fragment>
                                                   <div className="row">
                                                     <p style={{fontSize:"14px"}}>Now that the channel has been funded you are able to call the API on the Agent. Agents take different inputs, so may have their own UI. Once you've provided inputs, click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
@@ -872,9 +837,14 @@ class SampleServices extends React.Component {
                                                 </TabContainer>
                                                 } {(valueTab === 2) &&
                                                 <TabContainer>
-                                                  <React.Fragment>
-                                                    <CallComponent serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.servicegrpcresponse}/>
-                                                  </React.Fragment>
+                                                  { (this.state.grpcErrorOccurred)?
+                                                    <div>
+                                                       <p style={{fontSize: "13px"}}>Error: {this.state.grpcResponse}</p> 
+                                                    </div>:
+                                                    <React.Fragment>
+                                                      <CallComponent isComplete={true} response={this.state.grpcResponse}/>
+                                                    </React.Fragment>
+                                                  }
                                                   <div className="row">
                                                    <p></p>
                                                     <p style={{fontSize:"14px"}}>Your request has been completed. You can now vote for the agent below.</p>                                                  

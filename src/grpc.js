@@ -1,25 +1,8 @@
 const { ChunkParser, ChunkType } = require("grpc-web-client/dist/ChunkParser") 
 
-export function grpcJSONRequest(host, packageName, serviceName, methodName, requestHeaders, requestObject) {
-  const service = [ packageName, serviceName ].filter(Boolean).join(".")
-  return window.fetch(`${host}/${service}/${methodName}`, {
-    "method": "POST",
-    "headers": Object.assign(
-      {},
-      {
-        "content-type": "application/grpc-web+json",
-        "x-grpc-web": "1"
-      },
-      requestHeaders
-    ),
-    "body": frameRequest(Buffer.from(JSON.stringify(requestObject)))
-  })
-    .then(response => processResponse(response, callback))
-}
-
 async function processResponse(response, callback) {
   console.log(response);
-  var error = null, chunk = null;
+  let error = null, chunk = null;
 
   if (response.ok) {
     var buffer = await response.arrayBuffer();
@@ -30,10 +13,11 @@ async function processResponse(response, callback) {
     }
   }
   else {
-    error = grpcJSONResponseToString(buffer);
-    if (error == null) {
-      error = "Request failed"
+    let errorStatus = "Connection failed"
+    if(typeof response.statusText !== 'undefined') {
+      errorStatus = response.statusText;
     }
+    error = "Request failed with error ["+errorStatus+"]. Please retry in some time."
   }
 
   try
@@ -61,7 +45,7 @@ export function rpcImpl(host, packageName, serviceName, methodName, requestHeade
       ),
       "body": frameRequest(requestObject)
     })
-      .then(response => {processResponse(response, callback)})
+      .then(response => {processResponse(response, callback)}).catch(err => callback(err))
   }
 }
 
