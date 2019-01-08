@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles"
+import { MuiThemeProvider } from "@material-ui/core/styles"
 import Pagination from "material-ui-flat-pagination"
 import Typography from '@material-ui/core/Typography'
 import Modal from '@material-ui/core/Modal'
@@ -8,75 +8,18 @@ import Slide from '@material-ui/core/Slide'
 import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
-import { AGI, generateUniqueID, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
+import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
+import { Requests } from '../requests'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import BlockchainHelper from "./BlockchainHelper.js"
+import ServiceMappings from "./service/ServiceMappings.js"
 import ChannelHelper from "./ChannelHelper.js"
-import ExampleService from './service/ExampleService.js';
-import DefaultService from './service/DefaultService.js';
 import {Carddeckers} from './CardDeckers.js';
-const exampleServiceID = generateUniqueID("snet","example-service");
-const TabContainer = (props) => {
-  return (
-    <Typography component="div" style={{padding:"10px", height:"240px"}}>
-      {props.children}
-    </Typography>
-  );
-}
-TabContainer.propTypes = {
-  children: PropTypes.node.isRequired,
-};
-const ModalStylesAlertWait ={
-  position:'absolute',
-  borderRadius: 3,
-  border: 5,
-  backgroundColor:'white',
-  fontSize:"13px",
-  color: 'black',
-  lineHeight:40,
-  height: 100,
-  width: 750,
-  padding: '0 10px',
-  boxShadow: '0 3px 5px 2px gray',
-  top:150,
-  left:350,
-}
-//Get modalstyles for alert//
-const ModalStylesAlert ={
-  position:'relative',
-  borderRadius: 3,
-  border: 5,
-  color: 'white',
-  lineHeight:40,
-  height: 100,
-  width: 750,
-  padding: '0 10px',
-  boxShadow: '0 3px 5px 2px gray',
-  top:450,
-  left:350,
-}
-const theme = createMuiTheme({
-  typography: {
-    useNextVariants: true,
-  },
-  overrides: {
-    MuiButton: {
-      root: {
-        background: 'white',
-        borderRadius: 3,
-        border: 0,
-        color: 'white',
-        height: 38,
-        padding: '0 30px',
-        boxShadow: '0 3px 5px 2px lightblue',
-        fontFamily:"Segoe UI",
-        fontSize:"12px",
-      },
-    },
-  },
-});
+import {TabContainer, ModalStylesAlertWait, ModalStylesAlert, theme} from './ReactStyles.js';
+
+
 class SampleServices extends React.Component {
   constructor(props) {
     super(props);
@@ -101,35 +44,31 @@ class SampleServices extends React.Component {
       modalservicestatus:[],
       ocvalue:0,
       ocexpiration:0,
-      inputservicename:'',
-      inputmethodname:'',
-      inputservicejson:{},
       valueTab:0,
-      servicegrpcresponse:undefined,
+      grpcResponse:undefined,
+      grpcErrorOccurred:false,
       openchaining:false,   
       startjobfundinvokeres:false,
       chainId: undefined,
       depositopenchannelerror:'',
       runjobstate:false,
+      userkeepsvote:'',
     };
-    this.serviceOrgIDToComponent = [];
-    this.serviceOrgIDToComponent[exampleServiceID] = ExampleService
+
     this.serviceState = {
       serviceSpecJSON : undefined,
-      uniqueID: undefined,
+      serviceId: undefined,
+      orgId: undefined,
       price : undefined,
       channelHelper : new ChannelHelper()
     }
     this.network = new BlockchainHelper();
+    this.serviceMappings = new ServiceMappings();
     this.account = undefined;
     this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
     this.onOpenSearchBar = this.onOpenSearchBar.bind(this)
     this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
-    /*this.changehandlerservicename = this.changehandlerservicename.bind(this)
-    this.changehandlermethodname = this.changehandlermethodname.bind(this)
-    this.changehandlerervicejson= this.changehandlerervicejson.bind(this)
-    */
     this.handlesearch = this.handlesearch.bind(this)
     this.startjob = this.startjob.bind(this)
     this.CaptureSearchterm = this.captureSearchterm.bind(this)
@@ -149,77 +88,153 @@ class SampleServices extends React.Component {
     this.handleJobInvocation = this.handleJobInvocation.bind(this)
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
+    this.handleVote = this.handleVote.bind(this)
     this.watchNetworkTimer = undefined;
   }
+  
+  handleVote(orgid,serviceid,upVote)
+  {
+    console.log(this.state.userAddress + "," + orgid + "," + serviceid)
+    const urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
+    const requestObject = {
+      vote: {
+        user_address: this.state.userAddress,
+        org_id: orgid,
+        service_id: serviceid,
+        up_vote: upVote,
+        down_vote: (!upVote)
+      }
+    }
+
+    Requests.post(urlfetchvote,requestObject)
+      .then(res => res.json())
+      .then(data => this.setState({userkeepsvote: data}))
+      .catch(err => console.log(err));
+  }
+
   onClosechaining() {
     this.setState({openchaining:false})
   }
+
   onOpenchaining() {
     this.setState({openchaining:true})
   }
+
   handleChangeTabs (event, valueTab) {
     this.setState({ valueTab });
-  };
+  }
+
   watchNetwork() {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
         this.setState({ chainId: chainId });
-        this.loadDetails();
+        this.loadDetails(chainId);
       }
     });
   }
+
   handlesearchclear() {
     this.setState({searchterm: ''})
   }
+
   handlesearchkeyup(e) {
     e.preventDefault();
     if (e.keyCode === 13) {
       this.handlesearch()
     }
   }
+
   changeocvalue(e) {
     this.setState({ocvalue: e.target.value})
   }
+
   changeocexpiration(e) {
     this.setState({ocexpiration: e.target.value})
   } 
+
   processChannelErrors(error, message) {
     console.log(message + " " + error);
     this.setState({depositopenchannelerror: error})
     this.onClosechaining();
   }
-  openchannelhandler(data, dataservicestatus) {
+
+  openchannelhandler() {
     if (web3 === 'undefined') {
       return;
     }
-    console.log("Reading events from ");
-    this.setState({depositopenchannelerror: ''});
-    let mpeInstance = this.network.getMPEInstance(this.state.chainId);
-    var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
 
-    console.log('channel object ' + this.serviceState.channelHelper.getEndpoint());
-    if (typeof this.serviceState.channelHelper.getChannels() === 'undefined') {
-      this.onOpenModalAlert()
-    } else {
-      console.log("MPE has balance but have to check if we need to open a channel or extend one.");
-      var groupIDBytes = atob(this.serviceState.channelHelper.getGroupId());
-      var recipientaddress = this.serviceState.channelHelper.getRecipient();
-      console.log("group id is " + this.serviceState.channelHelper.getGroupId())
-      console.log("recipient address is " + recipientaddress)
-      console.log('groupdidgetter hex is ' + groupIDBytes)
-      console.log('Amount is ' + amountInCogs);
-      console.log(this.state.ocexpiration);
-      console.log(this.state.userAddress);
-      if (this.serviceState.channelHelper.getChannels().length > 0) {
-        var rrchannel = this.serviceState.channelHelper.getChannels()[0];
-        console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));        
-        this.channelExtend(mpeInstance, rrchannel, amountInCogs);
+    try
+    {
+      console.log("Reading events from ");
+      this.setState({depositopenchannelerror: ''});
+      let mpeInstance = this.network.getMPEInstance(this.state.chainId);
+      var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
+
+      console.log('channel object ' + this.serviceState.channelHelper.getEndpoint());
+      if (typeof this.serviceState.channelHelper.getChannels() === 'undefined') {
+        this.onOpenModalAlert()
       } else {
-        console.log("No Channel found to going to deposit from MPE and open a channel");
-        this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+        console.log("MPE has balance but have to check if we need to open a channel or extend one.");
+        var groupIDBytes = atob(this.serviceState.channelHelper.getGroupId());
+        var recipientaddress = this.serviceState.channelHelper.getRecipient();
+        console.log("group id is " + this.serviceState.channelHelper.getGroupId())
+        console.log("recipient address is " + recipientaddress)
+        console.log('groupdidgetter hex is ' + groupIDBytes)
+        console.log('Amount is ' + amountInCogs);
+        console.log(this.state.ocexpiration);
+        console.log(this.state.userAddress);
+        if (this.serviceState.channelHelper.getChannels().length > 0) {
+          var rrchannel = this.serviceState.channelHelper.getChannels()[0];
+          console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));        
+          this.channelExtend(mpeInstance, rrchannel, amountInCogs);
+        } else {
+          console.log("No Channel found to going to deposit from MPE and open a channel");
+          this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+        }
       }
     }
+    catch(e) {
+      this.processChannelErrors(e.message);
+    }
   }
+
+  channelExtend(mpeInstance, rrchannel, amountInCogs) {
+    web3.eth.getGasPrice((err, gasPrice) => {   
+      if(err) {
+        gasPrice = 4700000;
+      }
+
+      mpeInstance.channelExtendAndAddFunds.estimateGas(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, (err, estimatedGas) => 
+      {
+        if(err) {
+          this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
+        }
+        else {
+          mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
+            gas: estimatedGas,
+            gasPrice: gasPrice
+          }, (error, txnHash) => {
+            if(error) {
+              this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
+            }
+            else {
+              console.log("Channel extended and added funds is TXN Has : " + txnHash);
+              this.onOpenchaining();
+              this.network.waitForTransaction(txnHash).then(receipt => {
+                  this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]);
+                  console.log('Re using channel ' + this.serviceState.channelHelper.getChannelId());
+                  this.nextJobStep();
+                })
+                .catch((error) => {
+                  this.processChannelErrors(error,"Channel extend failed with error");
+                });
+              }
+            });
+          }
+        });
+    });
+  }
+
   channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
     var startingBlock = 900000;
     web3.eth.getBlockNumber((error, result) => {
@@ -228,26 +243,42 @@ class SampleServices extends React.Component {
       }
     });
     console.log("Reading events from " + startingBlock);
-    mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
-      gas: 210000, gasPrice: 51
-    }, (error, txnHash) => {
-      if(error) {
-        this.processChannelErrors(error,"Unable to invoke the openChannel method");
+
+    web3.eth.getGasPrice((err, gasPrice) => {   
+      if(err) {
+        gasPrice = 4700000;
       }
-      else {          
-        console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
-        this.onOpenchaining()
-        this.network.waitForTransaction(txnHash).then(receipt => {
-            console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
-          }).then(() => {
-            this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
-          })
-          .catch((error) => {
-            this.processChannelErrors(error,"Open channel failed.");
-          });
+
+      mpeInstance.openChannel.estimateGas(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) => 
+      {
+        if(err) {
+          this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
         }
-    }); 
+        else {    
+            mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
+              gas: estimatedGas, gasPrice: gasPrice
+            }, (error, txnHash) => {
+              if(error) {
+                this.processChannelErrors(error,"Unable to invoke the openChannel method");
+              }
+              else {          
+                console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
+                this.onOpenchaining()
+                this.network.waitForTransaction(txnHash).then(receipt => {
+                    console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
+                  }).then(() => {
+                    this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
+                  })
+                  .catch((error) => {
+                    this.processChannelErrors(error,"Open channel failed.");
+                  });
+                }
+            }); 
+          }
+      });
+    });
   }
+
   getChannelDetails(mpeInstance,startingBlock, recipientaddress) {
     console.log("Scanning events from " + startingBlock);
     var evt = mpeInstance.ChannelOpen({
@@ -267,28 +298,7 @@ class SampleServices extends React.Component {
       }
     });
   }  
-  channelExtend(mpeInstance, rrchannel, amountInCogs) {
-    mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
-      gas: 210000,
-      gasPrice: 51
-    }, (error, txnHash) => {
-      if(error) {
-        this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
-      }
-      else {
-        console.log("Channel extended and added funds is TXN Has : " + txnHash);
-        this.onOpenchaining();
-        this.network.waitForTransaction(txnHash).then(receipt => {
-            this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]);
-            console.log('Re using channel ' + this.serviceState.channelHelper.getChannelId());
-            this.nextJobStep();
-          })
-          .catch((error) => {
-            this.processChannelErrors(error,"Channel extend failed with error");
-          });
-        }
-    });
-  }
+
   handlehealthsort() {
     if (!this.state.healthMerged) {
       for (var ii in this.state.agents) {
@@ -320,15 +330,16 @@ class SampleServices extends React.Component {
     var pricesort = this.state.agents
     if (this.state.togleprice === false) {
 
-      pricesort.sort((a, b) => b.price - a.price)
+      pricesort.sort((a, b) => b.price_in_cogs - a.price_in_cogs)
       this.setState({togleprice: true})
     } else if (this.state.togleprice === true) {
 
-      pricesort.sort((a, b) => a.price - b.price)
+      pricesort.sort((a, b) => a.price_in_cogs - b.price_in_cogs)
       this.setState({togleprice: false})
     }
     this.setState({agents: pricesort})
   }
+  
   handleservicenamesort() {
     var servicenamesort = this.state.agents
     if (this.state.togleservicename === false) {
@@ -344,6 +355,7 @@ class SampleServices extends React.Component {
     }
     this.setState({agents: servicenamesort})
   }
+
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
@@ -352,65 +364,52 @@ class SampleServices extends React.Component {
       else {
         this.setState({chainId: this.network.getDefaultNetwork()});
         console.log("Defaulting to " + this.state.chainId);
-        this.loadDetails();
+        this.loadDetails(this.network.getDefaultNetwork());
       }
     }).catch(err => {
       console.error(err);
     })
   }
+
   componentWillUnmount() {
     if (this.watchNetworkTimer) {
       clearInterval(this.watchNetworkTimer);
     }
   }
+
   componentDidMount() {
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }
 
-  loadDetails() {
-    let _url = this.network.getMarketplaceURL(this.state.chainId) + "service"
-    fetch(_url, {
-        'mode': 'cors',
-        'Access-Control-Allow-Origin': '*'
-      })
-      .then(res => res.json())
-      .then(data => this.setState({agents: data})).then(this.handlehealthsort);
+  loadDetails(chainId) {
+    this.setState({userAddress: web3.eth.coinbase});
 
-    let _urlfetchservicestatus = this.network.getMarketplaceURL(this.state.chainId) + 'group-info'
-    fetch(_urlfetchservicestatus, {
-          'mode': 'cors',
-          method: 'GET',
-          'Access-Control-Allow-Origin': '*',
-        }
-      )
-      .then(res => res.json())
-      .then(data => this.setState({userservicestatus: data}))
-      .catch(err => console.log(err));
+    const url = this.network.getMarketplaceURL(chainId) + "service"
+    const urlfetchservicestatus = this.network.getMarketplaceURL(chainId) + 'group-info'
+    const urlfetchvote = this.network.getMarketplaceURL(chainId) + 'fetch-vote'
+    const fetchVoteBody = {user_address: web3.eth.coinbase}
+    Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.post(urlfetchvote,fetchVoteBody)])
+    .then((values) =>
+    {
+      values[0].data.map(rr => {
+        rr["price_in_agi"] = AGI.inAGI(rr["price_in_cogs"])
+      });    
+      this.setState({agents: values[0].data})
+      this.setState({userservicestatus: values[1].data})
+      this.setState({uservote: values[2].data})
+    }
+    ).catch((err)=> console.log(err))
     this.state.healthMerged = false;
-
     if (typeof web3 === 'undefined') {
       return;
     }
-    this.setState({userAddress: web3.eth.coinbase});
-    let _urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'fetch-vote'
-    fetch(_urlfetchvote, {
-        'mode': 'cors',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: 'POST',
-        body: JSON.stringify({
-          user_address: this.state.userAddress
-        })
-      })
-      .then(res => res.json())
-      .then(data => this.setState({uservote: data}))
-      .catch(err => console.log(err));
   }
+
   handleClick(offset) {
     this.setState({ offset });
   }
+
   onOpenJobDetailsSlider(data,dataservicestatus) {
     (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
     this.setState({modaluser:data})
@@ -420,15 +419,13 @@ class SampleServices extends React.Component {
     this.setState({valueTab:0})
     this.setState({startjobfundinvokeres:false})
     this.setState({runjobstate:false})
-    this.setState({inputservicejson:{}})
     this.setState({depositopenchannelerror:''})
     if (typeof web3 === 'undefined' || typeof this.state.userAddress === 'undefined') {
       return;
     }
-    this.serviceState.uniqueID = generateUniqueID(data["org_id"],data["service_name"]);
-    console.log(this.serviceState.uniqueID);
-    console.log(this.serviceOrgIDToComponent[this.serviceState.uniqueID]);
-    console.log(this.serviceOrgIDToComponent);
+    this.serviceState.serviceId = data["service_id"];
+    this.serviceState.orgId = data["org_id"];
+
     //disabled start job if the service is not up at all - unhealthy agent//
     dataservicestatus.map(row => {
       if (row["service_id"] === data["service_id"]) {
@@ -439,42 +436,45 @@ class SampleServices extends React.Component {
       }
     })
   }
+
   onCloseJobDetailsSlider(){
     this.setState({ jobDetailsSliderOpen: false });
   }
+
   onOpenSearchBar(e) {
     this.setState({ searchBarOpen: true });
   }
+
   onCloseSearchBar(){
     this.setState({ searchBarOpen: false });
   }
+
   onOpenModalAlert() {
     this.setState({openAlert: true})
   }
+
   onCloseModalAlert() {
     this.setState({openAlert: false})
     this.onCloseJobDetailsSlider()
     this.props.history.push("/Profile")
   }
+
   composeMessage(contract, channelID, nonce, price) {
-    //web3.sha3(contractAddrForMPE, this.state.channelstateid, 0, data['price']);
     var ethereumjsabi = require('ethereumjs-abi');
     var sha3Message = ethereumjsabi.soliditySHA3(
       ["address", "uint256", "uint256", "uint256"],
       [contract, parseInt(channelID), parseInt(nonce), parseInt(price)]);
     var msg = "0x" + sha3Message.toString("hex");
-    console.log(msg);
     return msg;
   }
+
   handleJobInvocation(serviceName, methodName, requestObject) {
-    console.log("Invoking service " + this.state.inputservicename + " and method name " + this.state.inputmethodname)
     var nonce = this.serviceState.channelHelper.getNonce(0);
     var msg = this.composeMessage(this.network.getMPEAddress(this.state.chainId), this.serviceState.channelHelper.getChannelId(), nonce, this.serviceState.price);
-    this.setState({servicegrpcresponse: undefined})
-    console.log("Composed message for signing is " + msg)
+    this.setState({grpcResponse: undefined})
+    this.setState({grpcErrorOccurred: false})
     window.ethjs.personal_sign(msg, this.state.userAddress)
       .then((signed) => {
-        console.log('Signed!  Result is: ', signed)
         var stripped = signed.substring(2, signed.length)
         var byteSig = Buffer.from(stripped, 'hex');
         let buff = new Buffer(byteSig);
@@ -488,8 +488,6 @@ class SampleServices extends React.Component {
           "snet-payment-channel-amount": parseInt(this.serviceState.price),
           "snet-payment-channel-signature-bin": base64data
         }
-        console.log(requestHeaders);
-        console.log(serviceSpecJSON);
         const packageName = Object.keys(serviceSpecJSON.nested).find(key =>
           typeof serviceSpecJSON.nested[key] === "object" &&
           hasOwnDefinedProperty(serviceSpecJSON.nested[key], "nested")
@@ -504,29 +502,33 @@ class SampleServices extends React.Component {
         grpcRequest(serviceObject, methodName, requestObject)
           .then(response => {
             console.log("Got a GRPC response")
-            this.setState({servicegrpcresponse: response})
+            this.setState({grpcResponse: response})
             console.log("jobResult" + response.value);
             this.nextJobStep();
           })
           .catch((err) => {
             console.log("GRPC call failed")
-            this.setState({servicegrpcresponse: 'GRPC call failed ' + err});
+            this.setState({grpcResponse: err});
+            this.setState({grpcErrorOccurred: true})
             console.log(err);
             this.nextJobStep();
           })
         return window.ethjs.personal_ecRecover(msg, signed);
       });
   }
+
   reInitializeJobState(data) {
     let serviceId = data["service_id"];
     let orgId = data["org_id"];
-    this.serviceState.price = data["price"];
+    this.serviceState.price = data["price_in_cogs"];
     let channelInfoUrl = this.network.getMarketplaceURL(this.state.chainId) + 'channel-info';
     return this.serviceState.channelHelper.reInitialize(channelInfoUrl, this.state.userAddress, serviceId, orgId);
   }
+
   fetchServiceSpec(data) {
     var caller = this;
-    let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_idfier"];
+    let _urlservicebuf = this.network.getProtobufjsURL(this.state.chainId) + data["org_id"] + "/" + data["service_id"];
+
     return fetch(encodeURI(_urlservicebuf))
       .then(serviceSpecResponse => serviceSpecResponse.json())
       .then(serviceSpec => new Promise(function(resolve) {
@@ -534,18 +536,17 @@ class SampleServices extends React.Component {
         resolve();
       }));
   }
+
   startjob(data) {
     var currentBlockNumber = 900000;
     (async ()=> { await web3.eth.getBlockNumber((error, result) => {currentBlockNumber = result}) })()
     var reInitialize = this.reInitializeJobState(data);
     var serviceSpec = this.fetchServiceSpec(data);
     Promise.all([reInitialize, serviceSpec]).then(() => {
-      console.log(this.serviceState.serviceSpecJSON);
-      console.log(this.serviceState.channelHelper);
       let mpeTokenInstance = this.network.getMPEInstance(this.state.chainId);
       mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
         balance = AGI.inAGI(balance);
-        console.log("In start job Balance is " + balance + " job cost is " + data['price']);
+        console.log("In start job Balance is " + balance + " job cost is " + data['price_in_agi']);
         let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data, currentBlockNumber);
         if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
           this.onOpenModalAlert();
@@ -554,7 +555,7 @@ class SampleServices extends React.Component {
           this.setState({startjobfundinvokeres: true});
           this.setState({valueTab: 1});
         } else {
-          console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price']);
+          console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + data['price_in_agi']);
           this.setState({startjobfundinvokeres: true})
           this.setState({valueTab: 0});
         }
@@ -562,23 +563,25 @@ class SampleServices extends React.Component {
     })
   }
 
-onKeyPressvalidator(event) {
-  const keyCode = event.keyCode || event.which;
-  if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
-    event.preventDefault()
-  } else {
-    let dots = event.target.value.split('.');
-    if (dots.length > 1 && keyCode == 46)
+  onKeyPressvalidator(event) {
+    const keyCode = event.keyCode || event.which;
+    if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
       event.preventDefault()
+    } else {
+      let dots = event.target.value.split('.');
+      if (dots.length > 1 && keyCode == 46)
+        event.preventDefault()
+    }
   }
-}
+
   handlesearch() {
     this.setState({besttagresult: []});
     let searchedagents = []
-    searchedagents = this.state.agents.map(row => (row["display_name"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1 || row["service_name"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1) ? row : null)
+    searchedagents = this.state.agents.map(row => (row["display_name"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1 || row["service_id"].toUpperCase().indexOf(this.state.searchterm.toUpperCase()) !== -1) ? row : null)
     let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
     this.setState({bestestsearchresults: bestsearchresults})
   }
+  
   handlesearchbytag(e, data) {
     let tagresult = [];
     this.state.agents.map(rowagents =>
@@ -587,24 +590,25 @@ onKeyPressvalidator(event) {
     //inner loop trap//
     this.setState({besttagresult: tagresult})
   }
+
   captureSearchterm(e) {
     this.setState({searchterm:e.target.value})
   }
+
   nextJobStep() {
     this.onClosechaining()
     this.setState({valueTab:(this.state.valueTab + 1)})
     console.log("Job step " + this.state.valueTab);
   }
+
   render() {
     const {open} = this.state;
     var agentsample = this.state.agents
     const {valueTab} = this.state;
     if (this.state.searchterm !== '') {
-      //this.setState({besttagresult:[]})
       agentsample = this.state.bestestsearchresults
     }
     if (this.state.besttagresult.length > 0) {
-      //this.setState({searchterm:''})
       agentsample = this.state.besttagresult
     }
     let servicestatus = this.state.userservicestatus
@@ -613,7 +617,7 @@ onKeyPressvalidator(event) {
       row["up_vote"] = 0, row["down_vote"] = 0
     });
     this.state.agents.map(row =>
-      this.state.uservote.map(rown => ((rown["service_name"] === row["service_name"] && rown["organization_name"] === row["organization_name"]) ?
+      this.state.uservote.map(rown => ((rown["service_id"] === row["service_id"] && rown["org_id"] === row["org_id"]) ?
         ((rown["up_vote"] === 1 ? row["up_vote"] = 1 : row["up_vote"] = 0) || (rown["down_vote"] === 1 ? row["down_vote"] = 1 : row["down_vote"] = 0)) : null))
     );
     const agents = agentsample.slice(this.state.offset, this.state.offset + 5).map((rown,index) =>  
@@ -627,12 +631,12 @@ onKeyPressvalidator(event) {
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Organization</div>
           <div className="col-sm-12 col-md-2 col-lg-2 org-name-align">
-              <Typography className="m-0" style={{fontSize: "14px",fontFamily: "Arial", }}>{rown["organization_name"]}</Typography>
+              <Typography className="m-0" style={{fontSize: "14px",fontFamily: "Arial", }}>{rown["org_id"]}</Typography>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Price</div>
           <div className="col-sm-12 col-md-2 col-lg-2 price-align">
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{rown["price"]} AGI</Typography>
+                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{(rown["price_in_agi"])} AGI</Typography>
               </label>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
@@ -651,23 +655,23 @@ onKeyPressvalidator(event) {
           <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
                   <div className="thumbsup-img "><img src="./img/thumbs-up.png" /></div>
-                  {this.state.uservote.length===0?
-                  <div className="likes-text">0</div>:this.state.uservote.map(rowu => (rowu["service_name"]===rown["service_name"])?
+                  {(this.state.uservote.length === 0)?<div className="likes-text">0</div>:
+                  (this.state.uservote.map(rowu => (rowu["service_id"]===rown["service_id"])?
                   <div className="likes-text">{rowu["up_vote_count"]}</div>:
-                  <div className="likes-text">0</div>)}
+                  <div className="likes-text"></div>))}
               </div>
               <div className="col-md-6 thumbsdown-icon"><img src="./img/thumbs-down.png" />
-                  <br/> {this.state.uservote.length===0? 0:this.state.uservote.map(rowu => (rowu["service_name"]===rown["service_name"])? rowu["down_vote_count"]:0)}
+                  <br/> {this.state.uservote.length===0? <div className="likes-text">0</div>:(this.state.uservote.map(rowu => (rowu["service_id"]===rown["service_id"])? rowu["down_vote_count"]:null))}
               </div>
           </div>
       </div>
     );
-    let CallComponent = DefaultService;
-    let customComponent = this.serviceOrgIDToComponent[this.serviceState.uniqueID];
-    console.log("Examining component " + customComponent + " with key " + this.serviceState.uniqueID);
-    if(typeof customComponent !== 'undefined') {
-      CallComponent = customComponent;
-    }
+
+    let CallComponent = this.serviceMappings.getComponent(this.serviceState.orgId, this.serviceState.serviceId);//DefaultService;
+    //let customComponent = this.serviceOrgIDToComponent[this.serviceState.uniqueID];
+    //if(typeof customComponent !== 'undefined') {
+    //  CallComponent = customComponent;
+    //}
     return(
           <React.Fragment>            
             <div className="inner">
@@ -766,7 +770,7 @@ onKeyPressvalidator(event) {
                                 <Typography component={ 'div'}>
                                     <div className="right-panel agentdetails-sec p-3 pb-5">
                                         <div className="col-xs-12 col-sm-12 col-md-12 name no-padding">
-                                            <h3>{this.state.modaluser["service_name"]} </h3>
+                                            <h3>{this.state.modaluser["service_id"]} </h3>
                                             <p> {this.state.tagsall.map(rowtags =>
                                                 <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
                                             <div className="text-right border-top1">
@@ -798,12 +802,12 @@ onKeyPressvalidator(event) {
                                                             <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} />
                                                         </div>
                                                         <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
-                                                            <button type="button" className="btn btn-primary width-mobile-100" onClick={()=>this.openchannelhandler(this.state.modaluser,this.state.modalservicestatus)}>Reserve Funds</button>
+                                                            <button type="button" className="btn btn-primary width-mobile-100" onClick={()=>this.openchannelhandler()}>Reserve Funds</button>
                                                         </div>
                                                     </div>:
                                                     <div className="row channels-sec-disabled">
                                                         <div className="col-xs-12 col-sm-4 col-md-4">
-                                                            <input type="text" className="chennels-amt-field" value={parseInt(this.state.modaluser[ "price"])} disabled />
+                                                            <input type="text" className="chennels-amt-field" value={parseInt(this.state.modaluser["price_in_agi"])} disabled />
                                                         </div>
                                                         <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
                                                         <div className="col-xs-12 col-sm-4 col-md-4">
@@ -825,7 +829,7 @@ onKeyPressvalidator(event) {
                                                 } {(valueTab === 1) &&
                                                 <TabContainer>
                                                   <React.Fragment>
-                                                    <CallComponent serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.servicegrpcresponse}/>
+                                                    <CallComponent isComplete={false} serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation}/>
                                                   </React.Fragment>
                                                   <div className="row">
                                                     <p style={{fontSize:"14px"}}>Now that the channel has been funded you are able to call the API on the Agent. Agents take different inputs, so may have their own UI. Once you've provided inputs, click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
@@ -833,9 +837,14 @@ onKeyPressvalidator(event) {
                                                 </TabContainer>
                                                 } {(valueTab === 2) &&
                                                 <TabContainer>
-                                                  <React.Fragment>
-                                                    <CallComponent serviceSpec={this.serviceState.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.servicegrpcresponse}/>
-                                                  </React.Fragment>
+                                                  { (this.state.grpcErrorOccurred)?
+                                                    <div>
+                                                       <p style={{fontSize: "13px"}}>Error: {this.state.grpcResponse}</p> 
+                                                    </div>:
+                                                    <React.Fragment>
+                                                      <CallComponent isComplete={true} response={this.state.grpcResponse}/>
+                                                    </React.Fragment>
+                                                  }
                                                   <div className="row">
                                                    <p></p>
                                                     <p style={{fontSize:"14px"}}>Your request has been completed. You can now vote for the agent below.</p>                                                  
@@ -853,7 +862,7 @@ onKeyPressvalidator(event) {
                                         </a>
                                                 </div>
                                                 <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 text-center border-left-1">
-                                                    <p style={{fontSize: "14px"}}>{this.state.modaluser["organization_name"]}</p>
+                                                    <p style={{fontSize: "14px"}}>{this.state.modaluser["org_id"]}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -861,13 +870,13 @@ onKeyPressvalidator(event) {
                                             <h3>Votes</h3>
                                             <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
                                                 <div className="thumbsup-icon float-none">
-                                                    <div className="thumbsup-img"><img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" /></div>
-                                                    <div className="votes-likes-text">40</div>
+                                                    <div className="thumbsup-img">
+                                                    <a href="#"><img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" onClick={()=>this.handleVote(this.state.modaluser["org_id"],this.state.modaluser["service_id"],true)} /></a></div>                   
                                                 </div>
                                             </div>
                                             <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
-                                                <div className="thumbsdown-icon float-none"><img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" />
-                                                    <div className="vote-dislikes-text">20</div>
+                                                <div className="thumbsdown-icon float-none">
+                                                <a href="#"><img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" onClick={()=>this.handleVote(this.state.modaluser["org_id"],this.state.modaluser["service_id"], false)}/></a>                                                 
                                                 </div>
                                             </div>
                                         </div>
@@ -875,7 +884,7 @@ onKeyPressvalidator(event) {
                                             <h3>Job Cost Preview</h3>
                                             <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-light" style={{fontSize: "14px"}}>Current Price</div>
-                                                <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}> {parseInt(this.state.modaluser["price"])} AGI</div>
+                                                <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}> {this.state.modaluser["price_in_agi"]} AGI</div>
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-light" style={{fontSize: "14px"}}>Price Model</div>
                                                 <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}>{this.state.modaluser["price_model"]}</div>
                                             </div>
@@ -945,6 +954,7 @@ onKeyPressvalidator(event) {
      );
   }
 }
+
 SampleServices.propTypes = {
   account: PropTypes.string
 };
