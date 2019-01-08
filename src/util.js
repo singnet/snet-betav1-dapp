@@ -85,7 +85,7 @@ const ERROR_MESSAGE = {
   reject: "User rejected transaction submission or message signing",
   failed: "Transaction mined, but not executed",
   internal: "Internal Server Error",
-  unknown: "Unknown error"
+  unknown: "Error"
 };
 
 const RPC_ERROR_BOUNDS = {
@@ -99,15 +99,20 @@ export class ERROR_UTILS {
         return ERROR_MESSAGE.denied;
     }
     
-    if (typeof error === 'object' && error.hasOwnProperty("value")) {
-      // It checks for rejection on both cases of message or transaction
-      if (error.value.message.indexOf("User denied") != -1) {
-        return ERROR_MESSAGE.reject;
-      }
+    if (typeof error === 'object') {
+      if(error.hasOwnProperty("value")) {
+        // It checks for rejection on both cases of message or transaction
+        if (error.value.message.indexOf("User denied") != -1) {
+          return ERROR_MESSAGE.reject;
+        }
 
-      //Checks for Internal server error 
-      if (error.value.code > RPC_ERROR_BOUNDS.internal[0] && error.value.code < RPC_ERROR_BOUNDS.internal[1]) {
-        return ERROR_MESSAGE.internal
+        //Checks for Internal server error 
+        if (error.value.code > RPC_ERROR_BOUNDS.internal[0] && error.value.code < RPC_ERROR_BOUNDS.internal[1]) {
+          return ERROR_MESSAGE.internal
+        }
+      } 
+      else if(error.hasOwnProperty("message")) {
+        return error.message;
       }
     }
 

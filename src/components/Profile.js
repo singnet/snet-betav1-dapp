@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -43,9 +42,9 @@ export class Profile extends Component {
       openchaining: false,
       chainId: undefined,
       contractError: '',
-      depositextenderror:'',
+      channelExtendAddError:'',
     }
-    
+
     this.account = undefined;
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
@@ -54,11 +53,12 @@ export class Profile extends Component {
     this.handlewithdraw = this.handlewithdraw.bind(this)
     this.handleAmountChange = this.handleAmountChange.bind(this)
     this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this)
-    this.handlerextendadd = this.handlerextendadd.bind(this)
+    this.handleChannelExtendAddFunds = this.handleChannelExtendAddFunds.bind(this)
     this.Expirationchange = this.Expirationchange.bind(this)
     this.extamountchange = this.extamountchange.bind(this)
     this.onOpenchaining = this.onOpenchaining.bind(this)
     this.onClosechaining = this.onClosechaining.bind(this)
+    this.handleExpansion = this.handleExpansion.bind(this)
   }
 
   componentDidMount() {
@@ -174,11 +174,17 @@ export class Profile extends Component {
   }
 
   handleChange(event, value) {
+    this.setState({contractError:''})
     this.setState({ value });
   };
 
   nextJobStep() {
     this.onClosechaining()
+  }
+
+  processError(error, errorLabel) {
+    this.setState({[errorLabel]: ERROR_UTILS.sanitizeError(error)})
+    this.nextJobStep();
   }
 
   handleAmountChange(e) {
@@ -187,7 +193,7 @@ export class Profile extends Component {
     this.setState({[name]: value,})
   }
 
-  executeContractMethod(operation, err, estimatedGas, gasPrice, parameters) {
+  executeContractMethod(operation, err, estimatedGas, gasPrice, errorLabel, parameters) {
     console.log("Operation " + operation + " " + estimatedGas + " gasPrice " + gasPrice);
     
     parameters.push({
@@ -195,21 +201,26 @@ export class Profile extends Component {
       gasPrice: gasPrice
     });
     parameters.push((error, txnHash) => {
-      console.log("Txn Hash for approved transaction is : " + txnHash);
-      this.onOpenchaining();
-      this.network.waitForTransaction(txnHash).then(receipt => {
-          this.nextJobStep();
-        })
-        .catch((error) => {
-          this.setState({contractError: error})
-          this.nextJobStep();
-        })
+      if(error) {
+        this.processError(error, errorLabel)
+      }
+      else {
+        console.log("Txn Hash for approved transaction is : " + txnHash);
+        this.onOpenchaining();
+        this.network.waitForTransaction(txnHash).then(receipt => {
+            this.nextJobStep();
+          })
+          .catch((error) => {
+            this.processError(error, errorLabel)
+          })
+      }
     });
 
     operation.apply(this,parameters);
   }
 
   handleAuthorize() {
+    this.setState({contractError:''})
     if (typeof web3 === 'undefined') {
       return;
     }
@@ -219,12 +230,13 @@ export class Profile extends Component {
 
     web3.eth.getGasPrice((err, gasPrice) => {
       instanceTokenContract.approve.estimateGas(this.network.getMPEAddress(this.state.chainId),amountInCogs, (err, estimatedGas) => {
-        this.executeContractMethod(instanceTokenContract.approve, err, estimatedGas, gasPrice, [this.network.getMPEAddress(this.state.chainId),amountInCogs]);
+        this.executeContractMethod(instanceTokenContract.approve, err, estimatedGas, gasPrice, "contractError", [this.network.getMPEAddress(this.state.chainId),amountInCogs]);
       })
     })
   }
 
   handleDeposit() {
+    this.setState({contractError:''})
     if (typeof web3 === undefined) {
       return;
     }
@@ -240,44 +252,46 @@ export class Profile extends Component {
         this.setState({contractError: ''})
         web3.eth.getGasPrice((err, gasPrice) => {
           instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
-            this.executeContractMethod(instanceEscrowContract.deposit, err, estimatedGas, gasPrice, [amountInCogs]);
+            this.executeContractMethod(instanceEscrowContract.deposit, err, estimatedGas, gasPrice, "contractError", [amountInCogs]);
           })
         })
       }
     })
   }
   
-  handlewithdraw() {
-    if (typeof web3 !== undefined) {
-      var amountInCogs = AGI.inCogs(web3,this.state.withdrawalAmount);
-      let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
-
-      web3.eth.getGasPrice((err, gasPrice) => {
-        instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
-          this.executeContractMethod(instanceEscrowContract.withdraw, err, estimatedGas, gasPrice, [amountInCogs]);
-        })
-      })
-    }
+  handleExpansion() {
+    this.setState({channelExtendAddError:''})
   }
 
-  handlerextendadd(channelid) {
+  handlewithdraw() {
+    this.setState({contractError:''})
+    if (typeof web3 === undefined) {
+      return;
+    }
+
+    var amountInCogs = AGI.inCogs(web3,this.state.withdrawalAmount);
+    let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
+
+    web3.eth.getGasPrice((err, gasPrice) => {
+      instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
+        this.executeContractMethod(instanceEscrowContract.withdraw, err, estimatedGas, gasPrice, "contractError", [amountInCogs]);
+      })
+    })
+  }
+
+  handleChannelExtendAddFunds(channelid) {
+    this.setState({channelExtendAddError:''})
+    if (typeof web3 === undefined) {
+      return;
+    }
+
     let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
     var amountInCogs = AGI.inCogs(web3, this.state.extamount);
-    console.log("Extending channel id:" + channelid, " amount:" + amountInCogs + " expiry: " + this.state.extexp);
-    instanceEscrowContract.channelExtendAndAddFunds(channelid, this.state.extexp, this.state.extamount, {
-      gas: 210000,
-      gasPrice: 51
-    }, (error, txnHash) => {
-      console.log("Channel extended and added funds is TXN Has : " + txnHash);
-      this.onOpenchaining()
-      this.network.waitForTransaction(txnHash).then(receipt => {
-          console.log('Channel extended and deposited ' + this.state.ocvalue + ' from: ' + web3.eth.defaultAccount + 'receipt is ' + receipt);
-          this.nextJobStep();
-        })
-        .catch((error) => {
-          this.setState({depositextenderror: error})
-          this.nextJobStep();
-        })
+
+    web3.eth.getGasPrice((err, gasPrice) => {
+      instanceEscrowContract.channelExtendAndAddFunds.estimateGas(channelid, this.state.extexp, amountInCogs, (err, estimatedGas) => {
+        this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, err, estimatedGas, gasPrice, "channelExtendAddError", [channelid, this.state.extexp, amountInCogs]);
+      })
     })
   }
 
@@ -444,7 +458,7 @@ export class Profile extends Component {
                                 <div className="col-sm-1 col-md-1 col-lg-1 hidden-xs">&nbsp;</div>
                             </div>
                             {this.state.userprofile.map((row, index) =>
-                            <ExpansionPanel key={index} style={{ borderRadius: "5px", backgroundColor: "#E3F0FF", marginBottom: "15px" }}>
+                            <ExpansionPanel onChange={this.handleExpansion} key={index} style={{ borderRadius: "5px", backgroundColor: "#E3F0FF", marginBottom: "15px" }}>
                                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} style={{ padding: "0px" }}>
                                 <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["channel_id"]}</span></div>
                                 <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["nonce"]}</span></div>
@@ -488,14 +502,14 @@ export class Profile extends Component {
                                         <div style={{ textAlign: "right" }}>
                                             {(typeof web3 !== 'undefined') ?
                                             <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} >
-                                                <button type="button" className="btn btn-primary " onClick={()=> this.handlerextendadd(row["channel_id"])}><span style={{ fontSize: "15px" }}>Confirm</span></button>
+                                                <button type="button" className="btn btn-primary " onClick={()=> this.handleChannelExtendAddFunds(row["channel_id"])}><span style={{ fontSize: "15px" }}>Confirm</span></button>
                                             </Tooltip> :
                                             <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} >
                                                 <button type="button" className="btn " disabled><span style={{ fontSize: "15px" }}>Confirm</span></button>
                                             </Tooltip>
                                             }
                                         </div>
-                                        <p style={{ color: "red", fontSize: "14px" }}>{this.state.depositextenderror!==''?ERROR_UTILS.sanitizeError(this.state.depositextenderror):''}</p>
+                                        <p style={{ color: "red", fontSize: "14px" }}>{this.state.channelExtendAddError!==''?ERROR_UTILS.sanitizeError(this.state.channelExtendAddError):''}</p>
                                     </div>
                                 </ExpansionPanelDetails>
                             </ExpansionPanel>
