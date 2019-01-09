@@ -28,7 +28,6 @@ export const NETWORKS = {
     name: "Kovan",
     etherscan: 'https://kovan.etherscan.io',
     infura: 'https:/kovan.infura.io',
-   // marketplace:'https://nhsdguu656.execute-api.us-east-1.amazonaws.com/kovan/',
     marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/kovan/',
     protobufjs:'http://protobufjs.singularitynet.io/',
     default:true
@@ -91,6 +90,9 @@ const ERROR_MESSAGE = {
 const RPC_ERROR_BOUNDS = {
   internal: [-31099, -32100]
 };
+
+export const DEFAULT_GAS_PRICE = 4700000;
+export const DEFAULT_GAS_ESTIMATE = 210000;
 
 export class ERROR_UTILS {
 

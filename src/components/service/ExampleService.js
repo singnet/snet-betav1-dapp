@@ -6,6 +6,9 @@ export default class ExampleService extends React.Component {
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
+        this.handleServiceName = this.handleServiceName.bind(this);
+        this.handleFormUpdate = this.handleFormUpdate.bind(this);
+
         this.state = {
             serviceName: undefined,
             methodName: undefined,
@@ -28,9 +31,9 @@ export default class ExampleService extends React.Component {
         else {
             if (typeof nextProps.response !== 'undefined') {
                 if (typeof nextProps.response === 'string') {
-                    this.state.response = nextProps.response; 
+                    this.setState({response:nextProps.response}); 
                 } else {
-                    this.state.response = nextProps.responseObject.value;
+                    this.setState({response: nextProps.responseObject.value});
                 }
             }
         }
@@ -65,9 +68,9 @@ export default class ExampleService extends React.Component {
         })
     }   
     
-    handleMethodName() {
+    handleFormUpdate() {
         this.setState({
-            methodName: event.target.value
+            [event.target.name]: event.target.value
         });
     }
 
@@ -117,7 +120,7 @@ export default class ExampleService extends React.Component {
         <div className="row">
         <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Method Name</div>
         <div className="col-md-3 col-lg-3">   
-        <select id="select2" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={(e) =>this.handleMethodName()}>
+        <select name="methodName" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={ this.handleFormUpdate}>
             {this.serviceMethods.map((row,index) => 
             <option key={index}>{row}</option>)}
         </select>            
@@ -126,11 +129,11 @@ export default class ExampleService extends React.Component {
         <div className="row">
         <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Number 1</div>
         <div className="col-md-3 col-lg-2">
-            <input type="text" style={{height: "30px",width: "80px",fontSize: "13px", marginBottom: "5px"}} value={this.state.a} onChange={event => this.setState({a: event.target.value})} onKeyPress={(e)=>this.onKeyPressvalidator(e)}></input>
+            <input name="a" type="text" style={{height: "30px",width: "80px",fontSize: "13px", marginBottom: "5px"}} value={this.state.a} onChange={this.handleFormUpdate} onKeyPress={(e)=>this.onKeyPressvalidator(e)}></input>
         </div>
         <div className="col-md-3 col-lg-1" style={{fontSize: "13px",marginLeft: "40px"}}>Number 2</div>
         <div className="col-md-3 col-lg-2">
-            <input type="text" style={{height: "30px",width: "80px",fontSize: "13px", marginBottom: "5px"}} value={this.state.b} onChange={event => this.setState({b: event.target.value})} onKeyPress={(e)=>this.onKeyPressvalidator(e)}></input>
+            <input name="b" type="text" style={{height: "30px",width: "80px",fontSize: "13px", marginBottom: "5px"}} value={this.state.b} onChange={this.handleFormUpdate} onKeyPress={(e)=>this.onKeyPressvalidator(e)}></input>
         </div>    
         </div>
         <div className="row">
