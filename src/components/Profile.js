@@ -7,7 +7,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AGI,ERROR_UTILS } from '../util';
+import { AGI,ERROR_UTILS,DEFAULT_GAS_PRICE } from '../util';
 import { Requests } from '../requests'
 import App from "../App.js";
 import Tooltip from '@material-ui/core/Tooltip';
@@ -109,10 +109,37 @@ export class Profile extends Component {
     });
   }
 
+  loadAGIBalances(chainId) {
+    if (typeof web3 === 'undefined') {
+      return;
+    }
+
+    console.log("Loading AGI Balance")
+    let mpeTokenInstance = this.network.getMPEInstance(chainId);
+    mpeTokenInstance.balances(web3.eth.coinbase, ((err, balance) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      this.setState({escrowaccountbalance: balance});
+    }));
+
+    let instanceTokenContract = this.network.getTokenInstance(chainId);
+    instanceTokenContract.allowance(web3.eth.coinbase, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        this.setState({allowedtokenbalance: parseInt(allowedbalance)})
+      }
+    });
+  }
+
   loadDetails(chainId) {
     if (typeof web3 === 'undefined') {
       return;
     }
+
     let mpeURL = this.network.getMarketplaceURL(chainId);
     if (typeof (mpeURL) !== 'undefined') {
       let _urlfetchprofile = mpeURL + 'fetch-profile'
@@ -122,27 +149,8 @@ export class Profile extends Component {
         this.setState({userprofile: values.data})
       )
       .catch(err => console.log(err))
-  
-      let mpeTokenInstance = this.network.getMPEInstance(chainId);
-      mpeTokenInstance.balances(web3.eth.coinbase, ((err, balance) => {
-        if (err) {
-          console.log(err);
-          return;
-        }
-        console.log("balance of user is  " + balance);
-        this.setState({escrowaccountbalance: balance});
-      }));
     }
-
-    let instanceTokenContract = this.network.getTokenInstance(chainId);
-    instanceTokenContract.allowance(web3.eth.coinbase, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
-      if (err) {
-        console.log(err);
-      }
-      else {
-        this.setState({allowedtokenbalance: parseInt(allowedbalance)})//["c"]
-      }
-    });
+    this.loadAGIBalances(chainId);
   }
 
   onKeyPressvalidator(event) {
@@ -173,7 +181,7 @@ export class Profile extends Component {
     this.setState({ extamount: e.target.value })
   }
 
-  handleChange(event, value) {
+  handleChange(value) {
     this.setState({contractError:''})
     this.setState({ value });
   };
@@ -189,12 +197,15 @@ export class Profile extends Component {
 
   handleAmountChange(e) {
     const { name, value } = e.target;
-    console.log("Operation " + name + " " + value);
     this.setState({[name]: value,})
   }
 
   executeContractMethod(operation, err, estimatedGas, gasPrice, errorLabel, parameters) {
     console.log("Operation " + operation + " " + estimatedGas + " gasPrice " + gasPrice);
+    if(err) {
+      this.processError(err,errorLabel);
+      return;
+    }
     
     parameters.push({
       gas: estimatedGas,
@@ -209,6 +220,7 @@ export class Profile extends Component {
         this.onOpenchaining();
         this.network.waitForTransaction(txnHash).then(receipt => {
             this.nextJobStep();
+            this.loadAGIBalances(this.state.chainId);
           })
           .catch((error) => {
             this.processError(error, errorLabel)
@@ -229,6 +241,9 @@ export class Profile extends Component {
     var amountInCogs = AGI.inCogs(web3, this.state.authorizeAmount);
 
     web3.eth.getGasPrice((err, gasPrice) => {
+      if(err) {
+        gasPrice = DEFAULT_GAS_PRICE;
+      }      
       instanceTokenContract.approve.estimateGas(this.network.getMPEAddress(this.state.chainId),amountInCogs, (err, estimatedGas) => {
         this.executeContractMethod(instanceTokenContract.approve, err, estimatedGas, gasPrice, "contractError", [this.network.getMPEAddress(this.state.chainId),amountInCogs]);
       })
@@ -251,6 +266,9 @@ export class Profile extends Component {
         let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
         this.setState({contractError: ''})
         web3.eth.getGasPrice((err, gasPrice) => {
+          if(err) {
+            gasPrice = DEFAULT_GAS_PRICE;
+          }          
           instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
             this.executeContractMethod(instanceEscrowContract.deposit, err, estimatedGas, gasPrice, "contractError", [amountInCogs]);
           })
@@ -273,6 +291,9 @@ export class Profile extends Component {
     let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
 
     web3.eth.getGasPrice((err, gasPrice) => {
+      if(err) {
+        gasPrice = DEFAULT_GAS_PRICE;
+      }
       instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
         this.executeContractMethod(instanceEscrowContract.withdraw, err, estimatedGas, gasPrice, "contractError", [amountInCogs]);
       })
@@ -289,6 +310,9 @@ export class Profile extends Component {
     var amountInCogs = AGI.inCogs(web3, this.state.extamount);
 
     web3.eth.getGasPrice((err, gasPrice) => {
+      if(err) {
+        gasPrice = DEFAULT_GAS_PRICE;
+      }      
       instanceEscrowContract.channelExtendAndAddFunds.estimateGas(channelid, this.state.extexp, amountInCogs, (err, estimatedGas) => {
         this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, err, estimatedGas, gasPrice, "channelExtendAddError", [channelid, this.state.extexp, amountInCogs]);
       })
@@ -363,7 +387,7 @@ export class Profile extends Component {
                         <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 manage-account">
                             <h3>Manage your Escrow account</h3>
                             <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
-                                <Tabs style={{ padding: "0" }} value={value} onChange={(event, value)=> this.handleChange(event, value)} indicatorColor='primary'>
+                                <Tabs style={{ padding: "0" }} value={value} onChange={(event,value)=> this.handleChange(value)} indicatorColor='primary'>
                                     <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgauthorize "alt="User" /></Tooltip></span></span>} />
                                         <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Deposit</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgdeposit" alt="User" /></Tooltip></span></span>} />
                                             <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgwithdraw" alt="User" /></Tooltip></span></span>} />

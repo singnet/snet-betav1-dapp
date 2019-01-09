@@ -44,7 +44,7 @@ export default class BlockchainHelper {
         while (!receipt) {
           receipt = await window.ethjs.getTransactionReceipt(hash);
         }
-    
+
         if (receipt.status === "0x0") {
           throw receipt
         }

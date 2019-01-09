@@ -8,7 +8,7 @@ import Slide from '@material-ui/core/Slide'
 import { Link,withRouter } from 'react-router-dom'
 import { grpcRequest, rpcImpl } from '../grpc.js'
 import { Root } from 'protobufjs'
-import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS } from '../util'
+import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE } from '../util'
 import { Requests } from '../requests'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
@@ -201,36 +201,35 @@ class SampleServices extends React.Component {
   channelExtend(mpeInstance, rrchannel, amountInCogs) {
     web3.eth.getGasPrice((err, gasPrice) => {   
       if(err) {
-        gasPrice = 4700000;
+        gasPrice = DEFAULT_GAS_PRICE;
       }
 
       mpeInstance.channelExtendAndAddFunds.estimateGas(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, (err, estimatedGas) => 
       {
         if(err) {
-          this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
+          estimatedGas = DEFAULT_GAS_ESTIMATE
+          //this.processChannelErrors(err,"Unable to invoke the channelExtendAndAddFunds method");
         }
-        else {
-          mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
-            gas: estimatedGas,
-            gasPrice: gasPrice
-          }, (error, txnHash) => {
-            if(error) {
-              this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
-            }
-            else {
-              console.log("Channel extended and added funds is TXN Has : " + txnHash);
-              this.onOpenchaining();
-              this.network.waitForTransaction(txnHash).then(receipt => {
-                  this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]);
-                  console.log('Re using channel ' + this.serviceState.channelHelper.getChannelId());
-                  this.nextJobStep();
-                })
-                .catch((error) => {
-                  this.processChannelErrors(error,"Channel extend failed with error");
-                });
-              }
-            });
+        mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
+          gas: estimatedGas,
+          gasPrice: gasPrice
+        }, (error, txnHash) => {
+          if(error) {
+            this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
           }
+          else {
+            console.log("Channel extended and added funds is TXN Has : " + txnHash);
+            this.onOpenchaining();
+            this.network.waitForTransaction(txnHash).then(receipt => {
+                this.serviceState.channelHelper.setChannelId(rrchannel["channelId"]);
+                console.log('Re using channel ' + this.serviceState.channelHelper.getChannelId());
+                this.nextJobStep();
+              })
+              .catch((error) => {
+                this.processChannelErrors(error,"Channel extend failed with error");
+              });
+            }
+          });
         });
     });
   }
@@ -246,35 +245,36 @@ class SampleServices extends React.Component {
 
     web3.eth.getGasPrice((err, gasPrice) => {   
       if(err) {
-        gasPrice = 4700000;
+        gasPrice = DEFAULT_GAS_PRICE;
       }
 
+      console.log("Channel Open amount " + amountInCogs + " expiration " + this.state.ocexpiration)
       mpeInstance.openChannel.estimateGas(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) => 
       {
         if(err) {
-          this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
+          estimatedGas = DEFAULT_GAS_ESTIMATE
+          //this.processChannelErrors(err,"Unable to invoke the channelExtendAndAddFunds method");
         }
-        else {    
-            mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
-              gas: estimatedGas, gasPrice: gasPrice
-            }, (error, txnHash) => {
-              if(error) {
-                this.processChannelErrors(error,"Unable to invoke the openChannel method");
-              }
-              else {          
-                console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
-                this.onOpenchaining()
-                this.network.waitForTransaction(txnHash).then(receipt => {
-                    console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
-                  }).then(() => {
-                    this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
-                  })
-                  .catch((error) => {
-                    this.processChannelErrors(error,"Open channel failed.");
-                  });
-                }
-            }); 
+            
+        mpeInstance.openChannel(this.state.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
+          gas: estimatedGas, gasPrice: gasPrice
+        }, (error, txnHash) => {
+          if(error) {
+            this.processChannelErrors(error,"Unable to invoke the openChannel method");
           }
+          else {          
+            console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
+            this.onOpenchaining()
+            this.network.waitForTransaction(txnHash).then(receipt => {
+                console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.state.userAddress);
+              }).then(() => {
+                this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
+              })
+              .catch((error) => {
+                this.processChannelErrors(error,"Open channel failed.");
+              });
+            }
+        }); 
       });
     });
   }
@@ -389,15 +389,23 @@ class SampleServices extends React.Component {
     const urlfetchservicestatus = this.network.getMarketplaceURL(chainId) + 'group-info'
     const urlfetchvote = this.network.getMarketplaceURL(chainId) + 'fetch-vote'
     const fetchVoteBody = {user_address: web3.eth.coinbase}
+    console.log("Fetching data")
     Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.post(urlfetchvote,fetchVoteBody)])
     .then((values) =>
     {
       values[0].data.map(rr => {
         rr["price_in_agi"] = AGI.inAGI(rr["price_in_cogs"])
       });    
-      this.setState({agents: values[0].data})
-      this.setState({userservicestatus: values[1].data})
-      this.setState({uservote: values[2].data})
+
+      if(Array.isArray(values[0].data)) {
+        this.setState({agents: values[0].data})
+      }
+      if(Array.isArray(values[1].data)) {
+        this.setState({userservicestatus: values[1].data})
+      }
+      if(Array.isArray(values[2].data)) {
+        this.setState({uservote: values[2].data})
+      }
     }
     ).catch((err)=> console.log(err))
     this.state.healthMerged = false;
@@ -488,6 +496,8 @@ class SampleServices extends React.Component {
           "snet-payment-channel-amount": parseInt(this.serviceState.price),
           "snet-payment-channel-signature-bin": base64data
         }
+
+        console.log("Headers " + JSON.stringify(requestHeaders))
         const packageName = Object.keys(serviceSpecJSON.nested).find(key =>
           typeof serviceSpecJSON.nested[key] === "object" &&
           hasOwnDefinedProperty(serviceSpecJSON.nested[key], "nested")
@@ -503,7 +513,6 @@ class SampleServices extends React.Component {
           .then(response => {
             console.log("Got a GRPC response")
             this.setState({grpcResponse: response})
-            console.log("jobResult" + response.value);
             this.nextJobStep();
           })
           .catch((err) => {
