@@ -424,11 +424,10 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(typeof web3 !== 'undefined') ? (web3.eth.coinbase !== null) ?
+                                                {(typeof web3 !== 'undefined' && web3.eth.coinbase !== null && this.state.authorizeAmount > 0) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>} style={{ fontsize: "15px" }}>
                                                     <button className="btn btn-primary mtb-10 " onClick={this.handleAuthorize}><span>Authorize</span></button>
                                                 </Tooltip> :
-                                                <button className="btn btn-primary mtb-10" disabled><span>Authorize</span></button> :
                                                 <button className="btn btn-primary mtb-10" disabled><span>Authorize</span></button>
                                                 }
                                             </div>
@@ -440,11 +439,10 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(typeof web3 !== 'undefined') ? (web3.eth.coinbase !== null) ?
+                                                {(typeof web3 !== 'undefined' && web3.eth.coinbase !== null && this.state.depositAmount > 0) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Deposit</span>}>
                                                     <button className="btn btn-primary " onClick={this.handleDeposit}><span style={{ fontSize: "15px" }}>Deposit</span></button>
                                                 </Tooltip> :
-                                                <button className="btn" disabled><span style={{ fontSize: "15px" }}>Deposit</span></button> :
                                                 <button className="btn" disabled><span style={{ fontSize: "15px" }}>Deposit</span></button>
                                                 }
                                             </div>
@@ -457,12 +455,10 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(typeof web3 !== 'undefined') ? (web3.eth.coinbase !== null) ?
+                                                {(typeof web3 !== 'undefined' && web3.eth.coinbase !== null && this.state.withdrawalAmount > 0) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>} >
                                                     <button type="button" className="btn btn-primary " onClick={this.handlewithdraw}><span style={{ fontSize: "15px" }}>Withdraw</span></button>
                                                 </Tooltip> :
-                                                <button className="btn" disabled><span style={{ fontSize: "15px" }}>WithDraw</span></button>
-                                                :
                                                 <button className="btn" disabled><span style={{ fontSize: "15px" }}>WithDraw</span></button>
                                                 }
                                             </div>
