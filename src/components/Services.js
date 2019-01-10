@@ -623,8 +623,6 @@ class SampleServices extends React.Component {
   }
 
   captureSearchTerm(e) {
-    console.log(e);
-    console.log(this);
     this.setState({searchterm:e.target.value})
   }
 
