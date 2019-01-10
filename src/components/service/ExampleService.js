@@ -111,7 +111,7 @@ export default class ExampleService extends React.Component {
         <div className="row">
         <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Service Name</div>
         <div className="col-md-3 col-lg-3">
-            <select id="select1" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={(e) =>this.handleServiceName()}>
+            <select id="select1" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleServiceName}>
             {this.allServices.map((row,index) => 
             <option key={index}>{row}</option>)}
         </select>        
@@ -138,7 +138,7 @@ export default class ExampleService extends React.Component {
         </div>
         <div className="row">
         <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-            <button type="button" className="btn btn-primary" onClick={()=>this.submitAction()}>Invoke</button>
+            <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
         </div>
         </div>
         </React.Fragment>

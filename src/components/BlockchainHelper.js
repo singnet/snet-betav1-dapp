@@ -99,6 +99,19 @@ export default class BlockchainHelper {
         return callBack(undefined);
     }
 
+    getCurrentBlockNumber(callBack) {
+        if (typeof this.eth === 'undefined') {
+            callBack(undefined);
+        }
+        
+        web3.eth.getBlockNumber((error, result) => {
+            if(error) {
+                console.log("Error reading blocknumber " + err)
+            }
+            callBack(result)
+        })
+    }
+
     getChainID(callBack) {
         if (typeof this.eth === 'undefined') {
             callBack(undefined);

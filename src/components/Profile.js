@@ -300,22 +300,35 @@ export class Profile extends Component {
     })
   }
 
-  handleChannelExtendAddFunds(channelid) {
+  handleChannelExtendAddFunds(data) {
     this.setState({channelExtendAddError:''})
     if (typeof web3 === undefined) {
       return;
     }
 
-    let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
-    var amountInCogs = AGI.inCogs(web3, this.state.extamount);
+    const channelID = data["channel_id"]
+    const currentExpiryBlock = data["expiration"]
+    if(this.state.extexp < currentExpiryBlock) {
+        this.processError("Expiry block number cannot be reduced. Previously provided value is " + currentExpiryBlock, "channelExtendAddError")
+        return;
+    }
 
-    web3.eth.getGasPrice((err, gasPrice) => {
-      if(err) {
-        gasPrice = DEFAULT_GAS_PRICE;
-      }      
-      instanceEscrowContract.channelExtendAndAddFunds.estimateGas(channelid, this.state.extexp, amountInCogs, (err, estimatedGas) => {
-        this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, err, estimatedGas, gasPrice, "channelExtendAddError", [channelid, this.state.extexp, amountInCogs]);
-      })
+    this.network.getCurrentBlockNumber((blockNumber) => {
+        if(this.state.extexp <= blockNumber) {
+            this.processError("Block number provided should be greater than current ethereum block number " + blockNumber, "channelExtendAddError")
+            return;
+        }
+
+        let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
+        var amountInCogs = AGI.inCogs(web3, this.state.extamount);
+        web3.eth.getGasPrice((err, gasPrice) => {
+        if(err) {
+            gasPrice = DEFAULT_GAS_PRICE;
+        }      
+        instanceEscrowContract.channelExtendAndAddFunds.estimateGas(channelID, this.state.extexp, amountInCogs, (err, estimatedGas) => {
+            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, err, estimatedGas, gasPrice, "channelExtendAddError", [channelID, this.state.extexp, amountInCogs]);
+            })
+        })
     })
   }
 
@@ -324,7 +337,7 @@ export class Profile extends Component {
     window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true
     return (
             <React.Fragment>
-                <App />
+                <App searchTerm="" searchCallBack={undefined}/>
                 <div className="container">
                     <div className="row">
                         <div className=" col-xs-12 col-sm-12 col-md-6 col-lg-6 your-account-details">
@@ -388,9 +401,21 @@ export class Profile extends Component {
                             <h3>Manage your Escrow account</h3>
                             <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
                                 <Tabs style={{ padding: "0" }} value={value} onChange={(event,value)=> this.handleChange(value)} indicatorColor='primary'>
-                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgauthorize "alt="User" /></Tooltip></span></span>} />
-                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Deposit</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgdeposit" alt="User" /></Tooltip></span></span>} />
-                                            <Tab label={<span style={{ fontSize: "13px" }}>WithDraw&nbsp;<span><Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>} style={{ fontsize: "15px" }}><img src="./img/info-4.png" name="imgwithdraw" alt="User" /></Tooltip></span></span>} />
+                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span>
+                                        <Tooltip title={<span style={{ fontSize: "13px" }}>
+                                            Authorize transfer of AGI tokens to the escrow account. You need to have funds in the escrow to create payment channels.</span>} style={{ fontsize: "13px" }}>
+                                            <img src="./img/info-4.png" name="imgauthorize "alt="User" />
+                                        </Tooltip></span></span>} />
+                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span>
+                                            <Tooltip title={<span style={{ fontSize: "13px" }}>
+                                                Deposit AGI tokens to the escrow account. You need to have funds in the escrow to create payment channels.</span>} style={{ fontsize: "13px" }}>
+                                                <img src="./img/info-4.png" name="imgdeposit" alt="User" />
+                                            </Tooltip></span></span>} />
+                                        <Tab label={<span style={{ fontSize: "13px" }}>Withdraw&nbsp;<span>
+                                            <Tooltip title={<span style={{ fontSize: "13px" }}>
+                                                Withdraw AGI tokens from the escrow to your account.</span>} style={{ fontsize: "13px" }}>
+                                                <img src="./img/info-4.png" name="imgwithdraw" alt="User" />
+                                            </Tooltip></span></span>} />
                                 </Tabs>
                                 {value === 0 &&
                                 <ProfileTabContainer>
@@ -485,10 +510,10 @@ export class Profile extends Component {
                             <ExpansionPanel onChange={this.handleExpansion} key={index} style={{ borderRadius: "5px", backgroundColor: "#E3F0FF", marginBottom: "15px" }}>
                                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} style={{ padding: "0px" }}>
                                 <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["channel_id"]}</span></div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["nonce"]}</span></div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["nonce"]}</span></div>                    
+                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["org_id"]}</span></div>
+                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["display_name"]}</span></div>                    
                                 <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
-                                    <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["balance"]}</span></Typography>
+                                    <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{AGI.inAGI(row["balance"])} AGI</span></Typography>
                                 </div>
                                 <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
                                     <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["expiration"]}</span></Typography>
@@ -496,7 +521,8 @@ export class Profile extends Component {
                                 </ExpansionPanelSummary>
                                 <ExpansionPanelDetails style={{ backgroundColor: "#F1F1F1" }}>
                                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-7 no-padding">
-                                        lorem ipsum
+                                        You can add additional funds to the channel and / or set the expiry block number.
+                                        In order to add funds to the channel you need to ensure that your escrow has sufficient balance. The expiry block represents the block number at which the channel becomes eligible for you to reclaim funds. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number.
                                     </div>
                                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-5 pull-right">
                                         <div className="row">
@@ -514,7 +540,7 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-md-12 pull-right no-padding">
                                                 <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
-                                                    <label>New Expiration</label>
+                                                    <label>Expiry Blocknumber</label>
                                                 </div>
                                                 <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
                                                     <Tooltip title={<span style={{ fontSize: "15px" }}>Expiration</span>}>
@@ -526,7 +552,7 @@ export class Profile extends Component {
                                         <div style={{ textAlign: "right" }}>
                                             {(typeof web3 !== 'undefined') ?
                                             <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} >
-                                                <button type="button" className="btn btn-primary " onClick={()=> this.handleChannelExtendAddFunds(row["channel_id"])}><span style={{ fontSize: "15px" }}>Confirm</span></button>
+                                                <button type="button" className="btn btn-primary " onClick={()=> this.handleChannelExtendAddFunds(row)}><span style={{ fontSize: "15px" }}>Confirm</span></button>
                                             </Tooltip> :
                                             <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} >
                                                 <button type="button" className="btn " disabled><span style={{ fontSize: "15px" }}>Confirm</span></button>

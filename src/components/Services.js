@@ -18,7 +18,7 @@ import ServiceMappings from "./service/ServiceMappings.js"
 import ChannelHelper from "./ChannelHelper.js"
 import {Carddeckers} from './CardDeckers.js';
 import {TabContainer, ModalStylesAlertWait, ModalStylesAlert, theme} from './ReactStyles.js';
-
+import App from "../App.js";
 
 class SampleServices extends React.Component {
   constructor(props) {
@@ -60,6 +60,7 @@ class SampleServices extends React.Component {
       serviceId: undefined,
       orgId: undefined,
       price : undefined,
+      currentBlockNumber : undefined,
       channelHelper : new ChannelHelper()
     }
     this.network = new BlockchainHelper();
@@ -71,7 +72,7 @@ class SampleServices extends React.Component {
     this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
     this.handlesearch = this.handlesearch.bind(this)
     this.startjob = this.startjob.bind(this)
-    this.CaptureSearchterm = this.captureSearchterm.bind(this)
+    this.captureSearchTerm = this.captureSearchTerm.bind(this)
     this.handlesearchbytag = this.handlesearchbytag.bind(this)
     this.handlepricesort = this.handlepricesort.bind(this)
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
@@ -94,22 +95,25 @@ class SampleServices extends React.Component {
   
   handleVote(orgid,serviceid,upVote)
   {
-    console.log(this.state.userAddress + "," + orgid + "," + serviceid)
     const urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
-    const requestObject = {
-      vote: {
-        user_address: this.state.userAddress,
-        org_id: orgid,
-        service_id: serviceid,
-        up_vote: upVote,
-        down_vote: (!upVote)
+    var sha3Message = web3.sha3(this.state.userAddress + orgid + upVote + serviceid + (!upVote));
+    window.ethjs.personal_sign(sha3Message, this.state.userAddress).then((signed) => {
+      const requestObject = {
+        vote: {
+          user_address: this.state.userAddress,
+          org_id: orgid,
+          service_id: serviceid,
+          up_vote: upVote,
+          down_vote: (!upVote),
+          signature: signed
+        }
       }
-    }
 
-    Requests.post(urlfetchvote,requestObject)
-      .then(res => res.json())
-      .then(data => this.setState({userkeepsvote: data}))
-      .catch(err => console.log(err));
+      Requests.post(urlfetchvote,requestObject)
+        .then(res => res.json())
+        .then(data => this.setState({userkeepsvote: data}))
+        .catch(err => console.log(err));
+    })
   }
 
   onClosechaining() {
@@ -149,6 +153,7 @@ class SampleServices extends React.Component {
   }
 
   changeocexpiration(e) {
+    this.setState({depositopenchannelerror: ""})
     this.setState({ocexpiration: e.target.value})
   } 
 
@@ -165,7 +170,6 @@ class SampleServices extends React.Component {
 
     try
     {
-      console.log("Reading events from ");
       this.setState({depositopenchannelerror: ''});
       let mpeInstance = this.network.getMPEInstance(this.state.chainId);
       var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
@@ -174,6 +178,12 @@ class SampleServices extends React.Component {
       if (typeof this.serviceState.channelHelper.getChannels() === 'undefined') {
         this.onOpenModalAlert()
       } else {
+        const currentBlockNumber = this.getCurrentBlockNumber()
+        if(this.state.ocexpiration <= currentBlockNumber) {
+          this.processChannelErrors("Block number provided should be greater than current block number " + currentBlockNumber);
+          return;
+        }
+
         console.log("MPE has balance but have to check if we need to open a channel or extend one.");
         var groupIDBytes = atob(this.serviceState.channelHelper.getGroupId());
         var recipientaddress = this.serviceState.channelHelper.getRecipient();
@@ -235,12 +245,12 @@ class SampleServices extends React.Component {
   }
 
   channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
-    var startingBlock = 900000;
-    web3.eth.getBlockNumber((error, result) => {
+    var startingBlock = this.getCurrentBlockNumber();
+    /*web3.eth.getBlockNumber((error, result) => {
       if (!error) {
         startingBlock = result;
       }
-    });
+    });*/
     console.log("Reading events from " + startingBlock);
 
     web3.eth.getGasPrice((err, gasPrice) => {   
@@ -383,13 +393,11 @@ class SampleServices extends React.Component {
   }
 
   loadDetails(chainId) {
-    this.setState({userAddress: web3.eth.coinbase});
-
     const url = this.network.getMarketplaceURL(chainId) + "service"
     const urlfetchservicestatus = this.network.getMarketplaceURL(chainId) + 'group-info'
     const urlfetchvote = this.network.getMarketplaceURL(chainId) + 'fetch-vote'
     const fetchVoteBody = {user_address: web3.eth.coinbase}
-    console.log("Fetching data")
+    console.log("Fetching data for " + chainId)
     Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.post(urlfetchvote,fetchVoteBody)])
     .then((values) =>
     {
@@ -408,14 +416,26 @@ class SampleServices extends React.Component {
       }
     }
     ).catch((err)=> console.log(err))
+
     this.state.healthMerged = false;
     if (typeof web3 === 'undefined') {
       return;
     }
+
+    this.setState({userAddress: web3.eth.coinbase});
   }
 
   handleClick(offset) {
     this.setState({ offset });
+  }
+
+  getCurrentBlockNumber() {
+    //Update blocknumber
+    this.network.getCurrentBlockNumber((blockNumber) => {
+      this.serviceState.currentBlockNumber = blockNumber
+    })
+    //return last seen blocknumber
+    return this.serviceState.currentBlockNumber;
   }
 
   onOpenJobDetailsSlider(data,dataservicestatus) {
@@ -431,6 +451,8 @@ class SampleServices extends React.Component {
     if (typeof web3 === 'undefined' || typeof this.state.userAddress === 'undefined') {
       return;
     }
+    
+    this.getCurrentBlockNumber();
     this.serviceState.serviceId = data["service_id"];
     this.serviceState.orgId = data["org_id"];
 
@@ -547,8 +569,8 @@ class SampleServices extends React.Component {
   }
 
   startjob(data) {
-    var currentBlockNumber = 900000;
-    (async ()=> { await web3.eth.getBlockNumber((error, result) => {currentBlockNumber = result}) })()
+    //var currentBlockNumber = 900000;
+    //(async ()=> { await web3.eth.getBlockNumber((error, result) => {currentBlockNumber = result}) })()
     var reInitialize = this.reInitializeJobState(data);
     var serviceSpec = this.fetchServiceSpec(data);
     Promise.all([reInitialize, serviceSpec]).then(() => {
@@ -556,7 +578,7 @@ class SampleServices extends React.Component {
       mpeTokenInstance.balances(this.state.userAddress, (err, balance) => {
         balance = AGI.inAGI(balance);
         console.log("In start job Balance is " + balance + " job cost is " + data['price_in_agi']);
-        let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data, currentBlockNumber);
+        let foundChannel = this.serviceState.channelHelper.findChannelWithBalance(data, this.getCurrentBlockNumber());
         if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
           this.onOpenModalAlert();
         } else if (foundChannel) {
@@ -600,7 +622,9 @@ class SampleServices extends React.Component {
     this.setState({besttagresult: tagresult})
   }
 
-  captureSearchterm(e) {
+  captureSearchTerm(e) {
+    console.log(e);
+    console.log(this);
     this.setState({searchterm:e.target.value})
   }
 
@@ -675,12 +699,9 @@ class SampleServices extends React.Component {
           </div>
       </div>
     );
-
-    let CallComponent = this.serviceMappings.getComponent(this.serviceState.orgId, this.serviceState.serviceId);//DefaultService;
-    //let customComponent = this.serviceOrgIDToComponent[this.serviceState.uniqueID];
-    //if(typeof customComponent !== 'undefined') {
-    //  CallComponent = customComponent;
-    //}
+    
+    //<App searchTerm={this.state.searchterm} searchCallBack={this.onOpenSearchBar}/>
+    let CallComponent = this.serviceMappings.getComponent(this.serviceState.orgId, this.serviceState.serviceId);
     return(
           <React.Fragment>            
             <div className="inner">
@@ -703,7 +724,7 @@ class SampleServices extends React.Component {
             </div>
             <main role="content" className="content-area">
                 <div className="container-fluid p-4  ">                                     
-                     <Carddeckers/>                    
+                    <Carddeckers/>                    
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 head-txt-sec">
                         <div className="col-sm-2 col-md-2 col-lg-2">
                             <h3>Agent</h3>
@@ -934,7 +955,7 @@ class SampleServices extends React.Component {
                                             </div>
                                             <div className="col-sm-12 col-md-12 col-lg-12 no-padding">
                                                 <div className="col-sm-9 col-md-9 col-lg-9 no-padding">
-                                                    <input id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchterm} onChange={this.captureSearchterm} onKeyUp={(e)=>this.handlesearchkeyup(e)} />
+                                                    <input id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchterm} onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handlesearchkeyup(e)} />
                                                 </div>
                                                 <div className="col-sm-3 col-md-3 col-lg-3">
                                                     <input className='btn btn-primary' id='phSearchButton' type='button' value='Search' onClick={this.handlesearch} />
@@ -951,7 +972,6 @@ class SampleServices extends React.Component {
                                                 <li onClick={(e)=>{this.handlesearchbytag(e,rowtag)}}>{rowtag}</li>
                                             </a>))}
                                         </ul>
-
                                     </div>
                                 </div>
                             </div>
