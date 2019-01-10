@@ -7,6 +7,10 @@ export default class DefaultService extends React.Component {
   constructor(props) {
       super(props);
       this.submitAction = this.submitAction.bind(this);
+      this.submitAction = this.submitAction.bind(this);
+      this.handleServiceName = this.handleServiceName.bind(this);
+      this.handleFormUpdate = this.handleFormUpdate.bind(this);
+
       this.state = {
           serviceName: undefined,
           methodName: undefined,
@@ -64,11 +68,11 @@ export default class DefaultService extends React.Component {
       })
   }
 
-  handleMethodName() {
-      this.setState({
-          methodName: event.target.value
-      });
-  }
+    handleFormUpdate() {
+        this.setState({
+            [event.target.name]: event.target.value
+        });
+    }
 
   handleServiceName() {
       var strService = event.target.value;
@@ -96,7 +100,7 @@ export default class DefaultService extends React.Component {
     <div className="row">
     <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Service Name</div>
     <div className="col-md-3 col-lg-3">
-        <select id="select1" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={(e) =>this.handleServiceName()}>
+        <select id="select1" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleServiceName}>
         {this.allServices.map((row,index) => 
         <option key={index}>{row}</option>)}
        </select>        
@@ -105,7 +109,7 @@ export default class DefaultService extends React.Component {
     <div className="row">
     <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Method Name</div>
     <div className="col-md-3 col-lg-3">   
-       <select id="select2" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={(e) =>this.handleMethodName()}>
+       <select name="methodName" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleFormUpdate}>
         {this.serviceMethods.map((row,index) => 
         <option key={index}>{row}</option>)}
        </select>            
@@ -114,12 +118,12 @@ export default class DefaultService extends React.Component {
     <div className="row">
     <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Input JSON</div>
     <div className="col-md-3 col-lg-2">
-        <input type="text" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} value={this.state.paramString} onChange={event => this.setState({paramString: event.target.value})}></input>
+        <input name="paramString" type="text" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} value={this.state.paramString} onChange={this.handleFormUpdate}></input>
     </div>
     </div>
     <div className="row">
     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-        <button type="button" className="btn btn-primary" onClick={()=>this.submitAction()}>Invoke</button>
+        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
     </div>
     </div>
     </React.Fragment>
