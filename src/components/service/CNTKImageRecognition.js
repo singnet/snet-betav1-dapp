@@ -1,12 +1,10 @@
 import React from 'react';
 import { hasOwnDefinedProperty } from '../../util'
 
-
-export default class DefaultService extends React.Component {
+export default class CNTKImageRecognition extends React.Component {
 
   constructor(props) {
       super(props);
-      this.submitAction = this.submitAction.bind(this);
       this.submitAction = this.submitAction.bind(this);
       this.handleServiceName = this.handleServiceName.bind(this);
       this.handleFormUpdate = this.handleFormUpdate.bind(this);
@@ -14,8 +12,8 @@ export default class DefaultService extends React.Component {
       this.state = {
           serviceName: undefined,
           methodName: undefined,
-          response: undefined,
-          paramString: "{}"
+          imgPath: undefined,
+          response: undefined
       };
       this.isComplete = false
       this.serviceMethods = []
@@ -29,13 +27,10 @@ export default class DefaultService extends React.Component {
       if (!this.isComplete) {
           this.parseServiceSpec(nextProps.serviceSpec);
       } else {
-          if (typeof nextProps.response !== 'undefined') {
-              if (typeof nextProps.response === 'string') {
-                  this.state.response = nextProps.response;
-              } else {
-                  this.state.response = nextProps.responseObject.value;
-              }
-          }
+        console.log(nextProps.response)
+        if (typeof nextProps.response !== 'undefined') {
+            this.setState({response:JSON.stringify(nextProps.response)})
+        }
       }
   }
 
@@ -68,30 +63,29 @@ export default class DefaultService extends React.Component {
       })
   }
 
-    handleFormUpdate() {
-        this.setState({
-            [event.target.name]: event.target.value
-        });
-    }
+  handleFormUpdate() {
+      this.setState({[event.target.name]: event.target.value})
+  }
 
   handleServiceName() {
       var strService = event.target.value;
       this.setState({
           serviceName: strService
       });
-      this.serviceMethods.length = 0
+      console.log("Selected service is " + strService);
       var data = this.methodsForAllServices[strService];
-      if (typeof data !== 'undefined') {
-          this.serviceMethods = data;
+      if (typeof data === 'undefined') {
+          data = [];
       }
+      this.serviceMethods = data;
   }
 
   submitAction() {
-      this.props.callApiCallback(
-          this.state.serviceName,
-          this.state.methodName,
-          JSON.parse(this.state.paramString)
-      );
+      this.props.callApiCallback(this.state.serviceName,
+          this.state.methodName, {
+              img_path: this.state.imgPath,
+              model: "ResNet152"
+          });
   }
 
   renderForm() {
@@ -100,7 +94,7 @@ export default class DefaultService extends React.Component {
     <div className="row">
     <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Service Name</div>
     <div className="col-md-3 col-lg-3">
-        <select id="select1" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleServiceName}>
+        <select style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleServiceName}>
         {this.allServices.map((row,index) => 
         <option key={index}>{row}</option>)}
        </select>        
@@ -116,10 +110,10 @@ export default class DefaultService extends React.Component {
     </div>
     </div>
     <div className="row">
-    <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Input JSON</div>
-    <div className="col-md-3 col-lg-2">
-        <input name="paramString" type="text" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} value={this.state.paramString} onChange={this.handleFormUpdate}></input>
-    </div>
+        <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Image URL</div>
+        <div className="col-md-3 col-lg-2">
+            <input name="imgPath" type="text" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} onChange={this.handleFormUpdate}></input>
+        </div>
     </div>
     <div className="row">
     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
@@ -130,11 +124,11 @@ export default class DefaultService extends React.Component {
         )
   }
 
-  
+
   renderComplete() {
     return(
       <div>
-        <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p> 
+            <label src={ this.state.response } />
       </div>
     );
   }
@@ -155,5 +149,4 @@ export default class DefaultService extends React.Component {
         )  
     }
   }
-
 }

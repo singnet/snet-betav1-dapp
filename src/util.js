@@ -1,6 +1,7 @@
 const bitcoin = require("bitcoinjs-lib")
 const BigNumber = require('bignumber.js');
 
+
 export const NETWORKS = {
   1: {
     name: "mainnet",
@@ -27,7 +28,7 @@ export const NETWORKS = {
     name: "Kovan",
     etherscan: 'https://kovan.etherscan.io',
     infura: 'https:/kovan.infura.io',
-    marketplace:'https://nhsdguu656.execute-api.us-east-1.amazonaws.com/kovan/',
+    marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/kovan/',
     protobufjs:'http://protobufjs.singularitynet.io/',
     default:true
   },
@@ -42,10 +43,6 @@ export const AGENT_STATE = {
 
 export const STRINGS = {
   "NULL_ADDRESS": "0x0000000000000000000000000000000000000000"
-};
-
-export function generateUniqueID(orgId,serviceId) {
-  return orgId + "__$%^^%$__" + serviceId;
 };
 
 export class AGI {
@@ -87,12 +84,15 @@ const ERROR_MESSAGE = {
   reject: "User rejected transaction submission or message signing",
   failed: "Transaction mined, but not executed",
   internal: "Internal Server Error",
-  unknown: "Unknown error"
+  unknown: "Error"
 };
 
 const RPC_ERROR_BOUNDS = {
   internal: [-31099, -32100]
 };
+
+export const DEFAULT_GAS_PRICE = 4700000;
+export const DEFAULT_GAS_ESTIMATE = 210000;
 
 export class ERROR_UTILS {
 
@@ -101,15 +101,20 @@ export class ERROR_UTILS {
         return ERROR_MESSAGE.denied;
     }
     
-    if (typeof error === 'object' && error.hasOwnProperty("value")) {
-      // It checks for rejection on both cases of message or transaction
-      if (error.value.message.indexOf("User denied") != -1) {
-        return ERROR_MESSAGE.reject;
-      }
+    if (typeof error === 'object') {
+      if(error.hasOwnProperty("value")) {
+        // It checks for rejection on both cases of message or transaction
+        if (error.value.message.indexOf("User denied") != -1) {
+          return ERROR_MESSAGE.reject;
+        }
 
-      //Checks for Internal server error 
-      if (error.value.code > RPC_ERROR_BOUNDS.internal[0] && error.value.code < RPC_ERROR_BOUNDS.internal[1]) {
-        return ERROR_MESSAGE.internal
+        //Checks for Internal server error 
+        if (error.value.code > RPC_ERROR_BOUNDS.internal[0] && error.value.code < RPC_ERROR_BOUNDS.internal[1]) {
+          return ERROR_MESSAGE.internal
+        }
+      } 
+      else if(error.hasOwnProperty("message")) {
+        return error.message;
       }
     }
 

@@ -44,7 +44,7 @@ export default class BlockchainHelper {
         while (!receipt) {
           receipt = await window.ethjs.getTransactionReceipt(hash);
         }
-    
+
         if (receipt.status === "0x0") {
           throw receipt
         }
@@ -97,6 +97,19 @@ export default class BlockchainHelper {
             }).catch(err => { console.log(err) });
         });
         return callBack(undefined);
+    }
+
+    getCurrentBlockNumber(callBack) {
+        if (typeof this.eth === 'undefined') {
+            callBack(undefined);
+        }
+        
+        web3.eth.getBlockNumber((error, result) => {
+            if(error) {
+                console.log("Error reading blocknumber " + err)
+            }
+            callBack(result)
+        })
     }
 
     getChainID(callBack) {
