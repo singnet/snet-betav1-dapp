@@ -20,7 +20,7 @@ import { Root } from 'protobufjs'
 export  class Jobdetails extends React.Component {
     constructor() {
       super(props)
-      console.log(props);
+      
       this.state = {
         tagsall:[],
         jobDetailsSliderOpen:false,
