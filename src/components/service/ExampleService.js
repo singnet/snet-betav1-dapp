@@ -30,7 +30,6 @@ export default class ExampleService extends React.Component {
         }
         else {
             if (typeof nextProps.response !== 'undefined') {
-                console.log(JSON.stringify(nextProps.response))
                 if (typeof nextProps.response === 'string') {
                     this.setState({response:nextProps.response}); 
                 } else {
