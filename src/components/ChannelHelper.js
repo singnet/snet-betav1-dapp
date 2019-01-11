@@ -104,11 +104,11 @@ export default class ChannelHelper {
     }
 
     this.channels = channels[0]["channelId"];
-    if (typeof this.channels !== 'undefined') {
+    /*if (typeof this.channels !== 'undefined') {
       this.channels.map(rr => {
         rr["balance"] = AGI.inAGI(rr["balance"])
       });
-    }
+    }*/
 
     this.endpoint = channels[0]["endpoint"]
     this.groupId = channels[0]["groupId"];
@@ -145,7 +145,7 @@ export default class ChannelHelper {
       {
         for(let ii=0; ii < this.channels.length; ii++) {
           var rrchannels = this.channels[ii];
-          if (parseInt(rrchannels["balance"]) >= parseInt(data["price_in_agi"])) 
+          if (parseInt(rrchannels["balance"]) >= parseInt(data["price_in_cogs"])) 
               //&& parseInt(rrchannels["expiration"]) >= (currentBlockNumber + BLOCK_OFFSET))
           {
             console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
