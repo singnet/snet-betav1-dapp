@@ -11,7 +11,6 @@ import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS,DEFAULT_GAS_PRICE,D
 import {TabContainer, ModalStylesAlertWait, ModalStylesAlert} from './ReactStyles.js';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ServiceMappings from "./service/ServiceMappings.js"
 import ChannelHelper from './ChannelHelper.js';
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -489,9 +488,9 @@ export  class Jobdetails extends React.Component {
               <Slide style={{width : this.state.sliderWidth}} direction="left" in={this.state.jobDetailsSliderOpen} mountOnEnter unmountOnExit>
                 <div className="sidebar">
                     <div style={{fontSize: "50px",textAlign: "right"}}>
-                      <i className="fas fa-window-minimize" onClick={this.onMinimizeJobDetailsSlider} style={{color: "black",fontSize: "20px",border: "none",cursor: "pointer"}}></i>
-                      <i className="fas fa-window-maximize" onClick={this.onMaximizeJobDetailsSlider} style={{color: "black",fontSize: "20px",border: "none",cursor: "pointer"}}></i>
-                      <i className="fas fa-window-close" onClick={this.onCloseJobDetailsSlider} style={{color: "black",fontSize: "20px",border: "none",cursor: "pointer"}}></i>
+                      <i className="fas fa-window-minimize" onClick={this.onMinimizeJobDetailsSlider} style={{color: "black",fontSize: "10px",border: "none",cursor: "pointer"}}></i>
+                      <i className="fas fa-window-maximize" onClick={this.onMaximizeJobDetailsSlider} style={{color: "black",fontSize: "10px",border: "none",cursor: "pointer"}}></i>
+                      <i className="fas fa-window-close" onClick={this.onCloseJobDetailsSlider} style={{color: "black",fontSize: "10px",border: "none",cursor: "pointer"}}></i>
                     </div>
                     <Typography component={ 'div'}>
                         <div className="right-panel agentdetails-sec p-3 pb-5">
@@ -580,17 +579,13 @@ export  class Jobdetails extends React.Component {
                                 </div>
                             </div>
                             <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
-                                <h3>User address</h3>
-                                <div className="row">
-                                    <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 text-center" style={{fontSize: "14px"}}>
-                                        <a target="_blank" href={ 'https://kovan.etherscan.io/address/' + ((typeof web3 !=='undefined' )?web3.eth.coinbase: '')}>
-                        {(typeof window.web3 !== 'undefined')?
-                          (web3.eth.coinbase !== null)?FORMAT_UTILS.toHumanFriendlyAddressPreview(web3.eth.coinbase):null:null}
-                            </a>
-                                    </div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 text-center border-left-1">
-                                        <p style={{fontSize: "14px"}}>{this.serviceState["org_id"]}</p>
-                                    </div>
+                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding" style={{fontSize: "14px"}}>
+                                      This is a brief write up about the service which discusses details of the service. We expect a short description of the service here and details on how to contact the author.
+                                </div>
+                            </div>
+                            <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
+                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding" style={{fontSize: "14px"}}>
+                                      URL: <a target="_blank" href={'https://singularitynet.io'}/>
                                 </div>
                             </div>
                             <div className="col-xs-12 col-sm-12 col-md-12 vote no-padding">
