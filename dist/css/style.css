@@ -11630,7 +11630,7 @@ position: absolute;
   font-weight: normal;
 }
 .let-get-started-btn {
-  background: #5345e9;
+  background: #006cff;
   border:1px solid #fff;
   color: #fff;
   font-size: 15px;
@@ -11645,11 +11645,7 @@ position: absolute;
   top: 0;
   left: 0;  
   padding: 2rem;
-  background: #40ceff;
-  background: -moz-linear-gradient(-45deg, #40ceff 0%, #5a2ff1 100%);
-  background: -webkit-linear-gradient(-45deg, #40ceff 0%, #5a2ff1 100%);
-  background: linear-gradient(135deg, #40ceff 0%, #5a2ff1 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#40ceff', endColorstr='#5a2ff1',GradientType=1 );
+  background-image: linear-gradient(to bottom, #5a2ff1, #006cff, #0093ff, #00b3ff, #40ceff);
 }
 .connect-wallet-title {
     color: #fff;
