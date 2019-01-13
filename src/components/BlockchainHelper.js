@@ -59,14 +59,15 @@ export default class BlockchainHelper {
 
         this.eth.accounts().then(accounts => {
             if (accounts.length === 0) {
-                console.log('wallet is locked');
+                callBack(undefined);
             } else {
                 web3.eth.defaultAccount = accounts[0]; //TODO - NETWORK CHANGE
-                console.log('account: ' + accounts[0] + ' unlocked');
                 callBack(accounts[0]);
             }
-        }).catch(err => { console.log(err) });
-        callBack(undefined);
+        }).catch(err => { 
+            console.log(err)
+            callBack(undefined);
+        });
     }
 
     getAGIBalance(chainId, address, callBack) {
@@ -120,7 +121,6 @@ export default class BlockchainHelper {
         this.eth.net_version().then(chainId => {
             if (this.chainId !== chainId && typeof chainId !== undefined) {
                 if (typeof NETWORKS[chainId] !== "undefined" && typeof NETWORKS[chainId].name !== "undefined") {
-                    console.log("connected to network: " + NETWORKS[chainId].name);
                     this.chainId = chainId;
                 } else {
                     this.chainId = undefined;
@@ -135,14 +135,6 @@ export default class BlockchainHelper {
 
     getEtherScanAddressURL(chainId, address) {
         return (chainId in NETWORKS ? NETWORKS[chainId]['etherscan'] +"/address/" + address : undefined);
-    }
-
-    getMarketplaceURL(chainId) {
-        return (chainId in NETWORKS ? NETWORKS[chainId]['marketplace'] : undefined);
-    }
-
-    getProtobufjsURL(chainId) {
-        return (chainId in NETWORKS ? NETWORKS[chainId]['protobufjs'] : undefined);
     }
 
     getRegistryInstance(chainId) {

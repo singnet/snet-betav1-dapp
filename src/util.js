@@ -155,4 +155,22 @@ export function base64ToHex(base64String) {
   return hexString;
 }
 
+export function getMarketplaceURL(chainId) {
+  return (chainId in NETWORKS ? NETWORKS[chainId]['marketplace'] : undefined);
+}
+
+export function getProtobufjsURL(chainId) {
+  return (chainId in NETWORKS ? NETWORKS[chainId]['protobufjs'] : undefined);
+}
+
+export function isSupportedNetwork(chainId) {
+  const marketPlaceURL = getMarketplaceURL(chainId);
+  console.log(marketPlaceURL)
+  if(typeof marketPlaceURL === 'undefined' || marketPlaceURL === "") {
+    console.log("Ignore network " + chainId)
+    return false;
+  }
+  return true;
+}
+
 export const BLOCK_OFFSET = 5760 //# blocks generated in 24 hrs

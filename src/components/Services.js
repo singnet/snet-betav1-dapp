@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography'
 import Modal from '@material-ui/core/Modal'
 import Slide from '@material-ui/core/Slide'
 import { withRouter } from 'react-router-dom'
-import { AGI } from '../util'
+import { AGI, getMarketplaceURL, isSupportedNetwork } from '../util'
 import { Requests } from '../requests'
 import BlockchainHelper from "./BlockchainHelper.js"
 import {Carddeckers} from './CardDeckers.js';
@@ -31,7 +31,7 @@ class SampleServices extends React.Component {
       togleservicename:false,
       togglehealth:false,
       userAddress: undefined,
-      chainId: undefined,
+      chainId: undefined
     };
 
     this.network = new BlockchainHelper();
@@ -132,6 +132,7 @@ class SampleServices extends React.Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
+        console.log("Initializing the watchNetwork timer")
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
       } 
       else {
@@ -146,36 +147,48 @@ class SampleServices extends React.Component {
 
   componentWillUnmount() {
     if (this.watchNetworkTimer) {
+      console.log("Clearing the watchNetwork timer")
       clearInterval(this.watchNetworkTimer);
     }
   }
 
   componentDidMount() {
+    console.log("componentDidMount")
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }
 
   loadDetails(chainId) {
-    const url = this.network.getMarketplaceURL(chainId) + "service"
-    const urlfetchservicestatus = this.network.getMarketplaceURL(chainId) + 'group-info'
-    const urlfetchvote = this.network.getMarketplaceURL(chainId) + 'fetch-vote'
-    const fetchVoteBody = {user_address: web3.eth.coinbase}
+    if(!isSupportedNetwork(chainId)) {
+      this.setState({agents:[]})
+      this.setState({uservote:[]})
+      this.setState({userservicestatus:[]})
+      return;
+    }
+    
+    const marketPlaceURL = getMarketplaceURL(chainId);
+    const url = marketPlaceURL + "service"
+    const urlfetchservicestatus = marketPlaceURL + 'group-info'
+    const urlfetchvote = marketPlaceURL + 'fetch-vote'
+    const fetchVoteBody = {user_address: typeof web3 === 'undefined' ? "" : web3.eth.coinbase}
     console.log("Fetching data for " + chainId)
     Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.post(urlfetchvote,fetchVoteBody)])
     .then((values) =>
     {
-      values[0].data.map(rr => {
-        rr["price_in_agi"] = AGI.inAGI(rr["price_in_cogs"])
-      });    
-
-      if(Array.isArray(values[0].data)) {
-        this.setState({agents: values[0].data})
-      }
-      if(Array.isArray(values[1].data)) {
-        this.setState({userservicestatus: values[1].data})
-      }
-      if(Array.isArray(values[2].data)) {
-        this.setState({uservote: values[2].data})
+      if(typeof(values[0]) !== 'undefined')
+      {
+        if(Array.isArray(values[0].data)) {
+          this.setState({agents: values[0].data})
+          values[0].data.map(rr => {
+            rr["price_in_agi"] = AGI.inAGI(rr["price_in_cogs"])
+          });           
+        }
+        if(Array.isArray(values[1].data)) {
+          this.setState({userservicestatus: values[1].data})
+        }
+        if(Array.isArray(values[2].data)) {
+          this.setState({uservote: values[2].data})
+        }
       }
     }
     ).catch((err)=> console.log(err))

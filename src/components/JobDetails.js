@@ -7,7 +7,7 @@ import Slide from '@material-ui/core/Slide'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import { Link } from 'react-router-dom'
-import { AGI, hasOwnDefinedProperty,FORMAT_UTILS,ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE } from '../util'
+import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE } from '../util'
 import {TabContainer, ModalStylesAlertWait, ModalStylesAlert} from './ReactStyles.js';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -75,7 +75,7 @@ export  class Jobdetails extends React.Component {
 
     handleVote(orgid,serviceid,upVote)
     {
-      const urlfetchvote = this.network.getMarketplaceURL(this.state.chainId) + 'vote'
+      const urlfetchvote = getMarketplaceURL(this.state.chainId) + 'vote'
       var sha3Message = web3.sha3(this.state.userAddress + orgid + upVote + serviceid + (!upVote));
       window.ethjs.personal_sign(sha3Message, this.state.userAddress).then((signed) => {
         const requestObject = {
@@ -100,13 +100,15 @@ export  class Jobdetails extends React.Component {
       //let serviceId = data["service_id"];
       //let orgId = data["org_id"];
       //this.serviceState.price = data["price_in_cogs"];
-      let channelInfoUrl = this.props.network.getMarketplaceURL(this.props.chainId) + 'channel-info';
+      this.setState({ocexpiration:0})
+      this.setState({ocvalue:0})
+      let channelInfoUrl = getMarketplaceURL(this.props.chainId) + 'channel-info';
       return this.channelHelper.reInitialize(channelInfoUrl, this.props.userAddress, this.serviceState["service_id"], this.serviceState["org_id"]);
     }
 
     fetchServiceSpec() {
       var caller = this;
-      let _urlservicebuf = this.props.network.getProtobufjsURL(this.props.chainId) + this.serviceState["org_id"] + "/" + this.serviceState["service_id"];
+      let _urlservicebuf = getProtobufjsURL(this.props.chainId) + this.serviceState["org_id"] + "/" + this.serviceState["service_id"];
 
       return fetch(encodeURI(_urlservicebuf))
         .then(serviceSpecResponse => serviceSpecResponse.json())
@@ -238,29 +240,34 @@ export  class Jobdetails extends React.Component {
           this.processChannelErrors("Block number provided should be greater than current block number " + currentBlockNumber);
           return;
         }
-          console.log("MPE has balance but have to check if we need to open a channel or extend one.");
-          var groupIDBytes = atob(this.channelHelper.getGroupId());
-          var recipientaddress = this.channelHelper.getRecipient();
-          console.log("group id is " + this.channelHelper.getGroupId())
-          console.log("recipient address is " + recipientaddress)
-          console.log('groupdidgetter hex is ' + groupIDBytes)
-          console.log('Amount is ' + amountInCogs);
-          console.log(this.state.ocexpiration);
-          console.log(this.props.userAddress);
-          if (this.channelHelper.getChannels().length > 0) {
-            var rrchannel = this.channelHelper.getChannels()[0];
-            console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));
-            this.channelExtend(mpeInstance, rrchannel, amountInCogs);
-          } else {
-            console.log("No Channel found to going to deposit from MPE and open a channel");
-            this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+        
+        console.log("MPE has balance but have to check if we need to open a channel or extend one.");
+        var groupIDBytes = atob(this.channelHelper.getGroupId());
+        var recipientaddress = this.channelHelper.getRecipient();
+        console.log("group id is " + this.channelHelper.getGroupId())
+        console.log("recipient address is " + recipientaddress)
+        console.log('groupdidgetter hex is ' + groupIDBytes)
+        console.log('Amount is ' + amountInCogs);
+        console.log(this.state.ocexpiration);
+        console.log(this.props.userAddress);
+        if (this.channelHelper.getChannels().length > 0) {
+          var rrchannel = this.channelHelper.getChannels()[0];
+          console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));
+          if(this.state.ocexpiration < rrchannel["expiration"]) {
+            this.processChannelErrors("The payment channel being used has the expiry block set to "+ rrchannel["expiration"] +" which cannot be reduced. Provide a value equal to or greater than " + rrchannel["expiration"]);
+            return;
           }
+          this.channelExtend(mpeInstance, rrchannel, amountInCogs);
+        } else {
+          console.log("No Channel found to going to deposit from MPE and open a channel");
+          this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
         }
       }
-      catch(e) {
-        this.processChannelErrors(e.message);
-      }
     }
+    catch(e) {
+      this.processChannelErrors(e.message);
+    }
+  }
 
     channelExtend(mpeInstance, rrchannel, amountInCogs) {
       web3.eth.getGasPrice((err, gasPrice) => {
@@ -450,16 +457,16 @@ export  class Jobdetails extends React.Component {
         return(
             <React.Fragment>
             <div>
-                <Modal style={ModalStylesAlertWait} open={this.state.openchaining} onClose={this.onClosechaining}>
+                <Modal style={ModalStylesAlertWait} open={this.state.openchaining}>
                     <Slide direction="left" in={this.state.openchaining} mountonEnter unmountOnExit>
                         <React.Fragment>
-                            <Typography compnent={ 'div'} style={{fontSize: "13px",lineHeight: "15px"}}>
+                            <Typography component={ 'div'} style={{fontSize: "13px",lineHeight: "15px"}}>
                                 <div className="row">
+                                <div style={{ width: '50px' }} className="col-sm-12 col-md-6 col-lg-6">
+                                      <CircularProgress backgroundpadding={6} styles={{ background: { fill: '#3e98c7', }, text: { fill: '#fff', }, path: { stroke: '#fff', }, trail: { stroke: 'transparent' }, }} />
+                                    </div>                                
                                     <div className="col-sm-12 col-md-6 col-lg-6">
                                         Your transaction is being mined.
-                                    </div>
-                                    <div style={{ width: '50px' }} className="col-sm-12 col-md-6 col-lg-6">
-                                        <CircularProgress backgroundpadding={6} styles={{ background: { fill: '#3e98c7', }, text: { fill: '#fff', }, path: { stroke: '#fff', }, trail: { stroke: 'transparent' }, }} />
                                     </div>
                                 </div>
                             </Typography>
