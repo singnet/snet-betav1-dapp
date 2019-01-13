@@ -7,7 +7,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AGI,ERROR_UTILS,DEFAULT_GAS_PRICE } from '../util';
+import { AGI,ERROR_UTILS,DEFAULT_GAS_PRICE, getMarketplaceURL, isSupportedNetwork } from '../util';
 import { Requests } from '../requests'
 import App from "../App.js";
 import Tooltip from '@material-ui/core/Tooltip';
@@ -43,9 +43,9 @@ export class Profile extends Component {
       chainId: undefined,
       contractError: '',
       channelExtendAddError:'',
+      supportedNetwork: false
     }
 
-    this.account = undefined;
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
     this.handleAuthorize = this.handleAuthorize.bind(this)
@@ -68,10 +68,12 @@ export class Profile extends Component {
 
   componentWillUnmount() {
     if (this.watchWalletTimer) {
+      console.log("Clearing wallet timer")
       clearInterval(this.watchWalletTimer);
     }
 
     if (this.watchNetworkTimer) {
+      console.log("Clearing network timer")
       clearInterval(this.watchNetworkTimer);
     }
   }
@@ -79,8 +81,9 @@ export class Profile extends Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        this.watchNetworkTimer = setTimeout(() => this.watchNetwork(), 500);
-        this.watchWalletTimer = setTimeout(() => this.watchWallet(), 500);
+        console.log("Initializing timers")
+        this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
+        this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
       }
     }).catch(err => {
       console.error(err);
@@ -91,11 +94,6 @@ export class Profile extends Component {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
         this.setState({ chainId: chainId });
-        this.network.getAGIBalance(this.state.chainId, web3.eth.coinbase,((balance) => {
-          if (balance !== this.state.agiBalance) {
-            this.setState({ agiBalance: balance });
-          }
-        }));         
         this.loadDetails(chainId);
       }
     });
@@ -104,13 +102,15 @@ export class Profile extends Component {
   watchWallet() {
     this.network.getAccount((account) => {
       if (account !== this.state.account) {
-        this.setState({ account: account });
+        console.log("Account changed from " + account +" to " + this.state.account)
+        this.setState({account:account})
+        this.loadAGIBalances(this.state.chainId)
       }
     });
   }
 
   loadAGIBalances(chainId) {
-    if (typeof web3 === 'undefined') {
+    if (typeof web3 === 'undefined' || !this.state.supportedNetwork) {
       return;
     }
 
@@ -130,26 +130,33 @@ export class Profile extends Component {
         console.log(err);
       }
       else {
-        this.setState({allowedtokenbalance: parseInt(allowedbalance)})
+        this.setState({allowedtokenbalance: allowedbalance})
       }
     });
+
+    this.network.getAGIBalance(chainId, web3.eth.coinbase,((balance) => {
+        if (balance !== this.state.agiBalance) {
+          this.setState({ agiBalance: balance });
+        }
+      }));
   }
 
   loadDetails(chainId) {
-    if (typeof web3 === 'undefined') {
+    if (typeof web3 === 'undefined' || !isSupportedNetwork(chainId)) {
+      this.setState({supportedNetwork: false})  
+      this.setState({userprofile: []})
       return;
     }
-
-    let mpeURL = this.network.getMarketplaceURL(chainId);
-    if (typeof (mpeURL) !== 'undefined') {
-      let _urlfetchprofile = mpeURL + 'fetch-profile'
-      const requestObject = {user_address: web3.eth.coinbase}
-      Requests.post(_urlfetchprofile,requestObject)
+    console.log("Loading details")
+    this.setState({supportedNetwork: true})  
+    let mpeURL = getMarketplaceURL(chainId);
+    let _urlfetchprofile = mpeURL + 'fetch-profile'
+    const requestObject = {user_address: web3.eth.coinbase}
+    Requests.post(_urlfetchprofile,requestObject)
       .then((values)=>
         this.setState({userprofile: values.data})
       )
       .catch(err => console.log(err))
-    }
     this.loadAGIBalances(chainId);
   }
 
@@ -233,7 +240,7 @@ export class Profile extends Component {
 
   handleAuthorize() {
     this.setState({contractError:''})
-    if (typeof web3 === 'undefined') {
+    if (typeof web3 === 'undefined' || !this.state.supportedNetwork) {
       return;
     }
 
@@ -252,7 +259,7 @@ export class Profile extends Component {
 
   handleDeposit() {
     this.setState({contractError:''})
-    if (typeof web3 === undefined) {
+    if (typeof web3 === undefined || !this.state.supportedNetwork) {
       return;
     }
 
@@ -283,7 +290,7 @@ export class Profile extends Component {
 
   handlewithdraw() {
     this.setState({contractError:''})
-    if (typeof web3 === undefined) {
+    if (typeof web3 === undefined || !this.state.supportedNetwork) {
       return;
     }
 
@@ -424,7 +431,7 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(typeof web3 !== 'undefined' && web3.eth.coinbase !== null && this.state.authorizeAmount > 0) ?
+                                                {(this.state.supportedNetwork && web3.eth.coinbase !== null && this.state.authorizeAmount > 0) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Authorize</span>} style={{ fontsize: "15px" }}>
                                                     <button className="btn btn-primary mtb-10 " onClick={this.handleAuthorize}><span>Authorize</span></button>
                                                 </Tooltip> :
@@ -439,7 +446,7 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(typeof web3 !== 'undefined' && web3.eth.coinbase !== null && this.state.depositAmount > 0) ?
+                                                {(this.state.supportedNetwork && web3.eth.coinbase !== null && this.state.depositAmount > 0) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Deposit</span>}>
                                                     <button className="btn btn-primary " onClick={this.handleDeposit}><span style={{ fontSize: "15px" }}>Deposit</span></button>
                                                 </Tooltip> :
@@ -455,7 +462,7 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ color: "red", fontSize: "14px" }}>{this.state.contractError!== '' ?ERROR_UTILS.sanitizeError(this.state.contractError):''}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(typeof web3 !== 'undefined' && web3.eth.coinbase !== null && this.state.withdrawalAmount > 0) ?
+                                                {(this.state.supportedNetwork && web3.eth.coinbase !== null && this.state.withdrawalAmount > 0) ?
                                                 <Tooltip title={<span style={{ fontSize: "15px" }}>Withdraw</span>} >
                                                     <button type="button" className="btn btn-primary " onClick={this.handlewithdraw}><span style={{ fontSize: "15px" }}>Withdraw</span></button>
                                                 </Tooltip> :
@@ -468,7 +475,7 @@ export class Profile extends Component {
                             </div>
                         </div>
                         <div>
-                            <Modal style={ModalStylesAlertWait} open={this.state.openchaining} onClose={this.onClosechaining} >
+                            <Modal style={ModalStylesAlertWait} open={this.state.openchaining} >
                                 <Slide direction="left" in={this.state.openchaining} mountonEnter unmountOnExit>
                                     <React.Fragment>
                                         <Typography component={ 'div'} style={{ fontSize: "13px", lineHeight: "15px" }}>
@@ -546,7 +553,7 @@ export class Profile extends Component {
                                             </div>
                                         </div>
                                         <div style={{ textAlign: "right" }}>
-                                            {(typeof web3 !== 'undefined') ?
+                                            {(this.state.supportedNetwork && web3.eth.coinbase !== null) ?
                                             <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} >
                                                 <button type="button" className="btn btn-primary " onClick={()=> this.handleChannelExtendAddFunds(row)}><span style={{ fontSize: "15px" }}>Confirm</span></button>
                                             </Tooltip> :
