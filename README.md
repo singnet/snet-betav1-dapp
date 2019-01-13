@@ -8,7 +8,6 @@ To get Kovan ETH to pay for gas costs you should refer to [this repo](https://gi
 
 # The beta dapp is under active development and will see several changes in the upcoming weeks
 ## How to call a Service
-The DApp can currently only interact with services that match the API of the example service. This will change in the future as we support a generic mechanism to declaratively describe a service's API. 
 
 1. Get [Ether](https://github.com/kovan-testnet/faucet) and [AGI](https://faucet.singularitynet.io/) on the Kovan network
 2. Navigate to the SingularityNET beta [dapp](http://beta.singularitynet.io/)
@@ -34,3 +33,16 @@ The DApp can currently only interact with services that match the API of the exa
 ### Additional commands
 * `npm run build-analyze` shows the size of the application's bundle components; the original size, the parsed size (uglified + tree-shaken) and the gzipped size
 * `npm run serve-dist` serves the `dist` directory locally
+
+
+### UI for Services
+Currently the UI needed by a service to capture inputs and render the output must be provided by the service developer as a PR. It must be provided in the form of a React component. The component will be contructed with the following properties
+* isComplete - Flag indicating if the service call has completed
+* serviceSpec - JSON object corresponding to the protobuf service definition
+* callApiCallback - Function to be called when the service needs to be called. The signature of this function is `callApiCallback(serviceName,methodName, requestObject)`. The component must invoke this callback with the service name, method name and the request object for the call to succeed.
+* response - The response object returned by the service call. This is sent only when isComplete is true. If the service call fails the DApp will display the error
+
+This approach will change in the future as we support a generic mechanism to declaratively describe a service's API. See [this](https://github.com/singnet/custom-ui-research) for more details
+
+
+
