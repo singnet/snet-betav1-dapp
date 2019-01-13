@@ -33,7 +33,7 @@ export default class ExampleService extends React.Component {
                 if (typeof nextProps.response === 'string') {
                     this.setState({response:nextProps.response}); 
                 } else {
-                    this.setState({response: nextProps.responseObject.value});
+                    this.setState({response: nextProps.response.value});
                 }
             }
         }
