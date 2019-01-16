@@ -1,10 +1,10 @@
 @font-face {
   font-family: "icomoon";
-  src: url("fonts/icomoon.eot?qk3bkl");
-  src: url("fonts/icomoon.eot?qk3bkl#iefix") format("embedded-opentype"),
-    url("fonts/icomoon.ttf?qk3bkl") format("truetype"),
-    url("fonts/icomoon.woff?qk3bkl") format("woff"),
-    url("fonts/icomoon.svg?qk3bkl#icomoon") format("svg");
+  src: url("fonts/icomoon.eot?d067fx");
+  src: url("fonts/icomoon.eot?d067fx#iefix") format("embedded-opentype"),
+    url("fonts/icomoon.ttf?d067fx") format("truetype"),
+    url("fonts/icomoon.woff?d067fx") format("woff"),
+    url("fonts/icomoon.svg?d067fx#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -25,6 +25,36 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-logo-singularity:before {
+.icon-dislike:before {
+    content: "\e900";
+    color: #757577;
+    font-size: 26px;
+}
+.icon-like:before {
+  content: "\e901";
+    color: #4086ff;
+    font-size: 26px;
+}
+.icon-dislike-disabled:before {
   content: "\e900";
+  color: #757577;
+  font-size: 26px;
+}
+.icon-like-disabled:before {
+  content: "\e901";
+    color: #757577;
+    font-size: 26px;
+}
+.icon-home-icon-silhouette:before {
+  content: "\e902";
+  font-size: 20px;
+}
+.icon-logo:before {
+  content: "\e903";
+  color: #fff;
+  font-size: 50px
+}
+.icon-user-3:before {
+  content: "\e904";
+  font-size: 20px;
 }

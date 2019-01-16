@@ -13,7 +13,7 @@ const styles = theme => ({
 
 export const ProfileTabContainer = (props) => {
     return (
-      <Typography component="div" style={{padding:"21px"}}>
+      <Typography component="div" style={{padding:"21px", fontFamily: "Muli"}}>
         {props.children}
       </Typography>
     );
@@ -24,7 +24,7 @@ export const ProfileTabContainer = (props) => {
 
 export const TabContainer = (props) => {
     return (
-        <Typography component="div" style={{padding:"10px", height:"240px"}}>
+        <Typography component="div" style={{padding:"10px", fontFamily: "Muli"}}>
         {props.children}
         </Typography>
     );
@@ -39,6 +39,7 @@ export const ModalStylesAlertWait = {
     borderRadius: 3,
     border: 5,
     backgroundColor: 'white',
+    fontFamily: "Muli",
     fontSize: "13px",
     color: 'black',
     lineHeight: 40,
@@ -51,6 +52,7 @@ export const ModalStylesAlertWait = {
 }
 //Get modalstyles for alert//
 export const ModalStylesAlert = {
+    fontFamily: "Muli",
     position: 'relative',
     borderRadius: 3,
     border: 5,
@@ -77,7 +79,7 @@ export const theme = createMuiTheme({
                 height: 38,
                 padding: '0 30px',
                 boxShadow: '0 3px 5px 2px lightblue',
-                fontFamily: "Segoe UI",
+                fontFamily: "Muli",
                 fontSize: "12px",
             },
         },

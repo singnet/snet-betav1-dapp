@@ -294,14 +294,19 @@ class SampleServices extends React.Component {
           </div>
           <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
-                  <div className="thumbsup-img "><img src="./img/thumbs-up.png" /></div>
+                  <div className="thumbsup-img "><span className="icon-like"></span></div>
                   {(this.state.uservote.length === 0)?<div className="likes-text">0</div>:
                   (this.state.uservote.map(rowu => (rowu["service_id"]===rown["service_id"])?
                   <div className="likes-text">{rowu["up_vote_count"]}</div>:
                   <div className="likes-text"></div>))}
               </div>
-              <div className="col-md-6 thumbsdown-icon"><img src="./img/thumbs-down.png" />
-                  <br/> {this.state.uservote.length===0? <div className="likes-text">0</div>:(this.state.uservote.map(rowu => (rowu["service_id"]===rown["service_id"])? rowu["down_vote_count"]:null))}
+              <div className="col-md-6 thumbsdown-icon">
+              <div className="thumbsdown-img">
+                <span className="icon-dislike"></span>
+              </div> 
+              {this.state.uservote.length===0? 
+              <div className="dislikes-text">0</div>:
+              (this.state.uservote.map(rowu => (rowu["service_id"]===rown["service_id"])? rowu["down_vote_count"]:null))}
               </div>
           </div>
       </div>
