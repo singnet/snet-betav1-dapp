@@ -32,6 +32,9 @@ export  class Jobdetails extends React.Component {
         depositopenchannelerror:'',
         valueTab:0,
         userkeepsvote:'',
+        voteLike:false,
+        voteDislike:false,
+        enableVoting:false,
         openchaining:false,
         sliderWidth:'550px',
         showEscrowBalanceAlert:false,
@@ -76,11 +79,14 @@ export  class Jobdetails extends React.Component {
     handleVote(orgid,serviceid,upVote)
     {
       const urlfetchvote = getMarketplaceURL(this.state.chainId) + 'vote'
-      var sha3Message = web3.sha3(this.state.userAddress + orgid + upVote + serviceid + (!upVote));
-      window.ethjs.personal_sign(sha3Message, this.state.userAddress).then((signed) => {
+      console.log("Message " + this.props.userAddress + orgid + upVote + serviceid + (!upVote))
+      var sha3Message = web3.sha3(this.props.userAddress + orgid + upVote + serviceid + (!upVote));
+      console.log("Hash " + sha3Message)
+      window.ethjs.personal_sign(sha3Message, this.props.userAddress).then((signed) => {
+        console.log("Signature " + signed)
         const requestObject = {
           vote: {
-            user_address: this.state.userAddress,
+            user_address: this.props.userAddress,
             org_id: orgid,
             service_id: serviceid,
             up_vote: upVote,
@@ -88,6 +94,7 @@ export  class Jobdetails extends React.Component {
             signature: signed
           }
         }
+        console.log(JSON.stringify(requestObject))
   
         Requests.post(urlfetchvote,requestObject)
           .then(res => res.json())
@@ -97,9 +104,6 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
-      //let serviceId = data["service_id"];
-      //let orgId = data["org_id"];
-      //this.serviceState.price = data["price_in_cogs"];
       this.setState({ocexpiration:0})
       this.setState({ocvalue:0})
       let channelInfoUrl = getMarketplaceURL(this.props.chainId) + 'channel-info';
@@ -189,6 +193,7 @@ export  class Jobdetails extends React.Component {
             .then(response => {
               console.log("Got a GRPC response")
               this.setState({grpcResponse: response})
+              this.setState({enableVoting: true})
               this.nextJobStep();
             })
             .catch((err) => {
@@ -196,6 +201,7 @@ export  class Jobdetails extends React.Component {
               this.setState({grpcResponse: err});
               this.setState({grpcErrorOccurred: true})
               console.log(err);
+              this.setState({enableVoting: true})
               this.nextJobStep();
             })
           return window.ethjs.personal_ecRecover(msg, signed);
@@ -479,7 +485,7 @@ export  class Jobdetails extends React.Component {
                     <Slide direction="down" in={this.state.showEscrowBalanceAlert} mountOnEnter unmountOnExit>
                         <div style={ModalStylesAlert} className="container popover-wrapper search-panel">
                             <Typography component={ 'div'}>
-                                <p style={{fontSize: "15px",fontFamily: "arial",color: "red"}}>The balance in your escrow account is 0. Please transfer money from wallet to escrow account to proceed.</p>
+                                <p style={{fontSize: "15px",color: "red"}}>The balance in your escrow account is 0. Please transfer money from wallet to escrow account to proceed.</p>
                                 <div style={{textAlign: "center"}}>
                                     <Link to="/Profile">
                                     <input className='btn btn-primary' type='button' value='Go to Profile' />
@@ -494,10 +500,10 @@ export  class Jobdetails extends React.Component {
             <PerfectScrollbar>
               <Slide style={{width : this.state.sliderWidth}} direction="left" in={this.state.jobDetailsSliderOpen} mountOnEnter unmountOnExit>
                 <div className="sidebar">
-                    <div style={{fontSize: "50px",textAlign: "right"}}>
-                      <i className="fas fa-window-minimize" onClick={this.onMinimizeJobDetailsSlider} style={{color: "black",fontSize: "10px",border: "none",cursor: "pointer"}}></i>
-                      <i className="fas fa-window-maximize" onClick={this.onMaximizeJobDetailsSlider} style={{color: "black",fontSize: "10px",border: "none",cursor: "pointer"}}></i>
-                      <i className="fas fa-window-close" onClick={this.onCloseJobDetailsSlider} style={{color: "black",fontSize: "10px",border: "none",cursor: "pointer"}}></i>
+                    <div style={{fontSize: "30px",textAlign: "right"}}>
+                      <i className="fas fa-window-minimize mini-maxi-close" onClick={this.onMinimizeJobDetailsSlider}></i>
+                      <i className="fas fa-window-maximize mini-maxi-close" onClick={this.onMaximizeJobDetailsSlider}></i>
+                      <i className="fas fa-window-close mini-maxi-close" onClick={this.onCloseJobDetailsSlider}></i>
                     </div>
                     <Typography component={ 'div'}>
                         <div className="right-panel agentdetails-sec p-3 pb-5">
@@ -505,11 +511,11 @@ export  class Jobdetails extends React.Component {
                                 <h3>{this.serviceState["service_id"]} </h3>
                                 <p> {this.state.tagsall.map(rowtags =>
                                     <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
-                                <div className="text-right border-top1">
+                                <div className="text-center border-top1">
                                     {(this.state.runjobstate === true) ?
-                                    <button type="button" className="btn-start" onClick={()=> this.startjob()}>Start Job</button>
+                                    <button type="button" className="btn-primary" onClick={()=> this.startjob()}>Start Job</button>
                                     :
-                                    <button type="button" className="btn-start-disabled" disabled>Start Job</button>
+                                    <button type="button" className="btn-primary-disabled" disabled>Start Job</button>
                                     }
                                 </div>
                             </div>
@@ -525,26 +531,38 @@ export  class Jobdetails extends React.Component {
                                     <TabContainer>
                                         { (this.state.startjobfundinvokeres)?
                                         <div className="row channels-sec">
-                                            <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Amount:</div>
+                                        <div class="col-md-12 no-padding mtb-10">
+                                        <div class="col-md-12 no-padding"> 
+                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:</div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} />
                                             </div>
-                                            <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
+                                            </div>
+                                            </div>
+                                            <div class="col-md-12 no-padding"> 
+                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiration:</div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} />
+                                            </div>
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
                                                 <button type="button" className="btn btn-primary width-mobile-100" onClick={()=>this.openchannelhandler()}>Reserve Funds</button>
                                             </div>
                                         </div>:
                                         <div className="row channels-sec-disabled">
-                                            <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Amount:</div>
+                                          <div class="col-md-12 no-padding mtb-10">
+                                          <div class="col-md-12 no-padding"> 
+                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:</div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={parseInt(this.serviceState["price_in_agi"])} disabled />
                                             </div>
-                                            <div className="col-xs-12 col-sm-2 col-md-2 mtb-10">Expiration:</div>
+                                            </div>
+                                            </div>
+                                            <div class="col-md-12 no-padding"> 
+                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiration:</div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} disabled />
+                                            </div>
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
                                                 <button type="button" className="btn btn-primary-disabled width-mobile-100" disabled>Reserve Funds</button>
@@ -552,9 +570,9 @@ export  class Jobdetails extends React.Component {
                                         </div>
                                         }
 
-                                        <p style={{fontSize: "12px",color: "red"}}>{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
+                                        <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
-                                        <p style={{fontSize:"14px"}}>
+                                        <p className="job-details-text">
                                         The first step in invoking the API is to open a payment. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a channel or extend a pre-existing channel. You can view the channel details in the profile page
                                         </p>
                                         </div>
@@ -565,14 +583,14 @@ export  class Jobdetails extends React.Component {
                                         <CallComponent isComplete={false} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation}/>
                                       </React.Fragment>
                                       <div className="row">
-                                        <p style={{fontSize:"14px"}}>Now that the channel has been funded you are able to call the API on the Agent. Agents take different inputs, so may have their own UI. Once you've provided inputs, click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
+                                        <p className="job-details-text">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
                                         </div>
                                     </TabContainer>
                                     } {(valueTab === 2) &&
                                     <TabContainer>
                                       { (this.state.grpcErrorOccurred)?
                                         <div>
-                                           <p style={{fontSize: "13px"}}>Error: {this.state.grpcResponse}</p>
+                                           <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
                                         </div>:
                                         <React.Fragment>
                                           <CallComponent isComplete={true} response={this.state.grpcResponse}/>
@@ -580,42 +598,43 @@ export  class Jobdetails extends React.Component {
                                       }
                                       <div className="row">
                                        <p></p>
-                                        <p style={{fontSize:"14px"}}>Your request has been completed. You can now vote for the agent below.</p>
+                                        <p className="job-details-text">Your request has been completed. You can now vote for the agent below.</p>
                                         </div>
                                     </TabContainer>}
                                 </div>
                             </div>
                             <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
-                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding" style={{fontSize: "14px"}}>
+                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
                                       This is a brief write up about the service which discusses details of the service. We expect a short description of the service here and details on how to contact the author.
                                 </div>
                             </div>
                             <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
-                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding" style={{fontSize: "14px"}}>
-                                      URL: <a target="_blank" href={'https://singularitynet.io'}/>
+                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding" >
+                                <span className="font-weight-bold">URL&nbsp;:&nbsp;</span> <a target="_blank" href={'https://singularitynet.io'}>https://singularitynet.io</a>
                                 </div>
                             </div>
+
                             <div className="col-xs-12 col-sm-12 col-md-12 vote no-padding">
-                                <h3>Votes</h3>
-                                <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
-                                    <div className="thumbsup-icon float-none">
-                                        <div className="thumbsup-img">
-                                        <a href="#"><img src="./img/like-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsUp" onClick={()=>this.handleVote(this.serviceState["org_id"],this.serviceState["service_id"],true)} /></a></div>
-                                    </div>
-                                </div>
-                                <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
-                                    <div className="thumbsdown-icon float-none">
-                                    <a href="#"><img src="./img/dislike-img.png" style={{height: "50px",width: "70px"}} alt="ThumbsDown" onClick={()=>this.handleVote(this.serviceState["org_id"],this.serviceState["service_id"], false)}/></a>
-                                    </div>
+                            <h3>Vote</h3>
+                            <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
+                                <div className="thumbsup-icon vote-like">
+                                    <span className="icon-like-disabled" onClick={()=>this.handleVote(this.serviceState["org_id"],this.serviceState["service_id"],true)}/>
                                 </div>
                             </div>
+                            <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
+                                <div className="thumbsdown-icon">
+                                <span className="icon-dislike-disabled" onClick={()=>this.handleVote(this.serviceState["org_id"],this.serviceState["service_id"],true)}/>
+                                </div>
+                            </div>
+                            </div>
+                            
                             <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
                                 <h3>Job Cost Preview</h3>
                                 <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light" style={{fontSize: "14px"}}>Current Price</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}> {this.serviceState["price_in_agi"]} AGI</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light" style={{fontSize: "14px"}}>Price Model</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" style={{fontSize: "14px"}}>{this.serviceState["price_model"]}</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Current Price</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > {this.serviceState["price_in_agi"]} AGI</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Price Model</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter">{this.serviceState["price_model"]}</div>
                                 </div>
                             </div>
                         </div>

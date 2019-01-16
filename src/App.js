@@ -30,25 +30,28 @@ export default class App extends React.Component {
                     </svg>
                 </div>            
               <div className="header">
-                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-6 logo">
+                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 logo">
                       {(typeof web3 !== 'undefined')?
                       <Link to="/SampleServices">
-                      <h1><img src="./img/singularity-logo.png"  alt="SingularityNET"/></h1></Link>:
+                      <h1><span className="icon-logo"></span></h1></Link>:
                       <Link to="/">
-                      <h1><img src="./img/singularity-logo.png"  alt="SingularityNET"/></h1></Link>}
+                      <h1><span className="icon-logo"></span></h1></Link>}
                   </div>
-                  <div className="col-xs-6 col-sm-8 col-md-6 col-lg-6 search-user">
+                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name">
+                  Your are on the Kovan Network
+                  </div>
+                  <div className="col-xs-6 col-sm-8 col-md-6 col-lg-4 search-user">
                       {
                         (typeof this.props.searchCallBack !== 'undefined')?
                           <input className="search hidden-xs" placeholder={this.props.searchTerm} name="srch-term" id="srch-term" type="label" onClick={this.props.searchCallBack} />:<p></p>
                       }
                       <div className="user">
                           {(typeof web3 !== 'undefined')?
-                          <Link to="/SampleServices"><img src="./img/home-icon.png" alt="" /> </Link>:
-                          <Link to="/"><img src="./img/home-icon.png" alt="" /> </Link>}
+                          <Link to="/SampleServices"><span className="icon-home-icon-silhouette"></span> </Link>:
+                          <Link to="/"><span className="icon-home-icon-silhouette"></span></Link>}
                       </div>
                       <div className="user">
-                          <Link to="/Profile"><img src="./img/user.png" alt="User" /></Link>
+                          <Link to="/Profile"><span className="icon-user-3"></span></Link>
                       </div>
                   </div>
               </div>
