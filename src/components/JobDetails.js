@@ -426,7 +426,6 @@ export  class Jobdetails extends React.Component {
         return;
       }
 
-      console.log(JSON.stringify(this.serviceState))
       this.getCurrentBlockNumber();
       this.setState({runjobstate: data["is_available"]});
     }

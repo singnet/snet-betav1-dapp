@@ -9,7 +9,6 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     library.add(fab, faCheckSquare, faCoffee);
-    console.log("App " + JSON.stringify(props))
   }
 
   render() {

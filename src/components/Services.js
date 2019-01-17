@@ -192,7 +192,6 @@ class SampleServices extends React.Component {
                 }
             }))            
           }      
-          console.log(JSON.stringify(values[0].data))
           this.setState({agents: values[0].data})
         }   
       }
