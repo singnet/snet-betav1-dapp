@@ -344,7 +344,7 @@ export class Profile extends Component {
     window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true
     return (
             <React.Fragment>
-                <App searchTerm="" searchCallBack={undefined}/>
+                <App searchTerm="" chainId={this.state.chainId}/>
                 <div className="container">
                     <div className="row">
                         <div className=" col-xs-12 col-sm-12 col-md-6 col-lg-6 your-account-details">

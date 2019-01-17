@@ -15,6 +15,9 @@ import ServiceMappings from "./service/ServiceMappings.js"
 import ChannelHelper from './ChannelHelper.js';
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { Root } from 'protobufjs'
+import Vote from './Vote.js';
+
+
 
 export  class Jobdetails extends React.Component {
     constructor() {
@@ -23,7 +26,6 @@ export  class Jobdetails extends React.Component {
       this.state = {
         tagsall:[],
         jobDetailsSliderOpen:false,
-        modalservicestatus:[],
         ocvalue:0,
         ocexpiration:0,
         grpcResponse:undefined,
@@ -123,6 +125,7 @@ export  class Jobdetails extends React.Component {
     }
 
     startjob() {
+      this.setState({enableVoting:true})
       //var currentBlockNumber = 900000;
       //(async ()=> { await web3.eth.getBlockNumber((error, result) => {currentBlockNumber = result}) })()
       var reInitialize = this.reInitializeJobState();
@@ -409,11 +412,10 @@ export  class Jobdetails extends React.Component {
       this.setState({ valueTab });
     }
 
-    onOpenJobDetails(data,dataservicestatus) {
+    onOpenJobDetails(data) {
       (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
       //this.setState({serviceState:data})
       this.serviceState = data;
-      this.setState({modalservicestatus:dataservicestatus})
       this.setState({jobDetailsSliderOpen: true });
       this.setState({expiryBlockNumber:10000})
       this.setState({valueTab:0})
@@ -426,15 +428,7 @@ export  class Jobdetails extends React.Component {
 
       console.log(JSON.stringify(this.serviceState))
       this.getCurrentBlockNumber();
-      //disabled start job if the service is not up at all - unhealthy agent//
-      dataservicestatus.map(row => {
-        if (row["service_id"] === data["service_id"]) {
-          if (row["is_available"] === 1) {
-            this.setState({runjobstate: true});
-            return;
-          }
-        }
-      })
+      this.setState({runjobstate: data["is_available"]});
     }
 
   getCurrentBlockNumber() {
@@ -511,7 +505,18 @@ export  class Jobdetails extends React.Component {
                                 <h3>{this.serviceState["service_id"]} </h3>
                                 <p> {this.state.tagsall.map(rowtags =>
                                     <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
-                                <div className="text-center border-top1">
+                                <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
+                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
+                                          This is a brief write up about the service which discusses details of the service. We expect a short description of the service here and details on how to contact the author.
+                                    </div>
+                                </div>
+                                <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
+                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding" >
+                                    <span className="font-weight-bold">URL&nbsp;:&nbsp;</span> <a target="_blank" href={'https://singularitynet.io'}>https://singularitynet.io</a>
+                                    </div>
+                                </div>
+
+                                <div className="col-xs-12 col-sm-12 col-md-12 text-center border-top1">                              
                                     {(this.state.runjobstate === true) ?
                                     <button type="button" className="btn-primary" onClick={()=> this.startjob()}>Start Job</button>
                                     :
@@ -531,15 +536,15 @@ export  class Jobdetails extends React.Component {
                                     <TabContainer>
                                         { (this.state.startjobfundinvokeres)?
                                         <div className="row channels-sec">
-                                        <div class="col-md-12 no-padding mtb-10">
-                                        <div class="col-md-12 no-padding"> 
+                                        <div className="col-md-12 no-padding mtb-10">
+                                        <div className="col-md-12 no-padding"> 
                                             <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:</div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} />
                                             </div>
                                             </div>
                                             </div>
-                                            <div class="col-md-12 no-padding"> 
+                                            <div className="col-md-12 no-padding"> 
                                             <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiration:</div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} />
@@ -550,15 +555,15 @@ export  class Jobdetails extends React.Component {
                                             </div>
                                         </div>:
                                         <div className="row channels-sec-disabled">
-                                          <div class="col-md-12 no-padding mtb-10">
-                                          <div class="col-md-12 no-padding"> 
+                                          <div className="col-md-12 no-padding mtb-10">
+                                          <div className="col-md-12 no-padding"> 
                                             <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:</div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={parseInt(this.serviceState["price_in_agi"])} disabled />
                                             </div>
                                             </div>
                                             </div>
-                                            <div class="col-md-12 no-padding"> 
+                                            <div className="col-md-12 no-padding"> 
                                             <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiration:</div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} disabled />
@@ -603,30 +608,7 @@ export  class Jobdetails extends React.Component {
                                     </TabContainer>}
                                 </div>
                             </div>
-                            <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
-                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
-                                      This is a brief write up about the service which discusses details of the service. We expect a short description of the service here and details on how to contact the author.
-                                </div>
-                            </div>
-                            <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
-                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding" >
-                                <span className="font-weight-bold">URL&nbsp;:&nbsp;</span> <a target="_blank" href={'https://singularitynet.io'}>https://singularitynet.io</a>
-                                </div>
-                            </div>
-
-                            <div className="col-xs-12 col-sm-12 col-md-12 vote no-padding">
-                            <h3>Vote</h3>
-                            <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
-                                <div className="thumbsup-icon vote-like">
-                                    <span className="icon-like-disabled" onClick={()=>this.handleVote(this.serviceState["org_id"],this.serviceState["service_id"],true)}/>
-                                </div>
-                            </div>
-                            <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
-                                <div className="thumbsdown-icon">
-                                <span className="icon-dislike-disabled" onClick={()=>this.handleVote(this.serviceState["org_id"],this.serviceState["service_id"],true)}/>
-                                </div>
-                            </div>
-                            </div>
+                            <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
                             
                             <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
                                 <h3>Job Cost Preview</h3>
