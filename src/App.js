@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { faCheckSquare, faCoffee } from '@fortawesome/free-solid-svg-icons'
+import { NETWORKS } from './util'
 
 export default class App extends React.Component {
   constructor(props) {
@@ -11,6 +12,7 @@ export default class App extends React.Component {
   }
 
   render() {
+      
     return (
       <React.Fragment>
             <div className="inner">
@@ -37,9 +39,13 @@ export default class App extends React.Component {
                       <Link to="/">
                       <h1><span className="icon-logo"></span></h1></Link>}
                   </div>
-                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name">
-                  Your are on the Kovan Network
-                  </div>
+                  {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
+                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name">
+                        Your are on {NETWORKS[this.props.chainId].name}
+                    </div>
+                    :
+                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name"/>
+                  }
                   <div className="col-xs-6 col-sm-8 col-md-6 col-lg-4 search-user">
                       {
                         (typeof this.props.searchCallBack !== 'undefined')?

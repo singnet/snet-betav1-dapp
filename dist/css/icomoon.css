@@ -35,14 +35,14 @@
     color: #4086ff;
     font-size: 26px;
 }
-.icon-dislike-disabled:before {
-  content: "\e900";
-  color: #757577;
-  font-size: 26px;
-}
 .icon-like-disabled:before {
   content: "\e901";
     color: #757577;
+    font-size: 26px;
+}
+.icon-dislike-enabled:before {
+  content: "\e900";
+    color: #4086ff;
     font-size: 26px;
 }
 .icon-home-icon-silhouette:before {
