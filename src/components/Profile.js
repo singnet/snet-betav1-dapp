@@ -12,11 +12,9 @@ import { Requests } from '../requests'
 import App from "../App.js";
 import Tooltip from '@material-ui/core/Tooltip';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Modal from '@material-ui/core/Modal';
-import Slide from '@material-ui/core/Slide';
 import BlockchainHelper from "./BlockchainHelper.js"
 import {ProfileTabContainer, ModalStylesAlertWait} from './ReactStyles.js';
+import DAppModal from './DAppModal.js'
 
 export class Profile extends Component {
   constructor(props) {
@@ -469,20 +467,7 @@ export class Profile extends Component {
                             </div>
                         </div>
                         <div>
-                            <Modal style={ModalStylesAlertWait} open={this.state.openchaining} >
-                                <Slide direction="left" in={this.state.openchaining} mountonEnter unmountOnExit>
-                                    <React.Fragment>
-                                        <Typography component={ 'div'} style={{ fontSize: "13px", lineHeight: "15px" }}>
-                                            <div className="col-sm-12 col-md-6 col-lg-6">
-                                                Your transaction is being mined.
-                                            </div>
-                                            <div style={{ width: '100px' }} className="col-sm-12 col-md-6 col-lg-6">
-                                                <CircularProgress backgroundpadding={6} styles={{ background: { fill: '#3e98c7', }, text: { fill: '#fff', }, path: { stroke: '#fff', }, trail: { stroke: 'transparent' }, }} />
-                                            </div>
-                                        </Typography>
-                                    </React.Fragment>
-                                </Slide>
-                            </Modal>
+                            <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
                         </div>
                         <div className="col-xs-12 col-sm-16 col-md-16 col-lg-16 channel-info ">
                             <div className="row channel-header">

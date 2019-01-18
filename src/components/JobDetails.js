@@ -1,22 +1,19 @@
 import React, { props } from 'react';
 import { grpcRequest, rpcImpl } from '../grpc.js'
-import { Requests } from '../requests'
 import Typography from '@material-ui/core/Typography'
 import Modal from '@material-ui/core/Modal'
 import Slide from '@material-ui/core/Slide'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
-import { Link } from 'react-router-dom'
 import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE } from '../util'
-import {TabContainer, ModalStylesAlertWait, ModalStylesAlert} from './ReactStyles.js';
+import {TabContainer} from './ReactStyles.js';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ServiceMappings from "./service/ServiceMappings.js"
 import ChannelHelper from './ChannelHelper.js';
-import CircularProgress from '@material-ui/core/CircularProgress'
 import { Root } from 'protobufjs'
 import Vote from './Vote.js';
-
+import DAppModal from './DAppModal.js'
 
 
 export  class Jobdetails extends React.Component {
@@ -33,9 +30,6 @@ export  class Jobdetails extends React.Component {
         startjobfundinvokeres:false,
         depositopenchannelerror:'',
         valueTab:0,
-        userkeepsvote:'',
-        voteLike:false,
-        voteDislike:false,
         enableVoting:false,
         openchaining:false,
         sliderWidth:'550px',
@@ -45,15 +39,7 @@ export  class Jobdetails extends React.Component {
       this.serviceState = {};
       this.channelHelper = new ChannelHelper()
       this.currentBlockNumber = undefined
-      this.serviceSpecJSON = undefined
-      /*this.serviceState = {
-        serviceSpecJSON : undefined,
-        serviceId: undefined,
-        orgId: undefined,
-        price : undefined,
-        currentBlockNumber : undefined,
-        channelHelper : new ChannelHelper()
-      }*/      
+      this.serviceSpecJSON = undefined  
       this.serviceMappings = new ServiceMappings();
       this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
       this.handleChangeTabs = this.handleChangeTabs.bind(this);
@@ -65,7 +51,6 @@ export  class Jobdetails extends React.Component {
       this.openchannelhandler = this.openchannelhandler.bind(this);
       this.handleJobInvocation = this.handleJobInvocation.bind(this);      
       this.startjob = this.startjob.bind(this);
-      this.handleVote = this.handleVote.bind(this);
       this.onOpenEscrowBalanceAlert = this.onOpenEscrowBalanceAlert.bind(this)
       this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this)  
       this.onOpenchaining = this.onOpenchaining.bind(this)
@@ -76,33 +61,6 @@ export  class Jobdetails extends React.Component {
       this.onClosechaining()
       this.setState({valueTab:(this.state.valueTab + 1)})
       console.log("Job step " + this.state.valueTab);
-    }
-
-    handleVote(orgid,serviceid,upVote)
-    {
-      const urlfetchvote = getMarketplaceURL(this.state.chainId) + 'vote'
-      console.log("Message " + this.props.userAddress + orgid + upVote + serviceid + (!upVote))
-      var sha3Message = web3.sha3(this.props.userAddress + orgid + upVote + serviceid + (!upVote));
-      console.log("Hash " + sha3Message)
-      window.ethjs.personal_sign(sha3Message, this.props.userAddress).then((signed) => {
-        console.log("Signature " + signed)
-        const requestObject = {
-          vote: {
-            user_address: this.props.userAddress,
-            org_id: orgid,
-            service_id: serviceid,
-            up_vote: upVote,
-            down_vote: (!upVote),
-            signature: signed
-          }
-        }
-        console.log(JSON.stringify(requestObject))
-  
-        Requests.post(urlfetchvote,requestObject)
-          .then(res => res.json())
-          .then(data => this.setState({userkeepsvote: data}))
-          .catch(err => console.log(err));
-      })
     }
 
     reInitializeJobState() {
@@ -125,9 +83,6 @@ export  class Jobdetails extends React.Component {
     }
 
     startjob() {
-      this.setState({enableVoting:true})
-      //var currentBlockNumber = 900000;
-      //(async ()=> { await web3.eth.getBlockNumber((error, result) => {currentBlockNumber = result}) })()
       var reInitialize = this.reInitializeJobState();
       var serviceSpec = this.fetchServiceSpec();
       Promise.all([reInitialize, serviceSpec]).then(() => {
@@ -251,14 +206,15 @@ export  class Jobdetails extends React.Component {
         }
         
         console.log("MPE has balance but have to check if we need to open a channel or extend one.");
-        var groupIDBytes = atob(this.channelHelper.getGroupId());
-        var recipientaddress = this.channelHelper.getRecipient();
         console.log("group id is " + this.channelHelper.getGroupId())
         console.log("recipient address is " + recipientaddress)
         console.log('groupdidgetter hex is ' + groupIDBytes)
         console.log('Amount is ' + amountInCogs);
         console.log(this.state.ocexpiration);
         console.log(this.props.userAddress);
+
+        var groupIDBytes = atob(this.channelHelper.getGroupId());
+        var recipientaddress = this.channelHelper.getRecipient();        
         if (this.channelHelper.getChannels().length > 0) {
           var rrchannel = this.channelHelper.getChannels()[0];
           console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));
@@ -456,38 +412,10 @@ export  class Jobdetails extends React.Component {
         return(
             <React.Fragment>
             <div>
-                <Modal style={ModalStylesAlertWait} open={this.state.openchaining}>
-                    <Slide direction="left" in={this.state.openchaining} mountonEnter unmountOnExit>
-                        <React.Fragment>
-                            <Typography component={ 'div'} style={{fontSize: "13px",lineHeight: "15px"}}>
-                                <div className="row">
-                                <div style={{ width: '50px' }} className="col-sm-12 col-md-6 col-lg-6">
-                                      <CircularProgress backgroundpadding={6} styles={{ background: { fill: '#3e98c7', }, text: { fill: '#fff', }, path: { stroke: '#fff', }, trail: { stroke: 'transparent' }, }} />
-                                    </div>                                
-                                    <div className="col-sm-12 col-md-6 col-lg-6">
-                                        Your transaction is being mined.
-                                    </div>
-                                </div>
-                            </Typography>
-                        </React.Fragment>
-                    </Slide>
-                </Modal>
+                <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
             </div>              
             <div>
-                <Modal open={this.state.showEscrowBalanceAlert} onClose={this.onCloseEscrowBalanceAlert}>
-                    <Slide direction="down" in={this.state.showEscrowBalanceAlert} mountOnEnter unmountOnExit>
-                        <div style={ModalStylesAlert} className="container popover-wrapper search-panel">
-                            <Typography component={ 'div'}>
-                                <p style={{fontSize: "15px",color: "red"}}>The balance in your escrow account is 0. Please transfer money from wallet to escrow account to proceed.</p>
-                                <div style={{textAlign: "center"}}>
-                                    <Link to="/Profile">
-                                    <input className='btn btn-primary' type='button' value='Go to Profile' />
-                                    </Link>
-                                </div>
-                            </Typography>
-                        </div>
-                    </Slide>
-                </Modal>
+              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from wallet to escrow account to proceed."} showProgress={false} link={"/Profile"} linkText="Go to Profile"/>
             </div>              
             <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
             <PerfectScrollbar>
@@ -528,8 +456,8 @@ export  class Jobdetails extends React.Component {
                                 <div className="servicedetailstab">
                                 <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
                                     <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Fund</span>}/>
-                                    <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Invoke</span>}/>
-                                    <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Result</span>} />
+                                    <Tab disabled={(!this.state.startjobfundinvokeres || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
+                                    <Tab disabled={(!this.state.startjobfundinvokeres || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
                                 </Tabs>
                                     { valueTab === 0 &&
                                     <TabContainer>

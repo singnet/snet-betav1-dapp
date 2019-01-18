@@ -376,8 +376,8 @@ class SampleServices extends React.Component {
                                                     <input id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchTerm} onChange={this.capturesearchTerm} onKeyUp={(e)=>this.handlesearchkeyup(e)} />
                                                 </div>
                                                 <div className="col-sm-3 col-md-3 col-lg-3">
-                                                    <input className='btn btn-primary' id='phSearchButton' type='button' value='Search' onClick={this.handlesearch} />
-                                                    <input className='btn btn-primary clear-btn' id='phSearchButtonclear' type='button' value='Clear' onClick={this.handlesearchclear} />
+                                                    <input className='btn btn-primary' id='phSearchButton' type='button' defaultValue='Search' onClick={this.handlesearch} />
+                                                    <input className='btn btn-primary clear-btn' id='phSearchButtonclear' type='button' defaultValue='Clear' onClick={this.handlesearchclear} />
                                                 </div>
                                             </div>
                                         </div>
