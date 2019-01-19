@@ -29,7 +29,6 @@ export class Profile extends Component {
       escrowaccountbalance: 0,
       allowedtokenbalance:[],
       value: 0, //WHAT IS THIS FOR??
-      authorizeAmount: 0,
       depositAmount: 0,
       withdrawalAmount: 0,
       userprofile: [],
@@ -47,7 +46,6 @@ export class Profile extends Component {
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
     this.handleAuthorize = this.handleAuthorize.bind(this)
-    this.handleDeposit = this.handleDeposit.bind(this)
     this.handlewithdraw = this.handlewithdraw.bind(this)
     this.handleAmountChange = this.handleAmountChange.bind(this)
     this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this)
@@ -206,13 +204,9 @@ export class Profile extends Component {
     this.setState({[name]: value,})
   }
 
-  executeContractMethod(operation, err, estimatedGas, gasPrice, messageField, successMessage, parameters) {
-    console.log("Operation " + operation + " " + estimatedGas + " gasPrice " + gasPrice);
-    if(err) {
-      this.processError(err,messageField);
-      return;
-    }
-    
+  executeContractMethod(operation, callBack, estimatedGas, gasPrice, messageField, successMessage, parameters) {
+    console.log("Operation " + operation.name + " " + estimatedGas + " gasPrice " + gasPrice + " with params " + JSON.stringify(parameters));
+    const caller = this
     parameters.push({
       gas: estimatedGas,
       gasPrice: gasPrice
@@ -225,9 +219,13 @@ export class Profile extends Component {
         console.log("Txn Hash for approved transaction is : " + txnHash);
         this.onOpenchaining();
         this.network.waitForTransaction(txnHash).then(receipt => {
-            this.nextJobStep();
-            this.setState({[messageField]:successMessage})
-            this.loadAGIBalances(this.state.chainId);
+            if(typeof callBack !== 'undefined') {
+                callBack(caller)
+            } else {            
+                this.nextJobStep();
+                this.setState({[messageField]:successMessage})
+                this.loadAGIBalances(this.state.chainId);
+            }
           })
           .catch((error) => {
             this.processError(error, messageField)
@@ -245,42 +243,58 @@ export class Profile extends Component {
     }
 
     let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
-    var amountInCogs = AGI.inCogs(web3, this.state.authorizeAmount);
+    var amountInCogs = AGI.inCogs(web3, this.state.depositAmount);
 
     web3.eth.getGasPrice((err, gasPrice) => {
       if(err) {
         gasPrice = DEFAULT_GAS_PRICE;
       }      
       instanceTokenContract.approve.estimateGas(this.network.getMPEAddress(this.state.chainId),amountInCogs, (err, estimatedGas) => {
-        this.executeContractMethod(instanceTokenContract.approve, err, estimatedGas, gasPrice, "contractMessage", 
+        if(err) {
+            this.processError(err,"contractMessage");
+            return;
+        }        
+        this.executeContractMethod(instanceTokenContract.approve, this.handleDeposit, estimatedGas, gasPrice, "contractMessage", 
         "You have successfully authorized tokens. Please deposit them to the Escrow account from the Deposit Tab",
         [this.network.getMPEAddress(this.state.chainId),amountInCogs]);
       })
     })
   }
 
-  handleDeposit() {
-    this.setState({contractMessage:''})
-    if (typeof web3 === undefined || !this.state.supportedNetwork) {
-      return;
+   handleDeposit(caller, counter) {
+    if(typeof counter === 'undefined'){
+        counter = 0
     }
-
-    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
-    instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(this.state.chainId), (err, allowedbalance) => {
-      var amountInCogs = AGI.inCogs(web3, this.state.depositAmount);
+    
+    let instanceTokenContract = caller.network.getTokenInstance(caller.state.chainId);
+    instanceTokenContract.allowance(web3.eth.defaultAccount, caller.network.getMPEAddress(caller.state.chainId), async (err, allowedbalance) => {
+      var amountInCogs = AGI.inCogs(web3, caller.state.depositAmount);
+      console.log("Attempting to deposit " + amountInCogs + " attempt " + counter)
       if (Number(amountInCogs) > Number(allowedbalance)) {
-        this.setState({contractMessage: 'Deposit amount should be less than approved balance ' + allowedbalance});
+          if(counter < 5) {
+              console.log("Checking deposit")
+              const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
+              await snooze(2000);
+              caller.handleDeposit(counter+1)
+          }
+          else {
+            caller.setState({contractMessage: 'Deposit amount should be less than approved balance ' + allowedbalance});
+          }
       }
       else {
-        let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
-        this.setState({contractMessage: ''})
+        let instanceEscrowContract = caller.network.getMPEInstance(caller.state.chainId);
+        caller.setState({contractMessage: ''})
         web3.eth.getGasPrice((err, gasPrice) => {
           if(err) {
             gasPrice = DEFAULT_GAS_PRICE;
           }          
           instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
-            this.executeContractMethod(instanceEscrowContract.deposit, err, estimatedGas, gasPrice, "contractMessage", 
-            "You have successfully deposited tokens to the Escrow. You can now execute Agents from the Home page"
+            if(err) {
+                caller.processError(err,"contractMessage");
+                return;
+            }                 
+            caller.executeContractMethod(instanceEscrowContract.deposit, undefined, estimatedGas, gasPrice, "contractMessage", 
+            "You have successfully deposited tokens to the Escrow. You can now execute Agents from the Home page",
             [amountInCogs]);
           })
         })
@@ -306,7 +320,11 @@ export class Profile extends Component {
         gasPrice = DEFAULT_GAS_PRICE;
       }
       instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
-        this.executeContractMethod(instanceEscrowContract.withdraw, err, estimatedGas, gasPrice, "contractMessage", [amountInCogs]);
+        if(err) {
+            this.processError(err,"contractMessage");
+            return;
+        }             
+        this.executeContractMethod(instanceEscrowContract.withdraw, undefined,estimatedGas, gasPrice, "contractMessage", [amountInCogs]);
       })
     })
   }
@@ -337,7 +355,11 @@ export class Profile extends Component {
             gasPrice = DEFAULT_GAS_PRICE;
         }      
         instanceEscrowContract.channelExtendAndAddFunds.estimateGas(channelID, this.state.extexp, amountInCogs, (err, estimatedGas) => {
-            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, err, estimatedGas, gasPrice, "channelExtendAddError", [channelID, this.state.extexp, amountInCogs]);
+            if(err) {
+                this.processError(err,"contractMessage");
+                return;
+            }
+            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, undefined, estimatedGas, gasPrice, "channelExtendAddError", [channelID, this.state.extexp, amountInCogs]);
             })
         })
     })
@@ -411,12 +433,7 @@ export class Profile extends Component {
                         <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 manage-account">
                             <h3>Manage your Escrow account</h3>
                             <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
-                                <Tabs style={{ padding: "0" }} value={value} onChange={(event,value)=> this.handleChange(value)} indicatorColor='primary'>
-                                    <Tab label={<span style={{ fontSize: "13px" }}>Authorize&nbsp;<span>
-                                        <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
-                                            Authorize transfer of AGI tokens to the escrow account. You need to have funds in the escrow to create payment channels.</span>}>
-                                            <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
-                                        </Tooltip></span></span>} />
+                                <Tabs value={value} onChange={(event,value)=> this.handleChange(value)} indicatorColor='primary'>
                                         <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span>
                                             <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
                                                 Deposit AGI tokens to the escrow account. You need to have funds in the escrow to create payment channels.</span>} >
@@ -430,32 +447,19 @@ export class Profile extends Component {
                                 </Tabs>
                                 {value === 0 &&
                                 <ProfileTabContainer>
-                                    <TextField id="standard-name" name="authorizeAmount" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" onChange={this.handleAmountChange} value={this.state.authorizeAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
-                                        <br />
-                                        <div className="row">
-                                            <div className="col-xs-6 col-sm-6 col-md-6 transaction-message">{this.state.contractMessage}</div>
-                                            <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(this.state.supportedNetwork && web3.eth.coinbase !== null && this.state.authorizeAmount > 0) ?
-                                                <button className="btn btn-primary" onClick={this.handleAuthorize}><span>Authorize</span></button>:
-                                                <button className="btn" disabled><span>Authorize</span></button>
-                                                }
-                                            </div>
-                                        </div>
-                                </ProfileTabContainer>} {value === 1 &&
-                                <ProfileTabContainer>
                                     <TextField id="depositamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="depositAmount" onChange={this.handleAmountChange} value={this.state.depositAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6 transaction-message">{this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
                                                 {(this.state.supportedNetwork && web3.eth.coinbase !== null && this.state.depositAmount > 0) ?
-                                                <button className="btn btn-primary" onClick={this.handleDeposit}><span style={{ fontSize: "15px" }}>Deposit</span></button> :
+                                                <button className="btn btn-primary" onClick={this.handleAuthorize}><span style={{ fontSize: "15px" }}>Deposit</span></button> :
                                                 <button className="btn " disabled><span style={{ fontSize: "15px" }}>Deposit</span></button>
                                                 }
                                             </div>
                                         </div>
                                         <p className="transaction-message">{this.state.contractMessage}</p>
-                                </ProfileTabContainer>} {value === 2 &&
+                                </ProfileTabContainer>} {value === 1 &&
                                 <ProfileTabContainer>
                                     <TextField id="withdrawamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="withdrawalAmount" onChange={this.handleAmountChange} value={this.state.withdrawalAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
