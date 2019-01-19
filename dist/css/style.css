@@ -9210,12 +9210,31 @@ a:hover {
   color: #0a51db;
 }
 
+.transaction-message {
+  color: #4086ff;
+  font-size: 13px;
+}
+
 .mini-maxi-close {
-  color: #999;
+  color: #4086ff;
   font-size: 13px;
   border: none;
   cursor: pointer;
 } 
+
+.info-icon {
+  color: #4086ff;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+}
+
+.sort-icon {
+  color: #4086ff;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+}
 
 body {
   font-family: 'Muli', sans-serif !important;

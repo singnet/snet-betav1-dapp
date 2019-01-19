@@ -70,7 +70,6 @@ class SampleServices extends React.Component {
   }
 
   handlehealthsort() {
-    console.log("Soring health")
     var healthSort = this.state.agents
     if (this.state.togglehealth === false) {
       healthSort.sort((a, b) => (a === b)? 0 : a ? -1 : 1)
@@ -154,10 +153,9 @@ class SampleServices extends React.Component {
     const marketPlaceURL = getMarketplaceURL(chainId);
     const url = marketPlaceURL + "service"
     const urlfetchservicestatus = marketPlaceURL + 'group-info'
-    const urlfetchvote = marketPlaceURL + 'fetch-vote'
-    const fetchVoteBody = {user_address: typeof web3 === 'undefined' ? "" : web3.eth.coinbase}
+    const urlfetchvote = marketPlaceURL + 'fetch-vote?user_address=' + (typeof web3 === 'undefined' ? "" : web3.eth.coinbase)
     console.log("Fetching data for " + chainId)
-    Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.post(urlfetchvote,fetchVoteBody)])
+    Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.get(urlfetchvote)])
     .then((values) =>
     {
       if(typeof(values[0]) !== 'undefined')
@@ -306,10 +304,10 @@ class SampleServices extends React.Component {
                      <Carddeckers/>
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 head-txt-sec">
                         <div className="col-sm-2 col-md-2 col-lg-2">
-                            <h3>Agent</h3>
                             <div className="toggle">
-                                <button>
-                                    <img src="./img/Arrow.png" alt="toggle" onClick={this.handleservicenamesort}/>
+                                <button onClick={this.handleservicenamesort}>
+                                    <h3>Agent</h3>
+                                    <i className="fa fa-sort sort-icon" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -317,10 +315,10 @@ class SampleServices extends React.Component {
                             <h3>Organization</h3>
                         </div>
                         <div className="col-sm-2 col-md-2 col-lg-2">
-                            <h3>Price</h3>
                             <div className="toggle">
-                                <button className="toggle-up">
-                                    <img src="./img/Arrow.png" alt="toggle" onClick={this.handlepricesort}/>
+                                <button onClick={this.handlepricesort}>
+                                    <h3>Price</h3>
+                                    <i className="fa fa-sort sort-icon" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -328,10 +326,10 @@ class SampleServices extends React.Component {
                             <h3>Tags</h3>
                         </div>
                         <div className="col-sm-1 col-md-1 col-lg-1 text-center">
-                            <h3>Health</h3>
                             <div className="toggle">
-                                <button className="toggle-up">
-                                    <img src="./img/Arrow.png" alt="toggle" onClick={this.handlehealthsort}/>
+                                <button onClick={this.handlehealthsort}>
+                                    <h3>Health</h3>
+                                    <i className="fa fa-sort sort-icon" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>

@@ -66,8 +66,11 @@ export  class Jobdetails extends React.Component {
     reInitializeJobState() {
       this.setState({ocexpiration:0})
       this.setState({ocvalue:0})
-      let channelInfoUrl = getMarketplaceURL(this.props.chainId) + 'channel-info';
-      return this.channelHelper.reInitialize(channelInfoUrl, this.props.userAddress, this.serviceState["service_id"], this.serviceState["org_id"]);
+      const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
+                          'available-channels?user_address="'+this.props.userAddress +
+                          '"&service_id='+this.serviceState["service_id"] +
+                          '&org_id='+this.serviceState["org_id"];
+      return this.channelHelper.reInitialize(channelInfoUrl);
     }
 
     fetchServiceSpec() {
