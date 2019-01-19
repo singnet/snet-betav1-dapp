@@ -324,7 +324,7 @@ export class Profile extends Component {
             this.processError(err,"contractMessage");
             return;
         }             
-        this.executeContractMethod(instanceEscrowContract.withdraw, undefined,estimatedGas, gasPrice, "contractMessage", [amountInCogs]);
+        this.executeContractMethod(instanceEscrowContract.withdraw, undefined,estimatedGas, gasPrice, "contractMessage", "You have successfully withdrawn tokens into your account", [amountInCogs]);
       })
     })
   }
@@ -359,7 +359,7 @@ export class Profile extends Component {
                 this.processError(err,"contractMessage");
                 return;
             }
-            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, undefined, estimatedGas, gasPrice, "channelExtendAddError", [channelID, this.state.extexp, amountInCogs]);
+            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, undefined, estimatedGas, gasPrice, "channelExtendAddError", "You have successfully extended the channel", [channelID, this.state.extexp, amountInCogs]);
             })
         })
     })
