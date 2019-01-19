@@ -18,8 +18,8 @@ export default class DAppModal extends React.Component {
     {
         return(
             <React.Fragment>
-            <div>
-                <Modal style={ModalStylesAlertWait} open={this.props.open}>
+            <div tabIndex="-1">
+                <Modal disableAutoFocus={true} style={ModalStylesAlertWait} open={this.props.open}>
                     <Slide direction="left" in={this.props.open} mountonEnter unmountOnExit>
                         <React.Fragment>
                             <Typography component={ 'div'} style={{fontSize: "13px",lineHeight: "15px"}}>
