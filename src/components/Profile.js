@@ -280,7 +280,7 @@ export class Profile extends Component {
           }          
           instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
             this.executeContractMethod(instanceEscrowContract.deposit, err, estimatedGas, gasPrice, "contractMessage", 
-            "You have successfully deposited tokens to the Escrow. You can now execute Agents from the Home page"
+            "You have successfully deposited tokens to the Escrow. You can now execute Agents from the Home page",
             [amountInCogs]);
           })
         })
@@ -306,7 +306,8 @@ export class Profile extends Component {
         gasPrice = DEFAULT_GAS_PRICE;
       }
       instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
-        this.executeContractMethod(instanceEscrowContract.withdraw, err, estimatedGas, gasPrice, "contractMessage", [amountInCogs]);
+        this.executeContractMethod(instanceEscrowContract.withdraw, err, estimatedGas, gasPrice, "contractMessage", 
+        "You have successfully withdrawn tokens into your account",[amountInCogs]);
       })
     })
   }
@@ -337,7 +338,7 @@ export class Profile extends Component {
             gasPrice = DEFAULT_GAS_PRICE;
         }      
         instanceEscrowContract.channelExtendAndAddFunds.estimateGas(channelID, this.state.extexp, amountInCogs, (err, estimatedGas) => {
-            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, err, estimatedGas, gasPrice, "channelExtendAddError", [channelID, this.state.extexp, amountInCogs]);
+            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, err, estimatedGas, gasPrice, "channelExtendAddError", "You have successfully extended the channel", [channelID, this.state.extexp, amountInCogs]);
             })
         })
     })
