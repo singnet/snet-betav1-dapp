@@ -409,7 +409,7 @@ export  class Jobdetails extends React.Component {
       //this.setState({serviceState:data})
       this.serviceState = data;
       this.setState({jobDetailsSliderOpen: true });
-      this.setState({enableVoting: true})
+      this.setState({enableVoting: false})
       this.setState({ocvalue:this.serviceState['price_in_agi']})      
       this.setState({valueTab:0})
       this.setState({startjobfundinvokeres:false})

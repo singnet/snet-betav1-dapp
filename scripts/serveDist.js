@@ -15,4 +15,4 @@ app.get('/bundle*', (req, res, next) => {
 
 app.use(express.static(paths.outPath));
 
-app.listen(PORT, () => { console.log('Alpha dapp running at http://localhost:' + PORT) });
+app.listen(PORT, () => { console.log('Beta DApp running at http://localhost:' + PORT) });

@@ -10399,7 +10399,6 @@ body.modal-open .modal .close {
 }
 
 .tooltip {
-  font-family: bergentext !important;
   font-weight: 500;
   font-style: normal;
 }
@@ -10863,7 +10862,7 @@ nav .nav-tabs .nav-link:hover {
   background-color: #fff;
   padding: 2rem;
   margin-bottom: 20px;
-  height: 190px;
+  height: 150px;
   } 
 .card-deck .card-body h3 {
   margin-top:0px;
@@ -11121,6 +11120,20 @@ nav .nav-tabs .nav-link:hover {
   display: inline-block;
   border-radius: 50px;
 }
+.search-user {
+  padding: 0px;
+  vertical-align: text-bottom;
+  text-align: right;
+  float: right;
+  } 
+
+  .get-started {
+    background-color:#fff;
+    padding: 6px 10px;
+    float: left;
+    border-radius: 4px;
+    margin: 0 11px 0 0;
+    } 
 
 .search-panel {
   position: relative;
@@ -11264,7 +11277,8 @@ h1 {
   padding: 0px;
   vertical-align: text-bottom;
   text-align: right;
-}
+  float: right;
+  } 
 
 .network-name {
   padding: 5px;
@@ -11536,7 +11550,6 @@ position: absolute;
  .amount-type {
   border-radius: 5px;
   border-top: 3px solid #0066ff;
-  font-family: 'Roboto',sans-serif;
   font-size: 15px !important;
   box-shadow: 1px 1px 10px #e0dbdb;
   padding: 0 15px;
@@ -11576,15 +11589,6 @@ position: absolute;
   border:0px;
 }
 
-.channel-info {
-    height: 385px;
-    overflow: auto;
-    border-radius: 5px;
-    border-top: 3px solid #0066ff;
-    padding: 15px;
-    margin: 30px 0;
-    box-shadow: 1px 1px 10px #e0dbdb;
-}
 .channel-header {
     font-size: 15px;
     font-weight: 500;
@@ -11928,6 +11932,15 @@ position: absolute;
     font-size: 13px;
     float: left;
 }
+
+.get-started {
+  background-color:#fff;
+  padding: 6px 10px;
+  float: left;
+  border-radius: 4px;
+  margin: 0 11px 0 0;
+  } 
+
   .search {
     border: none;
     padding: 7px 10px;

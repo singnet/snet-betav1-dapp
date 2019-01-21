@@ -12,10 +12,10 @@ export default class ExampleService extends React.Component {
         this.state = {
             serviceName: undefined,
             methodName: undefined,
-            response: undefined,
             a: 0,
             b: 0
         };
+        this.response = undefined
         this.isComplete = false
         this.serviceMethods = []
         this.allServices = []
@@ -31,9 +31,9 @@ export default class ExampleService extends React.Component {
         else {
             if (typeof nextProps.response !== 'undefined') {
                 if (typeof nextProps.response === 'string') {
-                    this.setState({response:nextProps.response}); 
+                    this.response=nextProps.response; 
                 } else {
-                    this.setState({response: nextProps.response.value});
+                    this.response=nextProps.response.value;
                 }
             }
         }
@@ -148,7 +148,7 @@ export default class ExampleService extends React.Component {
     renderComplete() {
         return(
         <div>
-            <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p> 
+            <p style={{fontSize: "13px"}}>Response from service is {this.response} </p> 
         </div>
         );
     }
