@@ -39,7 +39,7 @@ export  class Jobdetails extends React.Component {
 
       this.serviceState = {};
       this.channelHelper = new ChannelHelper()
-      this.currentBlockNumber = undefined
+      this.currentBlockNumber = 0
       this.serviceSpecJSON = undefined  
       this.serviceMappings = new ServiceMappings();
       this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
@@ -56,7 +56,22 @@ export  class Jobdetails extends React.Component {
       this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this)  
       this.onOpenchaining = this.onOpenchaining.bind(this)
       this.onClosechaining = this.onClosechaining.bind(this)  
+      this.watchBlocknumberTimer = undefined;
     }
+
+    watchBlocknumber() {
+      //Update blocknumber
+      this.props.network.getCurrentBlockNumber((blockNumber) => {
+        this.currentBlockNumber = blockNumber
+      })
+    }
+
+    componentWillUnmount() {
+      if (this.watchBlocknumberTimer) {
+        console.log("Clearing the watchblock timer")
+        clearInterval(this.watchBlocknumberTimer);
+      }
+    }  
 
     nextJobStep() {
       this.onClosechaining()
@@ -65,8 +80,9 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
-      this.setState({ocexpiration:0})
-      this.setState({ocvalue:0})
+      this.setState({enableVoting: true})
+      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
                           'available-channels?user_address='+this.props.userAddress +
                           '&service_id='+this.serviceState["service_id"] +
@@ -94,7 +110,7 @@ export  class Jobdetails extends React.Component {
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
           balance = AGI.inAGI(balance);
           console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
-          let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.getCurrentBlockNumber());
+          let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.currentBlockNumber);
           if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
             this.onOpenEscrowBalanceAlert();
           } else if (foundChannel) {
@@ -106,14 +122,14 @@ export  class Jobdetails extends React.Component {
             if (this.channelHelper.getChannels().length > 0) {
               let rrchannel = this.channelHelper.getChannels()[0];
               console.log("Reusing existing channel " + JSON.stringify(rrchannel));              
-              const suggstedExpiration = this.getCurrentBlockNumber() + BLOCK_OFFSET
+              const suggstedExpiration = this.currentBlockNumber + BLOCK_OFFSET
               let newExpiration = rrchannel["expiration"] > suggstedExpiration ? rrchannel["expiration"] : suggstedExpiration
               console.log("Suggested Expiry block " + suggstedExpiration + " used " + newExpiration);
               this.setState({ocexpiration: newExpiration});              
             } 
             else {
               this.setState({ocvalue: this.serviceState['price_in_agi']})
-              this.setState({ocexpiration: (this.getCurrentBlockNumber() + BLOCK_OFFSET)});              
+              this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});              
             }
             
             this.setState({ocvalue: this.serviceState['price_in_agi']})            
@@ -167,7 +183,7 @@ export  class Jobdetails extends React.Component {
           const serviceObject = Service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
           grpcRequest(serviceObject, methodName, requestObject)
             .then(response => {
-              console.log("Got a GRPC response")
+              console.log("Got a GRPC response " + JSON.stringify(response))
               this.setState({grpcResponse: response})
               this.setState({enableVoting: true})
               this.nextJobStep();
@@ -217,9 +233,8 @@ export  class Jobdetails extends React.Component {
         if (typeof this.channelHelper.getChannels() === 'undefined') {
           this.onOpenEscrowBalanceAlert()
         } else {
-        const currentBlockNumber = this.getCurrentBlockNumber()
-        if(this.state.ocexpiration <= currentBlockNumber) {
-          this.processChannelErrors("Block number provided should be greater than current block number " + currentBlockNumber);
+        if(this.state.ocexpiration <= this.currentBlockNumber) {
+          this.processChannelErrors("Block number provided should be greater than current block number " + this.currentBlockNumber);
           return;
         }
         
@@ -232,7 +247,11 @@ export  class Jobdetails extends React.Component {
         console.log(this.props.userAddress);
 
         var groupIDBytes = atob(this.channelHelper.getGroupId());
-        var recipientaddress = this.channelHelper.getRecipient();        
+        var recipientaddress = this.channelHelper.getRecipient();
+        console.log("Opening a new channel");
+        this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+
+        /*
         if (this.channelHelper.getChannels().length > 0) {
           var rrchannel = this.channelHelper.getChannels()[0];
           console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));
@@ -244,7 +263,7 @@ export  class Jobdetails extends React.Component {
         } else {
           console.log("No Channel found to going to deposit from MPE and open a channel");
           this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
-        }
+        }*/
       }
     }
     catch(e) {
@@ -289,19 +308,13 @@ export  class Jobdetails extends React.Component {
     }
 
     channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
-      var startingBlock = this.getCurrentBlockNumber();
-      /*web3.eth.getBlockNumber((error, result) => {
-        if (!error) {
-          startingBlock = result;
-        }
-      });*/
+      var startingBlock = this.currentBlockNumber;
       console.log("Reading events from " + startingBlock);
 
       web3.eth.getGasPrice((err, gasPrice) => {
         if(err) {
           gasPrice = DEFAULT_GAS_PRICE;
         }
-
         console.log("Channel Open amount " + amountInCogs + " expiration " + this.state.ocexpiration)
         mpeInstance.openChannel.estimateGas(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) =>
         {
@@ -361,6 +374,11 @@ export  class Jobdetails extends React.Component {
 
     onCloseJobDetailsSlider(){
       this.setState({ jobDetailsSliderOpen: false });
+      if (this.watchBlocknumberTimer) {
+        console.log("Clearing the watchblock timer")
+        clearInterval(this.watchBlocknumberTimer);
+        this.watchBlocknumberTimer=undefined
+      }
     }
 
     onMaximizeJobDetailsSlider(){
@@ -391,7 +409,8 @@ export  class Jobdetails extends React.Component {
       //this.setState({serviceState:data})
       this.serviceState = data;
       this.setState({jobDetailsSliderOpen: true });
-      this.setState({expiryBlockNumber:10000})
+      this.setState({enableVoting: true})
+      this.setState({ocvalue:this.serviceState['price_in_agi']})      
       this.setState({valueTab:0})
       this.setState({startjobfundinvokeres:false})
       this.setState({runjobstate:false})
@@ -400,18 +419,13 @@ export  class Jobdetails extends React.Component {
         return;
       }
 
-      this.getCurrentBlockNumber();
+      if(typeof watchBlocknumberTimer === 'undefined') {
+        console.log("Setting the watchblock timer")
+        this.watchBlocknumberTimer = setInterval(() => this.watchBlocknumber(), 500);
+      }
       this.setState({runjobstate: data["is_available"]});
+      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
     }
-
-  getCurrentBlockNumber() {
-    //Update blocknumber
-    this.props.network.getCurrentBlockNumber((blockNumber) => {
-      this.currentBlockNumber = blockNumber
-    })
-    //return last seen blocknumber
-    return this.currentBlockNumber;
-  }
 
   onOpenEscrowBalanceAlert() {
     this.setState({showEscrowBalanceAlert: true})
@@ -483,11 +497,12 @@ export  class Jobdetails extends React.Component {
                                         <div className={(this.state.startjobfundinvokeres)? "row channels-sec" : "row channels-sec-disabled"}>
                                         <div className="col-md-12 no-padding mtb-10">
                                         <div className="col-md-12 no-padding"> 
-                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:</div>
+                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:
                                             <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
                                                 Tokens to be added to the channel to make the call</span>} >
                                                 <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
                                             </Tooltip>                                            
+                                            </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
                                                  disabled={this.state.startjobfundinvokeres?false:true}/>
@@ -495,11 +510,12 @@ export  class Jobdetails extends React.Component {
                                             </div>
                                             </div>
                                             <div className="col-md-12 no-padding"> 
-                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiry Blocknumber:</div>
+                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiry Blocknumber:
                                             <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
                                                 Expiry in terms of Ethereum block number. The channel becomes eligible for you to reclaim funds once the Ethereum block number exceeds the provided number. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current block number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number. </span>} >
                                                 <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
-                                            </Tooltip>                                            
+                                            </Tooltip>       
+                                            </div>                                     
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={this.state.startjobfundinvokeres?false:true}/>
                                             </div>
