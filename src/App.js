@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { faCheckSquare, faCoffee } from '@fortawesome/free-solid-svg-icons'
-import { NETWORKS } from './util'
+import { NETWORKS } from './networks'
 import GetStarted from './components/GetStarted'
 
 export default class App extends React.Component {

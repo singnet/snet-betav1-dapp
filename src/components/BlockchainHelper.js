@@ -5,7 +5,9 @@ import AGITokenNetworks from 'singularitynet-token-contracts/networks/Singularit
 import AGITokenAbi from 'singularitynet-token-contracts/abi/SingularityNetToken.json';
 import MPEAbi from 'singularitynet-platform-contracts/abi/MultiPartyEscrow.json';
 import MPENetworks from 'singularitynet-platform-contracts/networks/MultiPartyEscrow.json';
-import { AGI, NETWORKS} from '../util';
+import { AGI } from '../util';
+import { NETWORKS } from '../networks'
+
 
 export default class BlockchainHelper {
 
