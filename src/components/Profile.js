@@ -39,7 +39,7 @@ export class Profile extends Component {
       openchaining: false,
       chainId: undefined,
       contractMessage: '',
-      channelExtendAddError:'',
+      channelExtendMessage:'',
       supportedNetwork: false
     }
 
@@ -303,7 +303,7 @@ export class Profile extends Component {
   }
   
   handleExpansion() {
-    this.setState({channelExtendAddError:''})
+    this.setState({channelExtendMessage:''})
   }
 
   handlewithdraw() {
@@ -330,7 +330,7 @@ export class Profile extends Component {
   }
 
   handleChannelExtendAddFunds(data) {
-    this.setState({channelExtendAddError:''})
+    this.setState({channelExtendMessage:''})
     if (typeof web3 === undefined) {
       return;
     }
@@ -338,13 +338,13 @@ export class Profile extends Component {
     const channelID = data["channel_id"]
     const currentExpiryBlock = data["expiration"]
     if(this.state.extexp < currentExpiryBlock) {
-        this.processError("Expiry block number cannot be reduced. Previously provided value is " + currentExpiryBlock, "channelExtendAddError")
+        this.processError("Expiry block number cannot be reduced. Previously provided value is " + currentExpiryBlock, "channelExtendMessage")
         return;
     }
 
     this.network.getCurrentBlockNumber((blockNumber) => {
         if(this.state.extexp <= blockNumber) {
-            this.processError("Block number provided should be greater than current ethereum block number " + blockNumber, "channelExtendAddError")
+            this.processError("Block number provided should be greater than current ethereum block number " + blockNumber, "channelExtendMessage")
             return;
         }
 
@@ -359,7 +359,7 @@ export class Profile extends Component {
                 this.processError(err,"contractMessage");
                 return;
             }
-            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, undefined, estimatedGas, gasPrice, "channelExtendAddError", "You have successfully extended the channel", [channelID, this.state.extexp, amountInCogs]);
+            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, undefined, estimatedGas, gasPrice, "channelExtendMessage", "You have successfully extended the channel", [channelID, this.state.extexp, amountInCogs]);
             })
         })
     })
@@ -494,7 +494,7 @@ export class Profile extends Component {
                                     <span>Balance</span>
                                 </div>
                                 <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
-                                    <span>Expiry Time</span>
+                                    <span>Expiry Block</span>
                                 </div>
                                 <div className="col-sm-1 col-md-1 col-lg-1 hidden-xs">&nbsp;</div>
                             </div>
@@ -535,7 +535,7 @@ export class Profile extends Component {
                                                     <label>Expiry Blocknumber</label>
                                                 </div>
                                                 <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
-                                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Expiration</span>}>
+                                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Expiry Blocknumber</span>}>
                                                         <input type="text" value={this.state.extexp} name="newexpiration" className="channels-input" onChange={(e)=> this.Expirationchange(e)} />
                                                     </Tooltip>
                                                 </div>
@@ -543,15 +543,15 @@ export class Profile extends Component {
                                         </div>
                                         <div style={{ textAlign: "right" }}>
                                             {(this.state.supportedNetwork && web3.eth.coinbase !== null) ?
-                                            <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} >
+                                            <Tooltip title={<span>Confirm</span>} >
                                                 <button type="button" className="btn btn-primary " onClick={()=> this.handleChannelExtendAddFunds(row)}><span style={{ fontSize: "15px" }}>Confirm</span></button>
                                             </Tooltip> :
-                                            <Tooltip title={<span style={{ fontSize: "15px" }}>Confirm</span>} >
+                                            <Tooltip title={<span>Confirm</span>} >
                                                 <button type="button" className="btn " disabled><span style={{ fontSize: "15px" }}>Confirm</span></button>
                                             </Tooltip>
                                             }
                                         </div>
-                                        <p style={{ color: "red", fontSize: "14px" }}>{this.state.channelExtendAddError!==''?ERROR_UTILS.sanitizeError(this.state.channelExtendAddError):''}</p>
+                                        <p className="transaction-message">{this.state.channelExtendMessage}</p>
                                     </div>
                                 </ExpansionPanelDetails>
                             </ExpansionPanel>

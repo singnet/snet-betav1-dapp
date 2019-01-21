@@ -92,7 +92,7 @@ export default class ChannelHelper {
       return;
     }
 
-    this.channels = channels[0]["channelId"];
+    this.channels = channels[0]["channels"];
     this.endpoint = channels[0]["endpoint"]
     this.groupId = channels[0]["groupId"];
     this.recipient = channels[0]["recipient"];

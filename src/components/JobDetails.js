@@ -5,7 +5,7 @@ import Modal from '@material-ui/core/Modal'
 import Slide from '@material-ui/core/Slide'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
-import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE } from '../util'
+import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET } from '../util'
 import {TabContainer} from './ReactStyles.js';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -14,6 +14,7 @@ import ChannelHelper from './ChannelHelper.js';
 import { Root } from 'protobufjs'
 import Vote from './Vote.js';
 import DAppModal from './DAppModal.js'
+import Tooltip from '@material-ui/core/Tooltip';
 
 
 export  class Jobdetails extends React.Component {
@@ -67,8 +68,8 @@ export  class Jobdetails extends React.Component {
       this.setState({ocexpiration:0})
       this.setState({ocvalue:0})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
-                          'available-channels?user_address="'+this.props.userAddress +
-                          '"&service_id='+this.serviceState["service_id"] +
+                          'available-channels?user_address='+this.props.userAddress +
+                          '&service_id='+this.serviceState["service_id"] +
                           '&org_id='+this.serviceState["org_id"];
       return this.channelHelper.reInitialize(channelInfoUrl);
     }
@@ -101,7 +102,21 @@ export  class Jobdetails extends React.Component {
             this.setState({startjobfundinvokeres: true});
             this.setState({valueTab: 1});
           } else {
-            console.log("MPE has balance but no usable channel - Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
+            console.log("Checking channels " + JSON.stringify(this.channelHelper));
+            if (this.channelHelper.getChannels().length > 0) {
+              let rrchannel = this.channelHelper.getChannels()[0];
+              console.log("Reusing existing channel " + JSON.stringify(rrchannel));              
+              const suggstedExpiration = this.getCurrentBlockNumber() + BLOCK_OFFSET
+              let newExpiration = rrchannel["expiration"] > suggstedExpiration ? rrchannel["expiration"] : suggstedExpiration
+              console.log("Suggested Expiry block " + suggstedExpiration + " used " + newExpiration);
+              this.setState({ocexpiration: newExpiration});              
+            } 
+            else {
+              this.setState({ocvalue: this.serviceState['price_in_agi']})
+              this.setState({ocexpiration: (this.getCurrentBlockNumber() + BLOCK_OFFSET)});              
+            }
+            
+            this.setState({ocvalue: this.serviceState['price_in_agi']})            
             this.setState({startjobfundinvokeres: true})
             this.setState({valueTab: 0});
           }
@@ -464,46 +479,36 @@ export  class Jobdetails extends React.Component {
                                 </Tabs>
                                     { valueTab === 0 &&
                                     <TabContainer>
-                                        { (this.state.startjobfundinvokeres)?
-                                        <div className="row channels-sec">
+                                        
+                                        <div className={(this.state.startjobfundinvokeres)? "row channels-sec" : "row channels-sec-disabled"}>
                                         <div className="col-md-12 no-padding mtb-10">
                                         <div className="col-md-12 no-padding"> 
                                             <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:</div>
+                                            <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
+                                                Tokens to be added to the channel to make the call</span>} >
+                                                <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                            </Tooltip>                                            
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} />
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
+                                                 disabled={this.state.startjobfundinvokeres?false:true}/>
                                             </div>
                                             </div>
                                             </div>
                                             <div className="col-md-12 no-padding"> 
-                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiration:</div>
+                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiry Blocknumber:</div>
+                                            <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
+                                                Expiry in terms of Ethereum block number. The channel becomes eligible for you to reclaim funds once the Ethereum block number exceeds the provided number. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current block number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number. </span>} >
+                                                <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                            </Tooltip>                                            
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} />
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={this.state.startjobfundinvokeres?false:true}/>
                                             </div>
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
-                                                <button type="button" className="btn btn-primary width-mobile-100" onClick={()=>this.openchannelhandler()}>Reserve Funds</button>
-                                            </div>
-                                        </div>:
-                                        <div className="row channels-sec-disabled">
-                                          <div className="col-md-12 no-padding mtb-10">
-                                          <div className="col-md-12 no-padding"> 
-                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:</div>
-                                            <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={parseInt(this.serviceState["price_in_agi"])} disabled />
-                                            </div>
-                                            </div>
-                                            </div>
-                                            <div className="col-md-12 no-padding"> 
-                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiration:</div>
-                                            <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} disabled />
-                                            </div>
-                                            </div>
-                                            <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
-                                                <button type="button" className="btn btn-primary-disabled width-mobile-100" disabled>Reserve Funds</button>
+                                                <button type="button" className={this.state.startjobfundinvokeres?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
+                                                disabled={this.state.startjobfundinvokeres?false:true}>Reserve Funds</button>
                                             </div>
                                         </div>
-                                        }
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
