@@ -10,8 +10,7 @@ export default class Vote extends React.Component {
       
       this.state = {
         upVote: false,
-        downVote: false,
-        userVoted: false,
+        downVote: false
       };
       this.handleVote = this.handleVote.bind(this);
       console.log(JSON.stringify(props))
@@ -19,8 +18,8 @@ export default class Vote extends React.Component {
 
     updateVote(upVote, downVote)
     {
-      this.setState({voteLike:upVote})
-      this.setState({voteDislike:downVote})      
+      this.setState({upVote:upVote})
+      this.setState({downVote:downVote})
     }
 
     processError(err, upVote, downVote)
@@ -29,13 +28,18 @@ export default class Vote extends React.Component {
       this.updateVote(upVote, downVote)
     }
 
-    handleVote(orgid,serviceid,upVote)
+    handleVote(orgid,serviceid,upVote, downVote)
     {
-      this.setState({userVoted:true})
       const voteLikeOriginal = this.state.upVote
       const voteDislikeOriginal = this.state.downVote
-
-      this.updateVote(upVote, !upVote)
+            
+      if(typeof upVote === 'undefined'){
+        this.updateVote(downVote ? false : this.state.upVote, downVote)
+      } 
+      else if(typeof downVote === 'undefined') {
+        this.updateVote(upVote, upVote ? false : this.state.downVote)
+      }
+      
       const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'user-vote'
       console.log("Message " + this.props.userAddress + orgid + upVote + serviceid + (!upVote))
       var sha3Message = web3.sha3(this.props.userAddress + orgid + upVote + serviceid + (!upVote));
@@ -48,7 +52,7 @@ export default class Vote extends React.Component {
             org_id: orgid,
             service_id: serviceid,
             up_vote: upVote,
-            down_vote: (!upVote),
+            down_vote: downVote,
             signature: signed
           }
         }
@@ -64,15 +68,8 @@ export default class Vote extends React.Component {
       const urlfetchvote = getMarketplaceURL(this.props.chainId)
       return (typeof urlfetchvote !== 'undefined' && this.props.enableVoting)
     }
-  
-    getUpVote() {
-      return this.state.userVoted ? this.state.upVote : this.props.serviceState["up_vote"];
-    }
 
-    getDownVote() {
-      return this.state.userVoted ? this.state.downVote : this.props.serviceState["down_vote"];
-    }
-
+    //TODO - Handle error here
     processRespone(response) {
       console.log(response)
     }
@@ -86,12 +83,12 @@ export default class Vote extends React.Component {
                 <h3>Vote</h3>
                 <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
                     <div className="thumbsup-icon vote-like">
-                        <span name="upVote" className={(this.getUpVote()) ? "icon-like" : "icon-like-disabled"} onClick={()=>this.handleVote(this.props.serviceState["org_id"],this.props.serviceState["service_id"],!this.getUpVote())}/>
+                        <span name="upVote" className={this.state.upVote ? "icon-like" : "icon-like-disabled"} onClick={()=>this.handleVote(this.props.serviceState["org_id"],this.props.serviceState["service_id"],!this.state.upVote, undefined)}/>
                     </div>
                 </div>
                 <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
                     <div className="thumbsdown-icon">
-                      <span name="downVote" className={(this.getDownVote()) ? "icon-dislike-enabled" : "icon-dislike"} onClick={()=>this.handleVote(this.props.serviceState["org_id"],this.props.serviceState["service_id"],!this.getDownVote())}/>
+                      <span name="downVote" className={this.state.downVote ? "icon-dislike-enabled" : "icon-dislike"} onClick={()=>this.handleVote(this.props.serviceState["org_id"],this.props.serviceState["service_id"],undefined, !this.state.downVote)}/>
                     </div>
                 </div>
               </div> :
