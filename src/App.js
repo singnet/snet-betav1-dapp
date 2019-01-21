@@ -4,6 +4,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { faCheckSquare, faCoffee } from '@fortawesome/free-solid-svg-icons'
 import { NETWORKS } from './util'
+import GetStarted from './components/GetStarted'
 
 export default class App extends React.Component {
   constructor(props) {
@@ -32,7 +33,7 @@ export default class App extends React.Component {
                     </svg>
                 </div>            
               <div className="header">
-                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 logo">
+                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 logo">
                       {(typeof web3 !== 'undefined')?
                       <Link to="/SampleServices">
                       <h1><span className="icon-logo"></span></h1></Link>:
@@ -40,17 +41,20 @@ export default class App extends React.Component {
                       <h1><span className="icon-logo"></span></h1></Link>}
                   </div>
                   {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
-                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name">
+                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 network-name">
                         Your are on {NETWORKS[this.props.chainId].name}
                     </div>
                     :
-                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name"/>
+                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 network-name"/>
                   }
-                  <div className="col-xs-6 col-sm-8 col-md-6 col-lg-4 search-user">
+                    <div className="col-xs-6 col-sm-8 col-md-6 col-lg-3 get-started-text">
+                        <Link to="/GetStarted"><span className="get-started-text">Get Started</span> </Link>
+                    </div>                        
+                  <div className="search-user">
                       {
                         (typeof this.props.searchCallBack !== 'undefined')?
                           <input className="search" placeholder={this.props.searchTerm === '' ? 'Search by Agent or Tags' : this.props.searchTerm} name="srch-term" id="srch-term" type="label" onClick={this.props.searchCallBack} />:<p></p>
-                      }
+                      }                
                       <div className="user">
                           {(typeof web3 !== 'undefined')?
                           <Link to="/SampleServices"><span className="icon-home-icon-silhouette"></span> </Link>:
