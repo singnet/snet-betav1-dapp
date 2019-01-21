@@ -29,11 +29,13 @@
     content: "\e900";
     color: #757577;
     font-size: 26px;
+    cursor: pointer;
 }
 .icon-like:before {
   content: "\e901";
     color: #4086ff;
     font-size: 26px;
+    cursor: pointer;
 }
 .icon-like-disabled:before {
   content: "\e901";
@@ -44,6 +46,7 @@
   content: "\e900";
     color: #4086ff;
     font-size: 26px;
+    cursor: pointer;
 }
 .icon-home-icon-silhouette:before {
   content: "\e902";
