@@ -60,6 +60,7 @@ class SampleServices extends React.Component {
 
   handlesearchclear() {
     this.setState({searchTerm: ''})
+    this.setState({besttagresult: []})
   }
 
   handlesearchkeyup(e) {
@@ -153,7 +154,7 @@ class SampleServices extends React.Component {
     const marketPlaceURL = getMarketplaceURL(chainId);
     const url = marketPlaceURL + "service"
     const urlfetchservicestatus = marketPlaceURL + 'group-info'
-    const urlfetchvote = marketPlaceURL + 'fetch-vote?user_address=' + (typeof web3 === 'undefined' ? "" : web3.eth.coinbase)
+    const urlfetchvote = marketPlaceURL + 'fetch-vote?user_address=' + (typeof web3 === 'undefined' ? "" : web3.eth.defaultAccount)
     console.log("Fetching data for " + chainId)
     Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.get(urlfetchvote)])
     .then((values) =>
@@ -200,7 +201,7 @@ class SampleServices extends React.Component {
       return;
     }
 
-    this.setState({userAddress: web3.eth.coinbase});
+    this.setState({userAddress: web3.eth.defaultAccount});
   }
 
   handleClick(offset) {
@@ -224,6 +225,7 @@ class SampleServices extends React.Component {
   }
 
   handlesearch() {
+    console.log("Starting search for " + this.state.searchTerm)
     this.setState({besttagresult: []});
     let searchedagents = []
     searchedagents = this.state.agents.map(row => (row["display_name"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1 || row["service_id"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1) ? row : null)
@@ -247,7 +249,16 @@ class SampleServices extends React.Component {
   render() {
     const {open} = this.state;
     const arraylimit = this.state.agents.length
-    const agents = this.state.agents.slice(this.state.offset, this.state.offset + 5).map((rown,index) =>
+
+    let agentsample = this.state.agents
+    if (this.state.searchTerm !== '') {
+      agentsample = this.state.bestestsearchresults
+    }
+    if (this.state.besttagresult.length > 0) {
+      agentsample = this.state.besttagresult
+    }
+
+    const agents = agentsample.slice(this.state.offset, this.state.offset + 5).map((rown,index) =>
       <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 media" key={index} id={rown[ "service_id"]} name={rown[ "display_name"].toUpperCase()}>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
@@ -371,7 +382,7 @@ class SampleServices extends React.Component {
                                             </div>
                                             <div className="col-sm-12 col-md-12 col-lg-12 no-padding">
                                                 <div className="col-sm-9 col-md-9 col-lg-9 no-padding">
-                                                    <input id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchTerm} onChange={this.capturesearchTerm} onKeyUp={(e)=>this.handlesearchkeyup(e)} />
+                                                    <input id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchTerm} onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handlesearchkeyup(e)} />
                                                 </div>
                                                 <div className="col-sm-3 col-md-3 col-lg-3">
                                                     <input className='btn btn-primary' id='phSearchButton' type='button' defaultValue='Search' onClick={this.handlesearch} />
