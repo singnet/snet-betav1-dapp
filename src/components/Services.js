@@ -258,7 +258,7 @@ class SampleServices extends React.Component {
       agentsample = this.state.besttagresult
     }
 
-    const agents = agentsample.slice(this.state.offset, this.state.offset + 5).map((rown,index) =>
+    const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
       <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 media" key={index} id={rown[ "service_id"]} name={rown[ "display_name"].toUpperCase()}>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
@@ -282,7 +282,7 @@ class SampleServices extends React.Component {
               {(rown.hasOwnProperty('tags'))? rown["tags"].map((rowtag,rindex) =>
               <button key={rindex} className='btn btn-secondary mr-15'>{rowtag}</button>):null}
           </div>
-          <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Health</div>
+          <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Status</div>
           <div className="col-sm-12 col-md-1 col-lg-1 health-align">
               {(rown["is_available"])? 
               <span className="agent-health green"></span>: 
@@ -339,7 +339,7 @@ class SampleServices extends React.Component {
                         <div className="col-sm-1 col-md-1 col-lg-1 text-center">
                             <div className="toggle">
                                 <button onClick={this.handlehealthsort}>
-                                    <h3>Health</h3>
+                                    <h3>Status</h3>
                                     <i className="fa fa-sort sort-icon" aria-hidden="true"></i>
                                 </button>
                             </div>
@@ -357,7 +357,7 @@ class SampleServices extends React.Component {
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-right no-padding">
                         {arraylimit>5?
                         <MuiThemeProvider theme={theme}>
-                            <Pagination limit={5} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
+                            <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
                         </MuiThemeProvider>
                         :null}
                     </div>

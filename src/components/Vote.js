@@ -10,10 +10,10 @@ export default class Vote extends React.Component {
       
       this.state = {
         upVote: false,
-        downVote: false
+        downVote: false,
       };
+      this.userVoted = false
       this.handleVote = this.handleVote.bind(this);
-      console.log(JSON.stringify(props))
     }
 
     updateVote(upVote, downVote)
@@ -24,21 +24,25 @@ export default class Vote extends React.Component {
 
     processError(err, upVote, downVote)
     {
+      this.userVoted = false
       console.log(err)
       this.updateVote(upVote, downVote)
     }
 
     handleVote(orgid,serviceid,upVote, downVote)
     {
+      this.userVoted = true
+      console.log("Changing upVote to " + upVote + " and downVote to " + downVote)
       const voteLikeOriginal = this.state.upVote
       const voteDislikeOriginal = this.state.downVote
             
       if(typeof upVote === 'undefined'){
-        this.updateVote(downVote ? false : this.state.upVote, downVote)
+        upVote = downVote ? false : this.state.upVote
       } 
       else if(typeof downVote === 'undefined') {
-        this.updateVote(upVote, upVote ? false : this.state.downVote)
+        downVote = upVote ? false : this.state.downVote
       }
+      this.updateVote(upVote, downVote)
       
       const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'user-vote'
       console.log("Message " + this.props.userAddress + orgid + upVote + serviceid + (!upVote))
@@ -74,6 +78,14 @@ export default class Vote extends React.Component {
       console.log(response)
     }
 
+    isUpVote() {
+      return this.userVoted ? this.state.upVote : this.props.serviceState["up_vote"]
+    }
+
+    isDownVote() {
+      return this.userVoted ? this.state.downVote : this.props.serviceState["down_vote"]
+    }
+
     render()
     {
         return(
@@ -83,12 +95,12 @@ export default class Vote extends React.Component {
                 <h3>Vote</h3>
                 <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 mobile-mtb-7">
                     <div className="thumbsup-icon vote-like">
-                        <span name="upVote" className={this.state.upVote ? "icon-like" : "icon-like-disabled"} onClick={()=>this.handleVote(this.props.serviceState["org_id"],this.props.serviceState["service_id"],!this.state.upVote, undefined)}/>
+                        <span name="upVote" className={ this.isUpVote() ? "icon-like" : "icon-like-disabled"} onClick={()=>this.handleVote(this.props.serviceState["org_id"],this.props.serviceState["service_id"],!this.isUpVote(), undefined)}/>
                     </div>
                 </div>
                 <div className="col-xs-6 col-sm-6 col-md-6 mtb-20 border-left-1">
                     <div className="thumbsdown-icon">
-                      <span name="downVote" className={this.state.downVote ? "icon-dislike-enabled" : "icon-dislike"} onClick={()=>this.handleVote(this.props.serviceState["org_id"],this.props.serviceState["service_id"],undefined, !this.state.downVote)}/>
+                      <span name="downVote" className={this.isDownVote() ? "icon-dislike-enabled" : "icon-dislike"} onClick={()=>this.handleVote(this.props.serviceState["org_id"],this.props.serviceState["service_id"],undefined, !this.isDownVote())}/>
                     </div>
                 </div>
               </div> :

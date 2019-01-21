@@ -434,7 +434,7 @@ export class Profile extends Component {
                             <h3>Manage your Escrow account</h3>
                             <div className="col-xs-12 col-sm-12 col-md-6 col-lg-6 amount-type">
                                 <Tabs value={value} onChange={(event,value)=> this.handleChange(value)} indicatorColor='primary'>
-                                        <Tab label={<span style={{ fontSize: "13px" }}>Deposit&nbsp;<span>
+                                        <Tab label={<span style={{ fontSize: "13px"  }}>Deposit&nbsp;<span>
                                             <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
                                                 Deposit AGI tokens to the escrow account. You need to have funds in the escrow to create payment channels.</span>} >
                                                 <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
@@ -478,6 +478,9 @@ export class Profile extends Component {
                         </div>
                         <div>
                             <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
+                        </div>
+                        <div className="manage-account">
+                        <h3>Channel Details</h3>
                         </div>
                         <div className="col-xs-12 col-sm-16 col-md-16 col-lg-16 channel-info ">
                             <div className="row channel-header">

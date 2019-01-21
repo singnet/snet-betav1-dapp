@@ -12,14 +12,14 @@ export default class ExampleService extends React.Component {
         this.state = {
             serviceName: undefined,
             methodName: undefined,
-            response: undefined,
             a: 0,
             b: 0
         };
-        this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
+        this.response = undefined
+        this.isComplete = false
+        this.serviceMethods = []
+        this.allServices = []
+        this.methodsForAllServices = []
         this.parseProps(props);
     }
 
@@ -31,9 +31,9 @@ export default class ExampleService extends React.Component {
         else {
             if (typeof nextProps.response !== 'undefined') {
                 if (typeof nextProps.response === 'string') {
-                    this.setState({response:nextProps.response});
+                    this.response=nextProps.response;
                 } else {
-                    this.setState({response: nextProps.response.value});
+                    this.response=nextProps.response.value;
                 }
             }
         }
@@ -55,26 +55,26 @@ export default class ExampleService extends React.Component {
         }
 
         this.allServices.push("Select a service");
-        this.methodsForAllServices = [];
+        this.methodsForAllServices = []
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
+                this.allServices.push(rr)
                 this.methodsForAllServices.push(rr);
 
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
+                var methods = Object.keys(items[rr]["methods"])
+                methods.unshift("Select a method")
                 this.methodsForAllServices[rr] = methods;
             }
         })
     }
 
-    handleFormUpdate(event) {
+    handleFormUpdate() {
         this.setState({
             [event.target.name]: event.target.value
         });
     }
 
-    handleServiceName(event) {
+    handleServiceName() {
         var strService = event.target.value;
         this.setState({
             serviceName: strService
@@ -82,21 +82,21 @@ export default class ExampleService extends React.Component {
         this.serviceMethods.length = 0;
         var data = [];
         if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-           data = Object.values(this.methodsForAllServices[strService]);
-           if (typeof data !== 'undefined') {
-               this.serviceMethods= data;
-           }
+            data = Object.values(this.methodsForAllServices[strService]);
+            if (typeof data !== 'undefined') {
+                this.serviceMethods= data;
+            }
         }
     }
 
     onKeyPressvalidator(event) {
         const keyCode = event.keyCode || event.which;
         if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
-            event.preventDefault();
+            event.preventDefault()
         } else {
             let dots = event.target.value.split('.');
             if (dots.length > 1 && keyCode == 46)
-                event.preventDefault();
+                event.preventDefault()
         }
     }
 
@@ -151,7 +151,7 @@ export default class ExampleService extends React.Component {
     renderComplete() {
         return(
         <div>
-            <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p>
+            <p style={{fontSize: "13px"}}>Response from service is {this.response} </p>
         </div>
         );
     }

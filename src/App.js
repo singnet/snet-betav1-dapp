@@ -46,14 +46,14 @@ export default class App extends React.Component {
                     </div>
                     :
                     <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 network-name"/>
-                  }
-                    <div className="col-xs-6 col-sm-8 col-md-6 col-lg-3 get-started-text">
-                        <Link to="/GetStarted"><span className="get-started-text">Get Started</span> </Link>
-                    </div>                        
+                  }                      
                   <div className="search-user">
+                    <div className="get-started">
+                        <Link to="/GetStarted"><span>Get Started</span> </Link>
+                    </div>                        
                       {
                         (typeof this.props.searchCallBack !== 'undefined')?
-                          <input className="search" placeholder={this.props.searchTerm === '' ? 'Search by Agent or Tags' : this.props.searchTerm} name="srch-term" id="srch-term" type="label" onClick={this.props.searchCallBack} />:<p></p>
+                          <input className="search" placeholder={this.props.searchTerm === '' ? 'Search by Agent or Tags' : this.props.searchTerm} name="srch-term" id="srch-term" type="label" onClick={this.props.searchCallBack} />:null
                       }                
                       <div className="user">
                           {(typeof web3 !== 'undefined')?
