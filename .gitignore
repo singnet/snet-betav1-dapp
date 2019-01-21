@@ -62,3 +62,9 @@ typings/
 
 # next.js build output
 .next
+
+# Dependency versions were installed using Yarn package manager.
+/yarn.lock
+
+# JetBrains IDE project settings
+/.idea/

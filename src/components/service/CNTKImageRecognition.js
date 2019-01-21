@@ -15,15 +15,15 @@ export default class CNTKImageRecognition extends React.Component {
           imgPath: undefined,
           response: undefined
       };
-      this.isComplete = false
-      this.serviceMethods = []
-      this.allServices = []
-      this.methodsForAllServices = []
+      this.isComplete = false;
+      this.serviceMethods = [];
+      this.allServices = [];
+      this.methodsForAllServices = [];
       this.parseProps(props);
   }
 
   parseProps(nextProps) {
-      this.isComplete = nextProps.isComplete
+      this.isComplete = nextProps.isComplete;
       if (!this.isComplete) {
           this.parseServiceSpec(nextProps.serviceSpec);
       } else {
@@ -50,14 +50,14 @@ export default class CNTKImageRecognition extends React.Component {
       }
 
       this.allServices.push("Select a service");
-      this.methodsForAllServices = []
+      this.methodsForAllServices = [];
       objects.map(rr => {
           if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
               this.allServices.push(rr)
               this.methodsForAllServices.push(rr);
 
-              var methods = Object.keys(items[rr]["methods"])
-              methods.unshift("Select a method")
+              var methods = Object.keys(items[rr]["methods"]);
+              methods.unshift("Select a method");
               this.methodsForAllServices[rr] = methods;
           }
       })
@@ -73,11 +73,14 @@ export default class CNTKImageRecognition extends React.Component {
           serviceName: strService
       });
       console.log("Selected service is " + strService);
-      var data = this.methodsForAllServices[strService];
-      if (typeof data === 'undefined') {
-          data = [];
+      var data = [];
+      if (typeof strService !== 'undefined' && strService !== 'Select a service') {
+          data = Object.values(this.methodsForAllServices[strService]);
+          if (typeof data !== 'undefined') {
+              this.serviceMethods= data;
+          }
       }
-      this.serviceMethods = data;
+
   }
 
   submitAction() {
@@ -95,18 +98,18 @@ export default class CNTKImageRecognition extends React.Component {
     <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Service Name</div>
     <div className="col-md-3 col-lg-3">
         <select style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleServiceName}>
-        {this.allServices.map((row,index) => 
+        {this.allServices.map((row,index) =>
         <option key={index}>{row}</option>)}
-       </select>        
+       </select>
     </div>
     </div>
     <div className="row">
     <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Method Name</div>
-    <div className="col-md-3 col-lg-3">   
+    <div className="col-md-3 col-lg-3">
        <select name="methodName" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleFormUpdate}>
-        {this.serviceMethods.map((row,index) => 
+        {this.serviceMethods.map((row,index) =>
         <option key={index}>{row}</option>)}
-       </select>            
+       </select>
     </div>
     </div>
     <div className="row">
@@ -146,7 +149,7 @@ export default class CNTKImageRecognition extends React.Component {
             <div>
             { this.renderForm() }
             </div>
-        )  
+        )
     }
   }
 }

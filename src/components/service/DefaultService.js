@@ -79,10 +79,13 @@ export default class DefaultService extends React.Component {
       this.setState({
           serviceName: strService
       });
-      this.serviceMethods.length = 0
-      var data = this.methodsForAllServices[strService];
-      if (typeof data !== 'undefined') {
-          this.serviceMethods = data;
+      this.serviceMethods.length = 0;
+      var data = [];
+      if (typeof strService !== 'undefined' && strService !== 'Select a service') {
+          data = Object.values(this.methodsForAllServices[strService]);
+          if (typeof data !== 'undefined') {
+              this.serviceMethods= data;
+          }
       }
   }
 
@@ -101,18 +104,18 @@ export default class DefaultService extends React.Component {
     <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Service Name</div>
     <div className="col-md-3 col-lg-3">
         <select id="select1" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleServiceName}>
-        {this.allServices.map((row,index) => 
+        {this.allServices.map((row,index) =>
         <option key={index}>{row}</option>)}
-       </select>        
+       </select>
     </div>
     </div>
     <div className="row">
     <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Method Name</div>
-    <div className="col-md-3 col-lg-3">   
+    <div className="col-md-3 col-lg-3">
        <select name="methodName" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleFormUpdate}>
-        {this.serviceMethods.map((row,index) => 
+        {this.serviceMethods.map((row,index) =>
         <option key={index}>{row}</option>)}
-       </select>            
+       </select>
     </div>
     </div>
     <div className="row">
@@ -130,11 +133,11 @@ export default class DefaultService extends React.Component {
         )
   }
 
-  
+
   renderComplete() {
     return(
       <div>
-        <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p> 
+        <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p>
       </div>
     );
   }
@@ -152,7 +155,7 @@ export default class DefaultService extends React.Component {
             <div>
             { this.renderForm() }
             </div>
-        )  
+        )
     }
   }
 
