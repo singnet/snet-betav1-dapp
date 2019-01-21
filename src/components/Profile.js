@@ -110,9 +110,9 @@ export class Profile extends Component {
       return;
     }
 
-    console.log("Loading AGI Balance")
+    console.log("Loading AGI Balance for " + web3.eth.defaultAccount)
     let mpeTokenInstance = this.network.getMPEInstance(chainId);
-    mpeTokenInstance.balances(web3.eth.coinbase, ((err, balance) => {
+    mpeTokenInstance.balances(web3.eth.defaultAccount, ((err, balance) => {
       if (err) {
         console.log(err);
         return;
@@ -121,7 +121,7 @@ export class Profile extends Component {
     }));
 
     let instanceTokenContract = this.network.getTokenInstance(chainId);
-    instanceTokenContract.allowance(web3.eth.coinbase, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
+    instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
       if (err) {
         console.log(err);
       }
@@ -130,7 +130,7 @@ export class Profile extends Component {
       }
     });
 
-    this.network.getAGIBalance(chainId, web3.eth.coinbase,((balance) => {
+    this.network.getAGIBalance(chainId, web3.eth.defaultAccount,((balance) => {
         if (balance !== this.state.agiBalance) {
           this.setState({ agiBalance: balance });
         }
@@ -146,7 +146,7 @@ export class Profile extends Component {
     console.log("Loading details")
     this.setState({supportedNetwork: true})  
     let mpeURL = getMarketplaceURL(chainId);
-    let _urlfetchprofile = mpeURL + 'channels?user_address='+web3.eth.coinbase
+    let _urlfetchprofile = mpeURL + 'channels?user_address='+web3.eth.defaultAccount
     Requests.get(_urlfetchprofile)
       .then((values)=> {
         if(typeof values !== 'undefined' && Array.isArray(values.data)) {
@@ -386,7 +386,7 @@ export class Profile extends Component {
                                             <Tooltip title={<span style={{ fontSize: "15px" }}>Account</span>}>
                                                 <label>{web3.eth.accounts[0]}</label>
                                             </Tooltip>
-                                            &nbsp; {(web3.eth.coinbase !== null) ?
+                                            &nbsp; {(web3.eth.defaultAccount !== null) ?
                                             <CopyToClipboard text={web3.eth.accounts[0]} onCopy={()=> message.success('Account address copied', 1)}>
                                                 <a>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 23 23">
@@ -452,7 +452,7 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6 transaction-message">{this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(this.state.supportedNetwork && web3.eth.coinbase !== null && this.state.depositAmount > 0) ?
+                                                {(this.state.supportedNetwork && web3.eth.defaultAccount !== null && this.state.depositAmount > 0) ?
                                                 <button className="btn btn-primary" onClick={this.handleAuthorize}><span style={{ fontSize: "15px" }}>Deposit</span></button> :
                                                 <button className="btn " disabled><span style={{ fontSize: "15px" }}>Deposit</span></button>
                                                 }
@@ -466,7 +466,7 @@ export class Profile extends Component {
                                         <div className="row">
                                             <div className="col-xs-6 col-sm-6 col-md-6 transaction-message">{this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(this.state.supportedNetwork && web3.eth.coinbase !== null && this.state.withdrawalAmount > 0) ?
+                                                {(this.state.supportedNetwork && web3.eth.defaultAccount !== null && this.state.withdrawalAmount > 0) ?
                                                 <button type="button" className="btn btn-primary " onClick={this.handlewithdraw}><span style={{ fontSize: "15px" }}>Withdraw</span></button>:
                                                 <button className="btn" disabled><span style={{ fontSize: "15px" }}>Withdraw</span></button>
                                                 }
@@ -542,7 +542,7 @@ export class Profile extends Component {
                                             </div>
                                         </div>
                                         <div style={{ textAlign: "right" }}>
-                                            {(this.state.supportedNetwork && web3.eth.coinbase !== null) ?
+                                            {(this.state.supportedNetwork && web3.eth.defaultAccount !== null) ?
                                             <Tooltip title={<span>Confirm</span>} >
                                                 <button type="button" className="btn btn-primary " onClick={()=> this.handleChannelExtendAddFunds(row)}><span style={{ fontSize: "15px" }}>Confirm</span></button>
                                             </Tooltip> :
