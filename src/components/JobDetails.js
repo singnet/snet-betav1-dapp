@@ -56,7 +56,27 @@ export  class Jobdetails extends React.Component {
       this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this)  
       this.onOpenchaining = this.onOpenchaining.bind(this)
       this.onClosechaining = this.onClosechaining.bind(this)  
+      this.watchBlocknumberTimer = undefined;
     }
+
+    watchBlocknumber() {
+      //Update blocknumber
+      this.props.network.getCurrentBlockNumber((blockNumber) => {
+        this.currentBlockNumber = blockNumber
+      })
+    }
+
+    componentWillUnmount() {
+      if (this.watchBlocknumberTimer) {
+        console.log("Clearing the watchblock timer")
+        clearInterval(this.watchBlocknumberTimer);
+      }
+    }
+  
+    componentDidMount() {
+      console.log("Setting the watchblock timer")
+      this.watchBlocknumberTimer = setInterval(() => this.watchBlocknumber(), 500);
+    }    
 
     nextJobStep() {
       this.onClosechaining()
@@ -65,8 +85,9 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
-      this.setState({ocexpiration:0})
-      this.setState({ocvalue:0})
+      this.setState({enableVoting: true})
+      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
                           'available-channels?user_address='+this.props.userAddress +
                           '&service_id='+this.serviceState["service_id"] +
@@ -94,7 +115,7 @@ export  class Jobdetails extends React.Component {
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
           balance = AGI.inAGI(balance);
           console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
-          let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.getCurrentBlockNumber());
+          let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.currentBlockNumber);
           if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
             this.onOpenEscrowBalanceAlert();
           } else if (foundChannel) {
@@ -106,14 +127,14 @@ export  class Jobdetails extends React.Component {
             if (this.channelHelper.getChannels().length > 0) {
               let rrchannel = this.channelHelper.getChannels()[0];
               console.log("Reusing existing channel " + JSON.stringify(rrchannel));              
-              const suggstedExpiration = this.getCurrentBlockNumber() + BLOCK_OFFSET
+              const suggstedExpiration = this.currentBlockNumber + BLOCK_OFFSET
               let newExpiration = rrchannel["expiration"] > suggstedExpiration ? rrchannel["expiration"] : suggstedExpiration
               console.log("Suggested Expiry block " + suggstedExpiration + " used " + newExpiration);
               this.setState({ocexpiration: newExpiration});              
             } 
             else {
               this.setState({ocvalue: this.serviceState['price_in_agi']})
-              this.setState({ocexpiration: (this.getCurrentBlockNumber() + BLOCK_OFFSET)});              
+              this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});              
             }
             
             this.setState({ocvalue: this.serviceState['price_in_agi']})            
@@ -217,9 +238,8 @@ export  class Jobdetails extends React.Component {
         if (typeof this.channelHelper.getChannels() === 'undefined') {
           this.onOpenEscrowBalanceAlert()
         } else {
-        const currentBlockNumber = this.getCurrentBlockNumber()
-        if(this.state.ocexpiration <= currentBlockNumber) {
-          this.processChannelErrors("Block number provided should be greater than current block number " + currentBlockNumber);
+        if(this.state.ocexpiration <= this.currentBlockNumber) {
+          this.processChannelErrors("Block number provided should be greater than current block number " + this.currentBlockNumber);
           return;
         }
         
@@ -289,19 +309,13 @@ export  class Jobdetails extends React.Component {
     }
 
     channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
-      var startingBlock = this.getCurrentBlockNumber();
-      /*web3.eth.getBlockNumber((error, result) => {
-        if (!error) {
-          startingBlock = result;
-        }
-      });*/
+      var startingBlock = this.currentBlockNumber;
       console.log("Reading events from " + startingBlock);
 
       web3.eth.getGasPrice((err, gasPrice) => {
         if(err) {
           gasPrice = DEFAULT_GAS_PRICE;
         }
-
         console.log("Channel Open amount " + amountInCogs + " expiration " + this.state.ocexpiration)
         mpeInstance.openChannel.estimateGas(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) =>
         {
@@ -391,7 +405,9 @@ export  class Jobdetails extends React.Component {
       //this.setState({serviceState:data})
       this.serviceState = data;
       this.setState({jobDetailsSliderOpen: true });
-      this.setState({expiryBlockNumber:10000})
+      this.setState({enableVoting: true})
+      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocvalue:this.serviceState['price_in_agi']})      
       this.setState({valueTab:0})
       this.setState({startjobfundinvokeres:false})
       this.setState({runjobstate:false})
@@ -400,18 +416,8 @@ export  class Jobdetails extends React.Component {
         return;
       }
 
-      this.getCurrentBlockNumber();
       this.setState({runjobstate: data["is_available"]});
     }
-
-  getCurrentBlockNumber() {
-    //Update blocknumber
-    this.props.network.getCurrentBlockNumber((blockNumber) => {
-      this.currentBlockNumber = blockNumber
-    })
-    //return last seen blocknumber
-    return this.currentBlockNumber;
-  }
 
   onOpenEscrowBalanceAlert() {
     this.setState({showEscrowBalanceAlert: true})
