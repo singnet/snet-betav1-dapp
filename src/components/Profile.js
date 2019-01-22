@@ -275,7 +275,7 @@ export class Profile extends Component {
               console.log("Checking deposit")
               const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
               await snooze(2000);
-              caller.handleDeposit(counter+1)
+              caller.handleDeposit(caller, counter+1)
           }
           else {
             caller.setState({contractMessage: 'Deposit amount should be less than approved balance ' + allowedbalance});

@@ -35,7 +35,7 @@ TabContainer.propTypes = {
 };
 
 export const ModalStylesAlertWait = {
-    position: 'absolute',
+    position: 'center',
     borderRadius: '6px',
     backgroundColor: 'white',
     fontFamily: "Muli",
