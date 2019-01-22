@@ -15,11 +15,11 @@ export default class ExampleService extends React.Component {
             a: 0,
             b: 0
         };
-        this.response = undefined
-        this.isComplete = false
-        this.serviceMethods = []
-        this.allServices = []
-        this.methodsForAllServices = []
+        this.response = undefined;
+        this.isComplete = false;
+        this.serviceMethods = [];
+        this.allServices = [];
+        this.methodsForAllServices = [];
         this.parseProps(props);
     }
 
