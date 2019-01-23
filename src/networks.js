@@ -10,7 +10,7 @@ export const NETWORKS = {
       name: "Ropsten",
       etherscan: 'https://ropsten.etherscan.io',
       infura: 'https://ropsten.infura.io',
-      marketplace:'',
+      marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/ropsten/',
       protobufjs:'http://protobufjs.singularitynet.io/'
     },
     4: {
