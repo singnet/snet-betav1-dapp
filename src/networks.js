@@ -3,7 +3,7 @@ export const NETWORKS = {
       name: "mainnet",
       etherscan: 'https://etherscan.io',
       infura: 'http://mainnet.infura.io',
-      marketplace:'',
+      marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/mainnet/',
       protobufjs:'http://mainnet-protojs.singularitynet.io/'
     },
     3: {
