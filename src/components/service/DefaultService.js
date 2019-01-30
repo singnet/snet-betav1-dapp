@@ -67,7 +67,7 @@ export default class DefaultService extends React.Component {
         })
     }
 
-    handleFormUpdate() {
+    handleFormUpdate(event) {
         this.setState({
             [event.target.name]: event.target.value
         });

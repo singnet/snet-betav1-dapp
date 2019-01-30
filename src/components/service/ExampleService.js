@@ -16,6 +16,7 @@ export default class ExampleService extends React.Component {
             a: 0,
             b: 0
         };
+
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -74,14 +75,20 @@ export default class ExampleService extends React.Component {
     }
 
     handleServiceName(event) {
-        var strService = event.target.value;
+        let strService = event.target.value;
         this.setState({
             serviceName: strService
         });
-        this.serviceMethods.length = 0;
-        var data = this.methodsForAllServices[strService];
+        this.serviceMethods.length = 0
+        let data = [];
         if (typeof data !== 'undefined') {
-            this.serviceMethods = data;
+            if (typeof strService !== 'undefined' && strService !== 'Select a service') {
+                this.serviceMethods= data;
+                data = Object.values(this.methodsForAllServices[strService]);
+                if (typeof data !== 'undefined') {
+                    this.serviceMethods= data;
+                }
+            }
         }
     }
 
