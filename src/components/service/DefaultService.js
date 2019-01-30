@@ -68,23 +68,29 @@ export default class DefaultService extends React.Component {
       })
   }
 
-    handleFormUpdate() {
+    handleFormUpdate(event) {
         this.setState({
             [event.target.name]: event.target.value
         });
     }
 
-  handleServiceName() {
-      var strService = event.target.value;
-      this.setState({
-          serviceName: strService
-      });
-      this.serviceMethods.length = 0
-      var data = this.methodsForAllServices[strService];
-      if (typeof data !== 'undefined') {
-          this.serviceMethods = data;
-      }
-  }
+    handleServiceName(event) {
+        let strService = event.target.value;
+        this.setState({
+            serviceName: strService
+        });
+        this.serviceMethods.length = 0
+        let data = [];
+        if (typeof data !== 'undefined') {
+            if (typeof strService !== 'undefined' && strService !== 'Select a service') {
+                this.serviceMethods= data;
+                data = Object.values(this.methodsForAllServices[strService]);
+                if (typeof data !== 'undefined') {
+                    this.serviceMethods= data;
+                }
+            }
+        }
+    }  
 
   submitAction() {
       this.props.callApiCallback(

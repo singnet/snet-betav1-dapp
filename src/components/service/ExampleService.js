@@ -15,29 +15,29 @@ export default class ExampleService extends React.Component {
             a: 0,
             b: 0
         };
-        this.response = undefined
-        this.isComplete = false
-        this.serviceMethods = []
-        this.allServices = []
-        this.methodsForAllServices = []
+        this.response = undefined;
+        this.isComplete = false;
+        this.serviceMethods = [];
+        this.allServices = [];
+        this.methodsForAllServices = [];
         this.parseProps(props);
     }
 
     parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete
+        this.isComplete = nextProps.isComplete;
         if (!this.isComplete) {
             this.parseServiceSpec(nextProps.serviceSpec);
         }
         else {
             if (typeof nextProps.response !== 'undefined') {
                 if (typeof nextProps.response === 'string') {
-                    this.response=nextProps.response; 
+                    this.response=nextProps.response;
                 } else {
                     this.response=nextProps.response.value;
                 }
             }
         }
-    }    
+    }
 
     parseServiceSpec(serviceSpec) {
         const packageName = Object.keys(serviceSpec.nested).find(key =>
@@ -53,7 +53,7 @@ export default class ExampleService extends React.Component {
             items = serviceSpec.nested;
             objects = Object.keys(serviceSpec.nested);
         }
-  
+
         this.allServices.push("Select a service");
         this.methodsForAllServices = []
         objects.map(rr => {
@@ -66,25 +66,31 @@ export default class ExampleService extends React.Component {
                 this.methodsForAllServices[rr] = methods;
             }
         })
-    }   
+    }
     
-    handleFormUpdate() {
+    handleFormUpdate(event) {
         this.setState({
             [event.target.name]: event.target.value
         });
     }
 
-    handleServiceName() {
-        var strService = event.target.value;
+    handleServiceName(event) {
+        let strService = event.target.value;
         this.setState({
             serviceName: strService
         });
         this.serviceMethods.length = 0
-        var data = this.methodsForAllServices[strService];
+        let data = [];
         if (typeof data !== 'undefined') {
-            this.serviceMethods= data;
+            if (typeof strService !== 'undefined' && strService !== 'Select a service') {
+                this.serviceMethods= data;
+                data = Object.values(this.methodsForAllServices[strService]);
+                if (typeof data !== 'undefined') {
+                    this.serviceMethods= data;
+                }
+            }
         }
-    }    
+    }
 
     onKeyPressvalidator(event) {
         const keyCode = event.keyCode || event.which;
@@ -112,9 +118,9 @@ export default class ExampleService extends React.Component {
         <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Service Name</div>
         <div className="col-md-3 col-lg-3">
             <select id="select1" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleServiceName}>
-            {this.allServices.map((row,index) => 
+            {this.allServices.map((row,index) =>
             <option key={index}>{row}</option>)}
-        </select>        
+        </select>
         </div>
         </div>
         <div className="row">
