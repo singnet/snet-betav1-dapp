@@ -79,15 +79,11 @@ export default class ExampleService extends React.Component {
         this.setState({
             serviceName: strService
         });
-        this.serviceMethods.length = 0
-        let data = [];
-        if (typeof data !== 'undefined') {
-            if (typeof strService !== 'undefined' && strService !== 'Select a service') {
+        this.serviceMethods.length = 0;
+        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
+            let data = Object.values(this.methodsForAllServices[strService]);
+            if (typeof data !== 'undefined') {
                 this.serviceMethods= data;
-                data = Object.values(this.methodsForAllServices[strService]);
-                if (typeof data !== 'undefined') {
-                    this.serviceMethods= data;
-                }
             }
         }
     }
