@@ -1,8 +1,8 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
+import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
 
-export default class CNTKImageRecognition extends React.Component {
+export default class YOLOv3ObjectDetection extends React.Component {
 
     constructor(props) {
         super(props);
@@ -11,15 +11,16 @@ export default class CNTKImageRecognition extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/cntk-image-recon.md",
-            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/cntk-image-recon",
-            reference: "https://cntk.ai/pythondocs/CNTK_301_Image_Recognition_with_Deep_Transfer_Learning.html",
+            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/yolov3-object-detection.md",
+            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/yolov3-object-detection",
+            reference: "https://pjreddie.com/darknet/yolo/",
 
             serviceName: undefined,
             methodName: undefined,
 
-            imgPath: undefined,
-            model: "ResNet152",
+            model: "yolov3",
+            img_path: undefined,
+            confidence: undefined,
 
             response: undefined
         };
@@ -91,8 +92,9 @@ export default class CNTKImageRecognition extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                imgPath: this.state.imgPath,
-                model: this.state.model
+                model: this.state.model,
+                imgPath: this.state.img_path,
+                confidence: this.state.confidence
             });
     }
 
@@ -121,9 +123,18 @@ export default class CNTKImageRecognition extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image (URL)</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="imgPath" type="text"
+                        <input name="img_path" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Confidence (0-1)
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="confidence" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                onChange={this.handleFormUpdate}></input>
                     </div>
@@ -153,12 +164,18 @@ export default class CNTKImageRecognition extends React.Component {
 
     renderComplete() {
         let status = "Ok\n";
-        let top_5 = "\n";
         let delta_time = "\n";
+        let boxes = "\n";
+        let class_ids = "\n";
+        let confidences = "\n";
+        let img_base64 = "\n";
 
         if (typeof this.state.response === "object") {
             delta_time = this.state.response.deltaTime + "s\n";
-            top_5 = this.state.response.top_5;
+            boxes = this.state.response.boxes + "\n";
+            class_ids = this.state.response.classIds + "\n";
+            confidences = this.state.response.confidences + "\n";
+            img_base64 = "\n" + this.state.response.imgBase64;
         } else {
             status = this.state.response + "\n";
         }
@@ -166,9 +183,13 @@ export default class CNTKImageRecognition extends React.Component {
             <div>
                 <p style={{fontSize: "13px"}}>Response from service is: </p>
                 <pre>
-                    Status : {status}
-                    Time   : {delta_time}
-                    {top_5}
+                    Status     : {status}
+                    Time       : {delta_time}
+                    Boxes      : {boxes}
+                    Classes    : {class_ids}
+                    Confidences: {confidences}
+                    Image      :
+                    {img_base64}
                 </pre>
             </div>
         );
