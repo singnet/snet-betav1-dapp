@@ -468,14 +468,20 @@ export  class Jobdetails extends React.Component {
                                     <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
                                     {this.serviceState["description"]}
                                     </div>
-                                </div>
-                                <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
-                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding" >
-                                    <span className="font-weight-bold">URL&nbsp;:&nbsp;</span>
-                                     <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
+                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
+                                    <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
                                     </div>
                                 </div>
 
+                                <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
+                                <h3>Job Cost Preview</h3>
+                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Current Price</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > {this.serviceState["price_in_agi"]} AGI</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Price Model</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter">{this.serviceState["price_model"]}</div>
+                                </div>
+                            </div>
                                 <div className="col-xs-12 col-sm-12 col-md-12 text-center border-top1">                              
                                     {(this.state.runjobstate === true) ?
                                     <button type="button" className="btn-primary" onClick={()=> this.startjob()}>Start Job</button>
@@ -525,7 +531,7 @@ export  class Jobdetails extends React.Component {
                                                 <button type="button" className={this.state.startjobfundinvokeres?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
                                                 disabled={this.state.startjobfundinvokeres?false:true}>Reserve Funds</button>
                                             </div>
-                                        </div>
+                                            </div>
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
@@ -562,15 +568,7 @@ export  class Jobdetails extends React.Component {
                             </div>
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
                             
-                            <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
-                                <h3>Job Cost Preview</h3>
-                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Current Price</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > {this.serviceState["price_in_agi"]} AGI</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Price Model</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter">{this.serviceState["price_model"]}</div>
-                                </div>
-                            </div>
+
                         </div>
                     </Typography>
                 </div>
