@@ -18,15 +18,15 @@ export default class CNTKLanguageUnderstanding extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            train_ctf_url: undefined,
-            test_ctf_url: undefined,
-            query_wl_url: undefined,
-            slots_wl_url: undefined,
-            intent_wl_url: undefined,
-            vocab_size: undefined,
-            num_labels: undefined,
-            num_intents: undefined,
-            sentences_url: undefined,
+            train_ctf_url: "",
+            test_ctf_url: "",
+            query_wl_url: "",
+            slots_wl_url: "",
+            intent_wl_url: "",
+            vocab_size: "",
+            num_labels: "",
+            num_intents: "",
+            sentences_url: "",
 
             response: undefined
         };

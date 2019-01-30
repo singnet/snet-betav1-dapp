@@ -18,8 +18,8 @@ export default class I3DActionRecognition extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            model: undefined,
-            url: undefined,
+            model: "",
+            url: "",
 
             response: undefined
         };

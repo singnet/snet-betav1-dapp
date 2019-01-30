@@ -18,16 +18,16 @@ export default class CNTKLSTMForecast extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            window_len: undefined,
-            word_len: undefined,
-            alphabet_size: undefined,
+            window_len: "",
+            word_len: "",
+            alphabet_size: "",
 
-            source_type: undefined,
-            source: undefined,
-            contract: undefined,
+            source_type: "",
+            source: "",
+            contract: "",
 
-            start_date: undefined,
-            end_date: undefined,
+            start_date: "",
+            end_date: "",
 
             response: undefined
         };

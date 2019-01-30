@@ -18,7 +18,7 @@ export default class CNTKImageRecognition extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            img_path: undefined,
+            img_path: "",
             model: "ResNet152",
 
             response: undefined

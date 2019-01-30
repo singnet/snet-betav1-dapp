@@ -18,9 +18,9 @@ export default class S2VTVideoCaptioning extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            url: undefined,
-            start_time_sec: undefined,
-            stop_time_sec: undefined,
+            url: "",
+            start_time_sec: "",
+            stop_time_sec: "",
 
             response: undefined
         };

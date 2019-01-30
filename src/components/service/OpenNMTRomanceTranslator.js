@@ -18,9 +18,9 @@ export default class OpenNMTRomanceTranslator extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            source_lang: undefined,
-            target_lang: undefined,
-            sentences_url: undefined,
+            source_lang: "",
+            target_lang: "",
+            sentences_url: "",
 
             response: undefined
         };

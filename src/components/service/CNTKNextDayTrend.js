@@ -18,11 +18,11 @@ export default class CNTKNextDayTrend extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            source: undefined,
-            contract: undefined,
-            start: undefined,
-            end: undefined,
-            target_date: undefined,
+            source: "",
+            contract: "",
+            start: "",
+            end: "",
+            target_date: "",
 
             response: undefined
         };

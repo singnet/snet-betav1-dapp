@@ -19,8 +19,8 @@ export default class YOLOv3ObjectDetection extends React.Component {
             methodName: undefined,
 
             model: "yolov3",
-            img_path: undefined,
-            confidence: undefined,
+            img_path: "",
+            confidence: "",
 
             response: undefined
         };

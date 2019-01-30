@@ -18,9 +18,9 @@ export default class Zeta36ChessAlphaZero extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            uid: undefined,
-            move: undefined,
-            cmd: undefined,
+            uid: "",
+            move: "",
+            cmd: "",
 
             response: undefined
         };
