@@ -410,9 +410,9 @@ export class Profile extends Component {
                                 </div>
                                 <div className="row">
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
-                                        <label>Escow Balance</label>
+                                        <label>Escrow Balance</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Escow Balance</span>}>
+                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Escrow Balance</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
                                             <label>{AGI.toDecimal(this.state.escrowaccountbalance)} AGI</label>
                                         </div>
