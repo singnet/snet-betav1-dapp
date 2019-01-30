@@ -1,5 +1,4 @@
 import React from 'react';
-import Modal from '@material-ui/core/Modal'
 
 export  class Carddeckers extends React.Component {
     constructor(props) {
@@ -23,8 +22,8 @@ export  class Carddeckers extends React.Component {
         };
         if (!this.state.visible) return (
             <React.Fragment>
-            <div onClick={this.toggleVisible} className="blue-boxes-head">
-                <h4 style={ cursor } className="align-self-center text-uppercase ">New &amp; Hot in Community ...</h4>
+            <div className="blue-boxes-head">
+                <h4 onClick={this.toggleVisible} style={ cursor } className="align-self-center text-uppercase ">New &amp; Hot in Community ...</h4>
             </div>
             </React.Fragment>
         )
