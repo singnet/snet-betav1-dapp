@@ -18,7 +18,7 @@ export default class CNTKImageRecognition extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            imgPath: undefined,
+            img_path: "",
             model: "ResNet152",
 
             response: undefined
@@ -91,7 +91,7 @@ export default class CNTKImageRecognition extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                imgPath: this.state.imgPath,
+                imgPath: this.state.img_path,
                 model: this.state.model
             });
     }
@@ -123,9 +123,9 @@ export default class CNTKImageRecognition extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="imgPath" type="text"
+                        <input name="img_path" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.img_path} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
