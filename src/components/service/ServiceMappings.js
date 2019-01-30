@@ -9,6 +9,7 @@ import OpenNMTRomanceTranslator from './OpenNMTRomanceTranslator.js';
 import S2VTVideoCaptioning from './S2VTVideoCaptioning.js';
 import YOLOv3ObjectDetection from './YOLOv3ObjectDetection.js';
 import Zeta36ChessAlphaZero from './Zeta36ChessAlphaZero.js';
+import VisualQAOpencog from './VisualQAOpencog.js';
 
 import DefaultService from './DefaultService.js';
 
@@ -25,6 +26,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "s2vt-video-captioning")] = S2VTVideoCaptioning;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "yolov3-object-detection")] = YOLOv3ObjectDetection;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "zeta36-chess-alpha-zero")] = Zeta36ChessAlphaZero;
+        this.serviceOrgIDToComponent[this.generateUniqueID("anatoly.belikov", "opencog-vqa")] = VisualQAOpencog;
     }
 
     generateUniqueID(orgId,serviceId) {
@@ -36,6 +38,7 @@ export default class SampleServices {
         if(typeof component === 'undefined') {
             component = DefaultService;
         }
+
 
         return component;
     }
