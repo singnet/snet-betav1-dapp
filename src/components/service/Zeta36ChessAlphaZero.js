@@ -1,8 +1,8 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
+import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
 
-export default class CNTKImageRecognition extends React.Component {
+export default class Zeta36ChessAlphaZero extends React.Component {
 
     constructor(props) {
         super(props);
@@ -11,15 +11,16 @@ export default class CNTKImageRecognition extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/cntk-image-recon.md",
-            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/cntk-image-recon",
-            reference: "https://cntk.ai/pythondocs/CNTK_301_Image_Recognition_with_Deep_Transfer_Learning.html",
+            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/zeta36-chess-alpha-zero.md",
+            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/zeta36-chess-alpha-zero",
+            reference: "https://github.com/Zeta36/chess-alpha-zero",
 
             serviceName: undefined,
             methodName: undefined,
 
-            imgPath: undefined,
-            model: "ResNet152",
+            uid: undefined,
+            move: undefined,
+            cmd: undefined,
 
             response: undefined
         };
@@ -91,55 +92,61 @@ export default class CNTKImageRecognition extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                imgPath: this.state.imgPath,
-                model: this.state.model
+                uid: this.state.uid,
+                move: this.state.move,
+                cmd: this.state.cmd
             });
     }
 
     renderForm() {
-        return (
+        return(
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Service Name</div>
                     <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
+                        <select id="select1" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleServiceName}>
+                            {this.allServices.map((row,index) =>
                                 <option key={index}>{row}</option>)}
                         </select>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Method Name</div>
                     <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
+                        <select name="methodName" style={{height:"30px",width:"250px",fontSize:"13px", marginBottom: "5px"}} onChange={this.handleFormUpdate}>
+                            {this.serviceMethods.map((row,index) =>
                                 <option key={index}>{row}</option>)}
                         </select>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>UID</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="imgPath" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                        <input name="paramString" type="text" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} value={this.state.uid} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Move</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="paramString" type="text" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} value={this.state.move} onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>Command</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="paramString" type="text" style={{height: "30px",width: "250px",fontSize: "13px", marginBottom: "5px"}} value={this.state.cmd} onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px",marginLeft: "10px"}}>About</div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.users_guide}
-                                style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
+                        <Button href={this.state.users_guide} style={{fontSize: "13px",marginLeft: "10px"}}>Guide</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                        <Button href={this.state.code_repo} style={{fontSize: "13px",marginLeft: "10px"}}>Code</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.reference}
-                                style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
+                        <Button href={this.state.reference} style={{fontSize: "13px",marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>
                 <div className="row">
@@ -152,13 +159,14 @@ export default class CNTKImageRecognition extends React.Component {
     }
 
     renderComplete() {
-        let status = "Ok\n";
-        let top_5 = "\n";
-        let delta_time = "\n";
+        let status = "\n";
+        let uid = "\n";
+        let board = "\n";
 
         if (typeof this.state.response === "object") {
-            delta_time = this.state.response.deltaTime + "s\n";
-            top_5 = this.state.response.top_5;
+            status = this.state.response.status + "\n";
+            uid = this.state.response.uid + "\n";
+            board = "\n" + this.state.response.board;
         } else {
             status = this.state.response + "\n";
         }
@@ -166,9 +174,9 @@ export default class CNTKImageRecognition extends React.Component {
             <div>
                 <p style={{fontSize: "13px"}}>Response from service is: </p>
                 <pre>
-                    Status : {status}
-                    Time   : {delta_time}
-                    {top_5}
+                    Status: {status}
+                    UID   : {uid}
+                    {board}
                 </pre>
             </div>
         );

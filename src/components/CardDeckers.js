@@ -1,12 +1,38 @@
 import React from 'react';
+
 export  class Carddeckers extends React.Component {
+    constructor(props) {
+        super(props);
+     
+        this.state = {
+            visible: false,
+        };
+        this.toggleVisible = this.toggleVisible.bind(this);
+    }
+
+    toggleVisible() {
+        
+        this.setState({ visible: !this.state.visible });
+    }
+    
     render()
     {
-        return(  
-            <React.Fragment>      
+        const cursor = {
+            cursor: 'pointer'
+        };
+        if (!this.state.visible) return (
+            <React.Fragment>
             <div className="blue-boxes-head">
-                <h4 className="align-self-center text-uppercase ">New &amp; Hot in Community</h4>
-            </div>    
+                <h4 onClick={this.toggleVisible} style={ cursor } className="align-self-center text-uppercase ">New &amp; Hot in Community ...</h4>
+            </div>
+            </React.Fragment>
+        )
+        else
+        return (
+            <React.Fragment>
+            <div className="blue-boxes-head">
+                <h4 style={ cursor } onClick={this.toggleVisible} className="align-self-center text-uppercase ">New &amp; Hot in Community x</h4>
+            </div>      
             <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 card-deck">
                 <div className="col-xs-12 col-sm-6 col-md-3 col-lg-3 card">
                                 <div className="card-body">
@@ -45,7 +71,8 @@ export  class Carddeckers extends React.Component {
                                 </div>
                             </div>
                 </div>
-        </React.Fragment>
+                </React.Fragment>
+        
         )
     }
 }

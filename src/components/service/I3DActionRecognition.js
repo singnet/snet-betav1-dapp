@@ -1,8 +1,8 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
+import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
 
-export default class CNTKImageRecognition extends React.Component {
+export default class I3DActionRecognition extends React.Component {
 
     constructor(props) {
         super(props);
@@ -11,15 +11,15 @@ export default class CNTKImageRecognition extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/cntk-image-recon.md",
-            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/cntk-image-recon",
-            reference: "https://cntk.ai/pythondocs/CNTK_301_Image_Recognition_with_Deep_Transfer_Learning.html",
+            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/i3d-video-action-recognition.md",
+            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/i3d-video-action-recognition",
+            reference: "https://github.com/deepmind/kinetics-i3d",
 
             serviceName: undefined,
             methodName: undefined,
 
-            imgPath: undefined,
-            model: "ResNet152",
+            model: undefined,
+            url: undefined,
 
             response: undefined
         };
@@ -91,8 +91,8 @@ export default class CNTKImageRecognition extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                imgPath: this.state.imgPath,
-                model: this.state.model
+                model: this.state.model,
+                url: this.state.url
             });
     }
 
@@ -121,9 +121,19 @@ export default class CNTKImageRecognition extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Model (400 or
+                        600)
+                    </div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="imgPath" type="text"
+                        <input name="model" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Video URL</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                onChange={this.handleFormUpdate}></input>
                     </div>
@@ -153,12 +163,10 @@ export default class CNTKImageRecognition extends React.Component {
 
     renderComplete() {
         let status = "Ok\n";
-        let top_5 = "\n";
-        let delta_time = "\n";
+        let value = "\n";
 
         if (typeof this.state.response === "object") {
-            delta_time = this.state.response.deltaTime + "s\n";
-            top_5 = this.state.response.top_5;
+            value = "\n" + this.state.response.value;
         } else {
             status = this.state.response + "\n";
         }
@@ -166,9 +174,9 @@ export default class CNTKImageRecognition extends React.Component {
             <div>
                 <p style={{fontSize: "13px"}}>Response from service is: </p>
                 <pre>
-                    Status : {status}
-                    Time   : {delta_time}
-                    {top_5}
+                    Status: {status}
+                    Top Predicted Actions:
+                    {value}
                 </pre>
             </div>
         );

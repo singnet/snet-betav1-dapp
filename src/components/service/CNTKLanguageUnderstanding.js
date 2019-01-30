@@ -1,8 +1,8 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
+import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
 
-export default class CNTKImageRecognition extends React.Component {
+export default class CNTKLanguageUnderstanding extends React.Component {
 
     constructor(props) {
         super(props);
@@ -11,15 +11,22 @@ export default class CNTKImageRecognition extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/cntk-image-recon.md",
-            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/cntk-image-recon",
-            reference: "https://cntk.ai/pythondocs/CNTK_301_Image_Recognition_with_Deep_Transfer_Learning.html",
+            users_guide: "https://github.com/singnet/nlp-services/blob/master/docs/users_guide/cntk-language-understanding.md",
+            code_repo: "https://github.com/singnet/nlp-services/blob/master/cntk-language-understanding",
+            reference: "https://cntk.ai/pythondocs/CNTK_202_Language_Understanding.html",
 
             serviceName: undefined,
             methodName: undefined,
 
-            imgPath: undefined,
-            model: "ResNet152",
+            train_ctf_url: undefined,
+            test_ctf_url: undefined,
+            query_wl_url: undefined,
+            slots_wl_url: undefined,
+            intent_wl_url: undefined,
+            vocab_size: undefined,
+            num_labels: undefined,
+            num_intents: undefined,
+            sentences_url: undefined,
 
             response: undefined
         };
@@ -91,8 +98,15 @@ export default class CNTKImageRecognition extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                imgPath: this.state.imgPath,
-                model: this.state.model
+                trainCtfUrl: this.state.train_ctf_url,
+                testCtfUrl: this.state.test_ctf_url,
+                queryWlUrl: this.state.query_wl_url,
+                slotsWlUrl: this.state.slots_wl_url,
+                intentWlUrl: this.state.intent_wl_url,
+                vocabSize: this.state.vocab_size,
+                numLabels: this.state.num_labels,
+                numIntents: this.state.num_intents,
+                sentencesUrl: this.state.sentences_url
             });
     }
 
@@ -121,9 +135,84 @@ export default class CNTKImageRecognition extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Train CTF (URL)
+                    </div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="imgPath" type="text"
+                        <input name="train_ctf_url" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Test CTF (URL)
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="test_ctf_url" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Query List (URL)
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="query_wl_url" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Slots List (URL)
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="slots_wl_url" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Intent List
+                        (URL)
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="intent_wl_url" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Vocabulary Size
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="vocab_size" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Number of Labels
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="num_labels" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Number of
+                        Intents
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="num_intents" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Sentences (URL)
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="sentences_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                onChange={this.handleFormUpdate}></input>
                     </div>
@@ -153,12 +242,12 @@ export default class CNTKImageRecognition extends React.Component {
 
     renderComplete() {
         let status = "Ok\n";
-        let top_5 = "\n";
-        let delta_time = "\n";
+        let model_url = "\n";
+        let output_url = "\n";
 
         if (typeof this.state.response === "object") {
-            delta_time = this.state.response.deltaTime + "s\n";
-            top_5 = this.state.response.top_5;
+            model_url = this.state.response.modelUrl + "\n";
+            output_url = this.state.response.outputUrl;
         } else {
             status = this.state.response + "\n";
         }
@@ -166,9 +255,9 @@ export default class CNTKImageRecognition extends React.Component {
             <div>
                 <p style={{fontSize: "13px"}}>Response from service is: </p>
                 <pre>
-                    Status : {status}
-                    Time   : {delta_time}
-                    {top_5}
+                    Status    : {status}
+                    Model URL : {model_url}
+                    Output URL: {output_url}
                 </pre>
             </div>
         );

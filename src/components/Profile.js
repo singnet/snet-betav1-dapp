@@ -271,14 +271,15 @@ export class Profile extends Component {
       var amountInCogs = AGI.inCogs(web3, caller.state.depositAmount);
       console.log("Attempting to deposit " + amountInCogs + " attempt " + counter)
       if (Number(amountInCogs) > Number(allowedbalance)) {
-          if(counter < 5) {
-              console.log("Checking deposit")
+          if(counter < 15) {
+              console.log("Checking deposit AllowedBalance is " + allowedbalance + " deposit amount is " + amountInCogs);
               const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
               await snooze(2000);
               caller.handleDeposit(caller, counter+1)
           }
           else {
-            caller.setState({contractMessage: 'Deposit amount should be less than approved balance ' + allowedbalance});
+            //caller.setState({contractMessage: 'Deposit amount should be less than approved balance ' + allowedbalance});
+            caller.processError("Deposit failed. Please retry with a higher gas fee","contractMessage");
           }
       }
       else {
@@ -294,7 +295,7 @@ export class Profile extends Component {
                 return;
             }                 
             caller.executeContractMethod(instanceEscrowContract.deposit, undefined, estimatedGas, gasPrice, "contractMessage", 
-            "You have successfully deposited tokens to the Escrow. You can now execute Agents from the Home page",
+            "You have successfully deposited tokens to the escrow. You can now invoke services from the Home page",
             [amountInCogs]);
           })
         })
@@ -410,9 +411,9 @@ export class Profile extends Component {
                                 </div>
                                 <div className="row">
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
-                                        <label>Escow Balance</label>
+                                        <label>Escrow Balance</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Escow Balance</span>}>
+                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Escrow Balance</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
                                             <label>{AGI.toDecimal(this.state.escrowaccountbalance)} AGI</label>
                                         </div>

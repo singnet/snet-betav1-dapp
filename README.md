@@ -1,7 +1,7 @@
 # snet-dapp
 
-This Dapp allows you to browse the list of SingularityNET Agents from the SingularityNET Registry and call them to provide a Service.
-The Dapp uses the SingularityNET contracts deployed on the Kovan testnet.
+This Dapp allows you to browse the list of services from the SingularityNET Registry and call them.
+By default it uses the SingularityNET contracts deployed on the Kovan testnet.
 
 To get Kovan AGI to use the Dapp you can use the official [SingularityNET AGI Faucet](https://faucet.singularitynet.io/).
 To get Kovan ETH to pay for gas costs you should refer to [this repo](https://github.com/kovan-testnet/faucet).
