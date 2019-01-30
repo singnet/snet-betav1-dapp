@@ -127,7 +127,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="img_path" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.img_path} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -136,7 +136,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="confidence" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.confidence} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">

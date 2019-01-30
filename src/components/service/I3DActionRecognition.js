@@ -127,7 +127,7 @@ export default class I3DActionRecognition extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="model" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.model} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -135,7 +135,7 @@ export default class I3DActionRecognition extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">

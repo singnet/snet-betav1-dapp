@@ -140,7 +140,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="train_ctf_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.train_ctf_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -149,7 +149,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="test_ctf_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.test_ctf_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -158,7 +158,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="query_wl_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.query_wl_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -167,7 +167,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="slots_wl_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.slots_wl_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -177,7 +177,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="intent_wl_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.intent_wl_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -186,7 +186,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="vocab_size" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.vocab_size} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -195,7 +195,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="num_labels" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.num_labels} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -205,7 +205,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="num_intents" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.num_intents} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -214,7 +214,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="sentences_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.sentences_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
