@@ -15,7 +15,7 @@ import { Root } from 'protobufjs'
 import Vote from './Vote.js';
 import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
-
+import {serviceStateJSON} from '../service_state'
 
 export  class Jobdetails extends React.Component {
     constructor() {
@@ -37,10 +37,11 @@ export  class Jobdetails extends React.Component {
         showEscrowBalanceAlert:false,
       };
 
+      this.channelExtended = false;
       this.serviceState = {};
-      this.channelHelper = new ChannelHelper()
-      this.currentBlockNumber = 0
-      this.serviceSpecJSON = undefined  
+      this.channelHelper = new ChannelHelper();
+      this.currentBlockNumber = 0;
+      this.serviceSpecJSON = undefined;
       this.serviceMappings = new ServiceMappings();
       this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
       this.handleChangeTabs = this.handleChangeTabs.bind(this);
@@ -50,17 +51,16 @@ export  class Jobdetails extends React.Component {
       this.changeocvalue = this.changeocvalue.bind(this);
       this.changeocexpiration = this.changeocexpiration.bind(this);
       this.openchannelhandler = this.openchannelhandler.bind(this);
-      this.handleJobInvocation = this.handleJobInvocation.bind(this);      
+      this.handleJobInvocation = this.handleJobInvocation.bind(this);
       this.startjob = this.startjob.bind(this);
-      this.onOpenEscrowBalanceAlert = this.onOpenEscrowBalanceAlert.bind(this)
-      this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this)  
-      this.onOpenchaining = this.onOpenchaining.bind(this)
-      this.onClosechaining = this.onClosechaining.bind(this)  
+      this.onOpenEscrowBalanceAlert = this.onOpenEscrowBalanceAlert.bind(this);
+      this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this);
+      this.onOpenchaining = this.onOpenchaining.bind(this);
+      this.onClosechaining = this.onClosechaining.bind(this);
       this.watchBlocknumberTimer = undefined;
     }
 
     watchBlocknumber() {
-      //Update blocknumber
       this.props.network.getCurrentBlockNumber((blockNumber) => {
         this.currentBlockNumber = blockNumber
       })
@@ -87,6 +87,7 @@ export  class Jobdetails extends React.Component {
                           'available-channels?user_address='+this.props.userAddress +
                           '&service_id='+this.serviceState["service_id"] +
                           '&org_id='+this.serviceState["org_id"];
+      this.channelExtended = false;
       return this.channelHelper.reInitialize(channelInfoUrl);
     }
 
@@ -217,7 +218,6 @@ export  class Jobdetails extends React.Component {
       this.setState({ocexpiration: e.target.value})
     }
 
-
     openchannelhandler() {
       if (typeof web3 === 'undefined') {
         return;
@@ -294,6 +294,7 @@ export  class Jobdetails extends React.Component {
               console.log("Channel extended and added funds is TXN Has : " + txnHash);
               this.onOpenchaining();
               this.props.network.waitForTransaction(txnHash).then(receipt => {
+                  this.channelExtended = true;
                   this.channelHelper.setChannelId(rrchannel["channelId"]);
                   console.log('Re using channel ' + this.channelHelper.getChannelId());
                   this.nextJobStep();
@@ -320,7 +321,6 @@ export  class Jobdetails extends React.Component {
         {
           if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE
-            //this.processChannelErrors(err,"Unable to invoke the channelExtendAndAddFunds method");
           }
 
           mpeInstance.openChannel(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
@@ -336,6 +336,7 @@ export  class Jobdetails extends React.Component {
                   console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.props.userAddress);
                 }).then(() => {
                   this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
+                  this.channelExtended = false;
                 })
                 .catch((error) => {
                   this.processChannelErrors(error,"Open channel failed.");
@@ -402,6 +403,45 @@ export  class Jobdetails extends React.Component {
 
     handleChangeTabs (event, valueTab) {
       this.setState({ valueTab });
+    }
+
+    testChannelState() {
+      var ethereumjsabi = require('ethereumjs-abi');
+      var sha3Message = ethereumjsabi.soliditySHA3(
+          ["uint256"],
+          [20]);
+      var msg = "0x" + sha3Message.toString("hex");
+      window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
+      .then((signed) => {
+        var stripped = signed.substring(2, signed.length)
+        var byteSig = new Buffer(Buffer.from(stripped, 'hex'));
+        console.log(byteSig.toString('base64'))
+        const byteschannelID = Buffer.alloc(4);
+        byteschannelID.writeUInt32BE(20, 0);
+
+        let requestObject   = ({"channelId":byteschannelID, "signature":byteSig})
+        console.log('after calling readFile' + serviceStateJSON);
+        const packageName = 'escrow'
+        const serviceName = 'PaymentChannelStateService'
+        const methodName = 'GetChannelState'
+
+        const requestHeaders = {}
+
+        console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + + " request " + JSON.stringify(requestObject));
+        const Service = Root.fromJSON(serviceStateJSON).lookup(serviceName)
+        const serviceObject = Service.create(rpcImpl('http://3.88.207.94:8080', packageName, serviceName, methodName, requestHeaders), false, false)
+        grpcRequest(serviceObject, methodName, requestObject)
+          .then(response => {
+            console.log("Got a GRPC response " + JSON.stringify(response))
+            console.log(response.currentSignedAmount)
+            let buffer = Buffer.from(response.currentSignedAmount);
+            console.log(buffer.readUIntBE(0, response.currentSignedAmount.length));
+          })
+          .catch((err) => {
+            console.log("GRPC call failed")
+            console.log(err);
+          })              
+    });
     }
 
     onOpenJobDetails(data) {
