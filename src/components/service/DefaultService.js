@@ -73,15 +73,17 @@ export default class DefaultService extends React.Component {
         });
     }
 
-    handleServiceName() {
-        var strService = event.target.value;
+    handleServiceName(event) {
+        let strService = event.target.value;
         this.setState({
             serviceName: strService
         });
         this.serviceMethods.length = 0;
-        var data = this.methodsForAllServices[strService];
-        if (typeof data !== 'undefined') {
-            this.serviceMethods = data;
+        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
+            let data = Object.values(this.methodsForAllServices[strService]);
+            if (typeof data !== 'undefined') {
+                this.serviceMethods= data;
+            }
         }
     }
 
