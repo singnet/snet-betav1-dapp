@@ -4,7 +4,7 @@ export const NETWORKS = {
       etherscan: 'https://etherscan.io',
       infura: 'http://mainnet.infura.io',
       marketplace:'',
-      protobufjs:'http://protobufjs.singularitynet.io/'
+      protobufjs:''
     },
     3: {
       name: "Ropsten",
@@ -18,7 +18,7 @@ export const NETWORKS = {
       etherscan: 'https://rinkeby.etherscan.io', 
       infura: 'https://rinkeby.infura.io',
       marketplace:'',
-      protobufjs:'http://protobufjs.singularitynet.io/'
+      protobufjs:''
     },
     42: {
       name: "Kovan",

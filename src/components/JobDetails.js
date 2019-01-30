@@ -466,12 +466,13 @@ export  class Jobdetails extends React.Component {
                                     <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
                                 <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
                                     <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
-                                          This is a brief write up about the service which discusses details of the service. We expect a short description of the service here and details on how to contact the author.
+                                    {this.serviceState["description"]}
                                     </div>
                                 </div>
                                 <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
                                     <div className="col-xs-12 col-sm-12 col-md-12 no-padding" >
-                                    <span className="font-weight-bold">URL&nbsp;:&nbsp;</span> <a target="_blank" href={'https://singularitynet.io'}>https://singularitynet.io</a>
+                                    <span className="font-weight-bold">URL&nbsp;:&nbsp;</span>
+                                     <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
                                     </div>
                                 </div>
 
