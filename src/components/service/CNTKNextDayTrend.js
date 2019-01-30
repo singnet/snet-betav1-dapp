@@ -1,8 +1,8 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
+import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
 
-export default class CNTKImageRecognition extends React.Component {
+export default class CNTKNextDayTrend extends React.Component {
 
     constructor(props) {
         super(props);
@@ -11,15 +11,18 @@ export default class CNTKImageRecognition extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/cntk-image-recon.md",
-            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/cntk-image-recon",
-            reference: "https://cntk.ai/pythondocs/CNTK_301_Image_Recognition_with_Deep_Transfer_Learning.html",
+            users_guide: "https://github.com/singnet/time-series-analysis/blob/master/docs/users_guide/finance/cntk-next-day-trend.md",
+            code_repo: "https://github.com/singnet/time-series-analysis/blob/master/finance/cntk-next-day-trend",
+            reference: "https://cntk.ai/pythondocs/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy.html",
 
             serviceName: undefined,
             methodName: undefined,
 
-            imgPath: undefined,
-            model: "ResNet152",
+            source: undefined,
+            contract: undefined,
+            start: undefined,
+            end: undefined,
+            target_date: undefined,
 
             response: undefined
         };
@@ -91,8 +94,11 @@ export default class CNTKImageRecognition extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                imgPath: this.state.imgPath,
-                model: this.state.model
+                source: this.state.source,
+                contract: this.state.contract,
+                start: this.state.start,
+                end: this.state.end,
+                targetDate: this.state.target_date
             });
     }
 
@@ -121,9 +127,41 @@ export default class CNTKImageRecognition extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Source</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="imgPath" type="text"
+                        <input name="source" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Contract</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="contract" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Start Date</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="start" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>End Date</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="end" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Target Date</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="target_date" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                onChange={this.handleFormUpdate}></input>
                     </div>
@@ -153,12 +191,10 @@ export default class CNTKImageRecognition extends React.Component {
 
     renderComplete() {
         let status = "Ok\n";
-        let top_5 = "\n";
-        let delta_time = "\n";
+        let trend = "\n";
 
         if (typeof this.state.response === "object") {
-            delta_time = this.state.response.deltaTime + "s\n";
-            top_5 = this.state.response.top_5;
+            trend = this.state.response.response;
         } else {
             status = this.state.response + "\n";
         }
@@ -166,9 +202,8 @@ export default class CNTKImageRecognition extends React.Component {
             <div>
                 <p style={{fontSize: "13px"}}>Response from service is: </p>
                 <pre>
-                    Status : {status}
-                    Time   : {delta_time}
-                    {top_5}
+                    Status: {status}
+                    Trend : {trend}
                 </pre>
             </div>
         );

@@ -42,7 +42,7 @@ export default class App extends React.Component {
                   </div>
                   {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
                     <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 network-name">
-                        Your are on {NETWORKS[this.props.chainId].name}
+                        You are on {NETWORKS[this.props.chainId].name}
                     </div>
                     :
                     <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 network-name"/>
