@@ -80,7 +80,6 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
-      this.setState({enableVoting: true})
       this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
       this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
@@ -110,34 +109,18 @@ export  class Jobdetails extends React.Component {
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
           balance = AGI.inAGI(balance);
           console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
-          let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.currentBlockNumber);
           if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
             this.onOpenEscrowBalanceAlert();
-          } else if (foundChannel) {
-            console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
-            this.setState({startjobfundinvokeres: true});
-            this.setState({valueTab: 1});
-          } else {
+          } 
+          else {
             console.log("Checking channels " + JSON.stringify(this.channelHelper));
-            if (this.channelHelper.getChannels().length > 0) {
-              let rrchannel = this.channelHelper.getChannels()[0];
-              console.log("Reusing existing channel " + JSON.stringify(rrchannel));              
-              const suggstedExpiration = this.currentBlockNumber + BLOCK_OFFSET
-              let newExpiration = rrchannel["expiration"] > suggstedExpiration ? rrchannel["expiration"] : suggstedExpiration
-              console.log("Suggested Expiry block " + suggstedExpiration + " used " + newExpiration);
-              this.setState({ocexpiration: newExpiration});              
-            } 
-            else {
-              this.setState({ocvalue: this.serviceState['price_in_agi']})
-              this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});              
-            }
-            
-            this.setState({ocvalue: this.serviceState['price_in_agi']})            
-            this.setState({startjobfundinvokeres: true})
+            this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});
+            this.setState({ocvalue: this.serviceState['price_in_agi']});
+            this.setState({startjobfundinvokeres: true});
             this.setState({valueTab: 0});
           }
         });
-      })
+      });
     }
 
     composeMessage(contract, channelID, nonce, price) {
@@ -320,7 +303,6 @@ export  class Jobdetails extends React.Component {
         {
           if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE
-            //this.processChannelErrors(err,"Unable to invoke the channelExtendAndAddFunds method");
           }
 
           mpeInstance.openChannel(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
@@ -466,15 +448,22 @@ export  class Jobdetails extends React.Component {
                                     <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
                                 <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
                                     <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
-                                          This is a brief write up about the service which discusses details of the service. We expect a short description of the service here and details on how to contact the author.
+                                    {this.serviceState["description"]}
                                     </div>
-                                </div>
-                                <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
-                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding" >
-                                    <span className="font-weight-bold">URL&nbsp;:&nbsp;</span> <a target="_blank" href={'https://singularitynet.io'}>https://singularitynet.io</a>
+                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
+                                    <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
                                     </div>
                                 </div>
 
+                                <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
+                                <h3>Job Cost Preview</h3>
+                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Current Price</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > {this.serviceState["price_in_agi"]} AGI</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Price Model</div>
+                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter">{this.serviceState["price_model"]}</div>
+                                </div>
+                            </div>
                                 <div className="col-xs-12 col-sm-12 col-md-12 text-center border-top1">                              
                                     {(this.state.runjobstate === true) ?
                                     <button type="button" className="btn-primary" onClick={()=> this.startjob()}>Start Job</button>
@@ -524,7 +513,7 @@ export  class Jobdetails extends React.Component {
                                                 <button type="button" className={this.state.startjobfundinvokeres?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
                                                 disabled={this.state.startjobfundinvokeres?false:true}>Reserve Funds</button>
                                             </div>
-                                        </div>
+                                            </div>
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
@@ -561,15 +550,7 @@ export  class Jobdetails extends React.Component {
                             </div>
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
                             
-                            <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
-                                <h3>Job Cost Preview</h3>
-                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Current Price</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > {this.serviceState["price_in_agi"]} AGI</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Price Model</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter">{this.serviceState["price_model"]}</div>
-                                </div>
-                            </div>
+
                         </div>
                     </Typography>
                 </div>

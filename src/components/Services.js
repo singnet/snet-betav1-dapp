@@ -22,7 +22,6 @@ class SampleServices extends React.Component {
       offset:0,
       searchBarOpen:false,
       searchTerm:'',
-      bestestsearchresults:[],
       besttagresult:[],
       togglePrice: false,
       toggleServiceName:false,
@@ -32,13 +31,13 @@ class SampleServices extends React.Component {
     };
 
     this.network = new BlockchainHelper();
-    
+    this.searchResults = [];
     this.account = undefined;
     this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
     this.onOpenSearchBar = this.onOpenSearchBar.bind(this)
     this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
-    this.handlesearch = this.handlesearch.bind(this)
+    this.handleSearch = this.handleSearch.bind(this)
     this.captureSearchTerm = this.captureSearchTerm.bind(this)
     this.handlesearchbytag = this.handlesearchbytag.bind(this)
     this.handlepricesort = this.handlepricesort.bind(this)
@@ -65,9 +64,7 @@ class SampleServices extends React.Component {
 
   handlesearchkeyup(e) {
     e.preventDefault();
-    if (e.keyCode === 13) {
-      this.handlesearch()
-    }
+    this.handleSearch();
   }
 
   handlehealthsort() {
@@ -224,13 +221,15 @@ class SampleServices extends React.Component {
     this.setState({ searchBarOpen: false });
   }
 
-  handlesearch() {
-    console.log("Starting search for " + this.state.searchTerm)
+  handleSearch() {
     this.setState({besttagresult: []});
-    let searchedagents = []
-    searchedagents = this.state.agents.map(row => (row["display_name"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1 || row["service_id"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1) ? row : null)
+
+    let searchedagents = this.state.agents.map(row => 
+        (row["display_name"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1 
+        || row["service_id"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1) ? row : null)
+    
     let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
-    this.setState({bestestsearchresults: bestsearchresults})
+    this.searchResults = bestsearchresults;
   }
 
   handlesearchbytag(e, data) {
@@ -252,7 +251,7 @@ class SampleServices extends React.Component {
 
     let agentsample = this.state.agents
     if (this.state.searchTerm !== '') {
-      agentsample = this.state.bestestsearchresults
+      agentsample = this.searchResults
     }
     if (this.state.besttagresult.length > 0) {
       agentsample = this.state.besttagresult
@@ -382,10 +381,9 @@ class SampleServices extends React.Component {
                                             </div>
                                             <div className="col-sm-12 col-md-12 col-lg-12 no-padding">
                                                 <div className="col-sm-9 col-md-9 col-lg-9 no-padding">
-                                                    <input id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchTerm} onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handlesearchkeyup(e)} />
+                                                    <input autoFocus id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchTerm} onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handlesearchkeyup(e)} />
                                                 </div>
                                                 <div className="col-sm-3 col-md-3 col-lg-3">
-                                                    <input className='btn btn-primary' id='phSearchButton' type='button' defaultValue='Search' onClick={this.handlesearch} />
                                                     <input className='btn btn-primary clear-btn' id='phSearchButtonclear' type='button' defaultValue='Clear' onClick={this.handlesearchclear} />
                                                 </div>
                                             </div>
