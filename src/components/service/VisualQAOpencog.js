@@ -91,16 +91,18 @@ export default class VisualQAOpencog extends React.Component {
 
     submitAction() {
 	let oReq = new XMLHttpRequest();
+	let bl = this;
         oReq.open("GET", this.state.imgPath, true);
 	oReq.responseType = "blob";
 	oReq.onload = function(oEvent) {
               let blob = oReq.response;
-              this.props.callApiCallback(this.state.serviceName,
-                  this.state.methodName, {
+              bl.props.callApiCallback(bl.state.serviceName,
+                  bl.state.methodName, {
                       image_data: blob,
-                      model: this.state.use_pm
+                      model: bl.state.use_pm
                   });
 	}
+	oReq.send(null);
     }
 
     renderForm() {
@@ -128,15 +130,13 @@ export default class VisualQAOpencog extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Use pattern matcher or URE</div>
                     <div className="col-md-3 col-lg-3">
                         <select name="use_pm"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                 onChange={this.handleFormUpdate}>
-		                <select>
-                                  <option value={true}>pattern matcher</option>
-                                  <option value={false}>URE</option>
-                                </select>
+                                <option value={true}>pattern matcher</option>
+                                <option value={false}>URE</option>
                         </select>
                     </div>
                 </div>
@@ -149,7 +149,7 @@ export default class VisualQAOpencog extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Question</div>
                     <div className="col-md-3 col-lg-2">
                         <input name="question" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
