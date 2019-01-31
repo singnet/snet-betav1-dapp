@@ -494,7 +494,7 @@ export  class Jobdetails extends React.Component {
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
-                                                 disabled={this.state.fundTabEnabled?false:true}/>
+                                                 disabled={!this.state.fundTabEnabled}/>
                                             </div>
                                             </div>
                                             </div>
@@ -511,7 +511,7 @@ export  class Jobdetails extends React.Component {
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
                                                 <button type="button" className={this.state.fundTabEnabled?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
-                                                        disabled={this.state.fundTabEnabled?false:true}>Reserve Funds</button>
+                                                        disabled={!this.state.fundTabEnabled}>Reserve Funds</button>
                                             </div>
                                             </div>
 
