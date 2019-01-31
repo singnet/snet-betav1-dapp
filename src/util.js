@@ -139,4 +139,4 @@ export function isSupportedNetwork(chainId) {
   return true;
 }
 
-export const BLOCK_OFFSET = 80640 //# blocks generated in 24 hrs
+export const BLOCK_OFFSET = 1680 //# Approximately blocks generated in 30 minutes
