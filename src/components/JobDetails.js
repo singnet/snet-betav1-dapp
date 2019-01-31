@@ -80,7 +80,6 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
-      this.setState({enableVoting: true})
       this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
       this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
@@ -110,34 +109,18 @@ export  class Jobdetails extends React.Component {
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
           balance = AGI.inAGI(balance);
           console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
-          let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.currentBlockNumber);
           if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
             this.onOpenEscrowBalanceAlert();
-          } else if (foundChannel) {
-            console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
-            this.setState({startjobfundinvokeres: true});
-            this.setState({valueTab: 1});
-          } else {
+          } 
+          else {
             console.log("Checking channels " + JSON.stringify(this.channelHelper));
-            if (this.channelHelper.getChannels().length > 0) {
-              let rrchannel = this.channelHelper.getChannels()[0];
-              console.log("Reusing existing channel " + JSON.stringify(rrchannel));              
-              const suggstedExpiration = this.currentBlockNumber + BLOCK_OFFSET
-              let newExpiration = rrchannel["expiration"] > suggstedExpiration ? rrchannel["expiration"] : suggstedExpiration
-              console.log("Suggested Expiry block " + suggstedExpiration + " used " + newExpiration);
-              this.setState({ocexpiration: newExpiration});              
-            } 
-            else {
-              this.setState({ocvalue: this.serviceState['price_in_agi']})
-              this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});              
-            }
-            
-            this.setState({ocvalue: this.serviceState['price_in_agi']})            
-            this.setState({startjobfundinvokeres: true})
+            this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});
+            this.setState({ocvalue: this.serviceState['price_in_agi']});
+            this.setState({startjobfundinvokeres: true});
             this.setState({valueTab: 0});
           }
         });
-      })
+      });
     }
 
     composeMessage(contract, channelID, nonce, price) {
@@ -320,7 +303,6 @@ export  class Jobdetails extends React.Component {
         {
           if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE
-            //this.processChannelErrors(err,"Unable to invoke the channelExtendAndAddFunds method");
           }
 
           mpeInstance.openChannel(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
