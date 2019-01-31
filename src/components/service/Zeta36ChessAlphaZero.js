@@ -90,7 +90,6 @@ export default class Zeta36ChessAlphaZero extends React.Component {
     }
 
     submitAction() {
-        debugger;
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
                 uid: this.state.uid,
