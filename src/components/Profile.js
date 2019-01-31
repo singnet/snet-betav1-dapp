@@ -9,9 +9,8 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { AGI,ERROR_UTILS,DEFAULT_GAS_PRICE, DEFAULT_GAS_ESTIMATE, getMarketplaceURL, isSupportedNetwork } from '../util';
 import { Requests } from '../requests'
-import App from "../App.js";
+import Header from "./Header.js";
 import Tooltip from '@material-ui/core/Tooltip';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import BlockchainHelper from "./BlockchainHelper.js"
 import {ProfileTabContainer} from './ReactStyles.js';
 import DAppModal from './DAppModal.js'
@@ -40,6 +39,7 @@ export class Profile extends Component {
       chainId: undefined,
       contractMessage: '',
       channelMessage:'',
+      isErrorMessage:false,
       supportedNetwork: false
     }
 
@@ -186,8 +186,13 @@ export class Profile extends Component {
     this.setState({ extamount: e.target.value })
   }
 
+  clearMessage(name) {
+    this.setState({isErrorMessage:false})
+    this.setState({[name]:''})
+  }
+
   handleChange(value) {
-    this.setState({contractMessage:''})
+    this.clearMessage("contractMessage");
     this.setState({ value });
   };
 
@@ -196,7 +201,8 @@ export class Profile extends Component {
   }
 
   processError(error, errorLabel) {
-    this.setState({[errorLabel]: ERROR_UTILS.sanitizeError(error)})
+    this.setState({[errorLabel]: ERROR_UTILS.sanitizeError(error)});
+    this.setState({isErrorMessage:true});
     this.nextJobStep();
   }
 
@@ -238,7 +244,7 @@ export class Profile extends Component {
   }
 
   handleAuthorize() {
-    this.setState({contractMessage:''})
+    this.clearMessage("contractMessage");
     if (typeof web3 === 'undefined' || !this.state.supportedNetwork) {
       return;
     }
@@ -278,13 +284,12 @@ export class Profile extends Component {
               caller.handleDeposit(caller, counter+1)
           }
           else {
-            //caller.setState({contractMessage: 'Deposit amount should be less than approved balance ' + allowedbalance});
             caller.processError("Deposit failed. Please retry with a higher gas fee","contractMessage");
           }
       }
       else {
         let instanceEscrowContract = caller.network.getMPEInstance(caller.state.chainId);
-        caller.setState({contractMessage: ''})
+        caller.clearMessage("contractMessage");
         web3.eth.getGasPrice((err, gasPrice) => {
           if(err) {
             gasPrice = DEFAULT_GAS_PRICE;
@@ -303,11 +308,11 @@ export class Profile extends Component {
   }
   
   handleExpansion() {
-    this.setState({channelMessage:''})
+    this.clearMessage("channelMessage");
   }
 
   handlewithdraw() {
-    this.setState({contractMessage:''})
+    this.clearMessage("contractMessage");
     if (typeof web3 === undefined || !this.state.supportedNetwork) {
       return;
     }
@@ -329,7 +334,7 @@ export class Profile extends Component {
   }
 
   handleClaimTimeout(data) {
-    this.setState({channelMessage:''})
+    this.clearMessage("channelMessage");
     if (typeof web3 === undefined) {
       return;
     }
@@ -351,7 +356,7 @@ export class Profile extends Component {
   }
 
   handleChannelExtendAddFunds(data) {
-    this.setState({channelMessage:''})
+    this.clearMessage("channelMessage");
     if (typeof web3 === undefined) {
       return;
     }
@@ -390,7 +395,7 @@ export class Profile extends Component {
     window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true
     return (
             <React.Fragment>
-                <App searchTerm="" chainId={this.state.chainId}/>
+                <Header chainId={this.state.chainId}/>
                 <div className="container">
                     <div className="row">
                         <div className=" col-xs-12 col-sm-12 col-md-6 col-lg-6 your-account-details">
@@ -406,14 +411,6 @@ export class Profile extends Component {
                                             <Tooltip title={<span style={{ fontSize: "15px" }}>Account</span>}>
                                                 <label>{web3.eth.accounts[0]}</label>
                                             </Tooltip>
-                                            &nbsp; {(web3.eth.defaultAccount !== null) ?
-                                            <CopyToClipboard text={web3.eth.accounts[0]} onCopy={()=> message.success('Account address copied', 1)}>
-                                                <a>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 23 23">
-                                                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
-                                                    </svg>
-                                                </a>
-                                            </CopyToClipboard> : null}
                                         </div>
                                     </React.Fragment>
                                     : null}
@@ -470,7 +467,8 @@ export class Profile extends Component {
                                     <TextField id="depositamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="depositAmount" onChange={this.handleAmountChange} value={this.state.depositAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
-                                            <div className="col-xs-6 col-sm-6 col-md-6 transaction-message">{this.state.contractMessage}</div>
+                                            <div className={this.state.isErrorMessage ? "col-xs-6 col-sm-6 col-md-6 error-msg":"col-xs-6 col-sm-6 col-md-6 transaction-message"}>
+                                            {this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
                                                 {(this.state.supportedNetwork && web3.eth.defaultAccount !== null && this.state.depositAmount > 0) ?
                                                 <button className="btn btn-primary" onClick={this.handleAuthorize}><span style={{ fontSize: "15px" }}>Deposit</span></button> :
@@ -478,13 +476,13 @@ export class Profile extends Component {
                                                 }
                                             </div>
                                         </div>
-                                        <p className="transaction-message">{this.state.contractMessage}</p>
                                 </ProfileTabContainer>} {value === 1 &&
                                 <ProfileTabContainer>
                                     <TextField id="withdrawamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="withdrawalAmount" onChange={this.handleAmountChange} value={this.state.withdrawalAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
-                                            <div className="col-xs-6 col-sm-6 col-md-6 transaction-message">{this.state.contractMessage}</div>
+                                            <div className={this.state.isErrorMessage ? "col-xs-6 col-sm-6 col-md-6 error-msg":"col-xs-6 col-sm-6 col-md-6 transaction-message"}>
+                                            {this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
                                                 {(this.state.supportedNetwork && web3.eth.defaultAccount !== null && this.state.withdrawalAmount > 0) ?
                                                 <button type="button" className="btn btn-primary " onClick={this.handlewithdraw}><span style={{ fontSize: "15px" }}>Withdraw</span></button>:
@@ -492,7 +490,6 @@ export class Profile extends Component {
                                                 }
                                             </div>
                                         </div>
-                                        <p></p>
                                 </ProfileTabContainer>}
                             </div>
                         </div>
@@ -549,7 +546,7 @@ export class Profile extends Component {
                                             </Tooltip>
                                             }
                                         </div>
-                                        <p className="transaction-message">{this.state.channelMessage}</p>
+                                        <p className={this.state.isErrorMessage ? "error-msg":"transaction-message"}>{this.state.channelMessage}</p>
                                     </div>
                                 </ExpansionPanelDetails>
                             </ExpansionPanel>

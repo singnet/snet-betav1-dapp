@@ -1,6 +1,6 @@
 import React, { props } from 'react';
 import {Link} from 'react-router-dom';
-import App from "../App.js";
+import Header from "./Header.js";
 
 export default class GetStarted extends React.Component {
 	constructor() {
@@ -9,7 +9,7 @@ export default class GetStarted extends React.Component {
 	render() {
 		return (
             <React.Fragment>
-                <App searchTerm="" chainId={undefined}/>
+                <Header searchTerm="" chainId={undefined}/>
 				<div className="col-md-2"></div>
 				<div className="col-md-8">
 					<div>
