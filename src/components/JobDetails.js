@@ -80,7 +80,7 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
-      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)})
       this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
                           'available-channels?user_address='+this.props.userAddress +
@@ -114,7 +114,7 @@ export  class Jobdetails extends React.Component {
           } 
           else {
             console.log("Checking channels " + JSON.stringify(this.channelHelper));
-            this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});
+            this.setState({ocexpiration: (this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)});
             this.setState({ocvalue: this.serviceState['price_in_agi']});
             this.setState({fundTabEnabled: true});
             this.setState({valueTab: 0});
@@ -406,7 +406,7 @@ export  class Jobdetails extends React.Component {
         this.watchBlocknumberTimer = setInterval(() => this.watchBlocknumber(), 500);
       }
       this.setState({runjobstate: data["is_available"]});
-      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET)})
     }
 
   onOpenEscrowBalanceAlert() {
