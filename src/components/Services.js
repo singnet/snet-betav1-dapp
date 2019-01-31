@@ -22,7 +22,6 @@ class SampleServices extends React.Component {
       offset:0,
       searchBarOpen:false,
       searchTerm:'',
-      searchResults:[],
       besttagresult:[],
       togglePrice: false,
       toggleServiceName:false,
@@ -32,7 +31,7 @@ class SampleServices extends React.Component {
     };
 
     this.network = new BlockchainHelper();
-    
+    this.searchResults = [];
     this.account = undefined;
     this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
@@ -223,7 +222,6 @@ class SampleServices extends React.Component {
   }
 
   handleSearch() {
-    console.log("Starting search for " + this.state.searchTerm)
     this.setState({besttagresult: []});
 
     let searchedagents = this.state.agents.map(row => 
@@ -231,7 +229,7 @@ class SampleServices extends React.Component {
         || row["service_id"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1) ? row : null)
     
     let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
-    this.setState({searchResults: bestsearchresults})
+    this.searchResults = bestsearchresults;
   }
 
   handlesearchbytag(e, data) {
@@ -253,7 +251,7 @@ class SampleServices extends React.Component {
 
     let agentsample = this.state.agents
     if (this.state.searchTerm !== '') {
-      agentsample = this.state.searchResults
+      agentsample = this.searchResults
     }
     if (this.state.besttagresult.length > 0) {
       agentsample = this.state.besttagresult
