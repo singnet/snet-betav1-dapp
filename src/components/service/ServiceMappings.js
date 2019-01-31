@@ -9,8 +9,12 @@ import OpenNMTRomanceTranslator from './OpenNMTRomanceTranslator.js';
 import S2VTVideoCaptioning from './S2VTVideoCaptioning.js';
 import YOLOv3ObjectDetection from './YOLOv3ObjectDetection.js';
 import Zeta36ChessAlphaZero from './Zeta36ChessAlphaZero.js';
-import NamedEntityRecognitionService from "./NamedEntityRecognitionService.js";
-import SentimentAnalysisService from "./SentimentAnalysisService";
+import QAbert from './QAbert.js';
+import QAnet from './QAnet.js';
+import ASR from './ASR.js';
+import TTS from './TTS.js';
+import SemanticSimilarityBERT from './SemanticSimilarityBERT.js';
+import Test from './Test.js';
 
 import DefaultService from './DefaultService.js';
 
@@ -27,12 +31,16 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "s2vt-video-captioning")] = S2VTVideoCaptioning;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "yolov3-object-detection")] = YOLOv3ObjectDetection;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "zeta36-chess-alpha-zero")] = Zeta36ChessAlphaZero;
-        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition")] = NamedEntityRecognitionService;
-        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "QAbert")] = QAbert;
+        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "QAnet")] = QAnet;
+        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "ASR")] = ASR;
+        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "TTS")] = TTS;
+        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "SSbert")] = SemanticSimilarityBERT;
+        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "test_service")] = Test;
     }
 
     generateUniqueID(orgId,serviceId) {
-        return orgId + "__$%^^%$__" + serviceId;
+        return orgId + "__$%^^%$__" + serviceId; 
     }
 
     getComponent(orgId, serviceId) {
