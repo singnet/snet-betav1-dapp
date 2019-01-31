@@ -1,5 +1,7 @@
 import { AGI, base64ToHex, BLOCK_OFFSET } from '../util'
 import { Requests } from '../requests'
+import {serviceStateJSON} from '../service_state'
+import { Root } from 'protobufjs'
 
 export default class ChannelHelper {
   constructor() {
@@ -118,6 +120,44 @@ export default class ChannelHelper {
       }
       console.log("channel id" + this.channelId);
     }
+  }
+
+  testChannelState(channelDetails) {
+    var ethereumjsabi = require('ethereumjs-abi');
+    var sha3Message = ethereumjsabi.soliditySHA3(
+        ["uint256"],[channelDetails["channelId"]]);
+    var msg = "0x" + sha3Message.toString("hex");
+    window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
+    .then((signed) => {
+      var stripped = signed.substring(2, signed.length)
+      var byteSig = new Buffer(Buffer.from(stripped, 'hex'));
+      console.log(byteSig.toString('base64'))
+      const byteschannelID = Buffer.alloc(4);
+      byteschannelID.writeUInt32BE(20, 0);
+
+      let requestObject   = ({"channelId":byteschannelID, "signature":byteSig})
+      console.log('after calling readFile' + serviceStateJSON);
+      const packageName = 'escrow'
+      const serviceName = 'PaymentChannelStateService'
+      const methodName = 'GetChannelState'
+
+      const requestHeaders = {}
+
+      console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + + " request " + JSON.stringify(requestObject));
+      const Service = Root.fromJSON(serviceStateJSON).lookup(serviceName)
+      const serviceObject = Service.create(rpcImpl(channelDetails["endpoint"], packageName, serviceName, methodName, requestHeaders), false, false)
+      grpcRequest(serviceObject, methodName, requestObject)
+        .then(response => {
+          console.log("Got a GRPC response " + JSON.stringify(response))
+          console.log(response.currentSignedAmount)
+          let buffer = Buffer.from(response.currentSignedAmount);
+          console.log(buffer.readUIntBE(0, response.currentSignedAmount.length));
+        })
+        .catch((err) => {
+          console.log("GRPC call failed")
+          console.log(err);
+        })
+  });
   }
 
   findChannelWithBalance(data, currentBlockNumber) {

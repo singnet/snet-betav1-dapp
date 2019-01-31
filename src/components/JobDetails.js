@@ -110,12 +110,26 @@ export  class Jobdetails extends React.Component {
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
           balance = AGI.inAGI(balance);
           console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
+          let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.currentBlockNumber);
           if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
             this.onOpenEscrowBalanceAlert();
-          } 
-          else {
+          } else if (foundChannel) {
+            console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
+            this.setState({startjobfundinvokeres: true});
+            this.setState({valueTab: 1});
+          } else {
             console.log("Checking channels " + JSON.stringify(this.channelHelper));
-            this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});
+            if (this.channelHelper.getChannels().length > 0) {
+              let rrchannel = this.channelHelper.getChannels()[0];
+              console.log("Reusing existing channel " + JSON.stringify(rrchannel));              
+              const suggstedExpiration = this.currentBlockNumber + BLOCK_OFFSET
+              let newExpiration = rrchannel["expiration"] > suggstedExpiration ? rrchannel["expiration"] : suggstedExpiration
+              console.log("Suggested Expiry block " + suggstedExpiration + " used " + newExpiration);
+              this.setState({ocexpiration: newExpiration});              
+            } 
+            else {
+              this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});              
+            }
             this.setState({ocvalue: this.serviceState['price_in_agi']});
             this.setState({startjobfundinvokeres: true});
             this.setState({valueTab: 0});
@@ -386,45 +400,6 @@ export  class Jobdetails extends React.Component {
 
     handleChangeTabs (event, valueTab) {
       this.setState({ valueTab });
-    }
-
-    testChannelState() {
-      var ethereumjsabi = require('ethereumjs-abi');
-      var sha3Message = ethereumjsabi.soliditySHA3(
-          ["uint256"],
-          [20]);
-      var msg = "0x" + sha3Message.toString("hex");
-      window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
-      .then((signed) => {
-        var stripped = signed.substring(2, signed.length)
-        var byteSig = new Buffer(Buffer.from(stripped, 'hex'));
-        console.log(byteSig.toString('base64'))
-        const byteschannelID = Buffer.alloc(4);
-        byteschannelID.writeUInt32BE(20, 0);
-
-        let requestObject   = ({"channelId":byteschannelID, "signature":byteSig})
-        console.log('after calling readFile' + serviceStateJSON);
-        const packageName = 'escrow'
-        const serviceName = 'PaymentChannelStateService'
-        const methodName = 'GetChannelState'
-
-        const requestHeaders = {}
-
-        console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + + " request " + JSON.stringify(requestObject));
-        const Service = Root.fromJSON(serviceStateJSON).lookup(serviceName)
-        const serviceObject = Service.create(rpcImpl('http://3.88.207.94:8080', packageName, serviceName, methodName, requestHeaders), false, false)
-        grpcRequest(serviceObject, methodName, requestObject)
-          .then(response => {
-            console.log("Got a GRPC response " + JSON.stringify(response))
-            console.log(response.currentSignedAmount)
-            let buffer = Buffer.from(response.currentSignedAmount);
-            console.log(buffer.readUIntBE(0, response.currentSignedAmount.length));
-          })
-          .catch((err) => {
-            console.log("GRPC call failed")
-            console.log(err);
-          })              
-    });
     }
 
     onOpenJobDetails(data) {
