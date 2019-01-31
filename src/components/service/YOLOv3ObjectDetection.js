@@ -1,7 +1,8 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
+import {hasOwnDefinedProperty} from '../../util';
+import Button from '@material-ui/core/Button';
 
-export default class DefaultService extends React.Component {
+export default class YOLOv3ObjectDetection extends React.Component {
 
     constructor(props) {
         super(props);
@@ -10,10 +11,18 @@ export default class DefaultService extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
+            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/yolov3-object-detection.md",
+            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/yolov3-object-detection",
+            reference: "https://pjreddie.com/darknet/yolo/",
+
             serviceName: undefined,
             methodName: undefined,
-            response: undefined,
-            paramString: "{}"
+
+            model: "yolov3",
+            img_path: "",
+            confidence: "",
+
+            response: undefined
         };
         this.isComplete = false;
         this.serviceMethods = [];
@@ -27,12 +36,9 @@ export default class DefaultService extends React.Component {
         if (!this.isComplete) {
             this.parseServiceSpec(nextProps.serviceSpec);
         } else {
+            console.log(nextProps.response);
             if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
-                    this.state.response = nextProps.response;
-                } else {
-                    this.state.response = JSON.stringify(nextProps.response);
-                }
+                this.state.response = nextProps.response;
             }
         }
     }
@@ -67,31 +73,29 @@ export default class DefaultService extends React.Component {
     }
 
     handleFormUpdate(event) {
-        this.setState({
-            [event.target.name]: event.target.value
-        });
+        this.setState({[event.target.name]: event.target.value})
     }
 
     handleServiceName(event) {
-        let strService = event.target.value;
+        var strService = event.target.value;
         this.setState({
             serviceName: strService
         });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
+        console.log("Selected service is " + strService);
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
         }
+        this.serviceMethods = data;
     }
 
     submitAction() {
-        this.props.callApiCallback(
-            this.state.serviceName,
-            this.state.methodName,
-            JSON.parse(this.state.paramString)
-        );
+        this.props.callApiCallback(this.state.serviceName,
+            this.state.methodName, {
+                model: this.state.model,
+                imgPath: this.state.img_path,
+                confidence: this.state.confidence
+            });
     }
 
     renderForm() {
@@ -100,8 +104,7 @@ export default class DefaultService extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
                     <div className="col-md-3 col-lg-3">
-                        <select id="select1"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                 onChange={this.handleServiceName}>
                             {this.allServices.map((row, index) =>
                                 <option key={index}>{row}</option>)}
@@ -120,11 +123,34 @@ export default class DefaultService extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Input JSON</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image (URL)</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="paramString" type="text"
+                        <input name="img_path" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.paramString} onChange={this.handleFormUpdate}></input>
+                               value={this.state.img_path} onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Confidence (0-1)
+                    </div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="confidence" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               value={this.state.confidence} onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-xs-3 col-xs-2">
+                        <Button href={this.state.users_guide}
+                                style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
+                    </div>
+                    <div className="col-xs-3 col-xs-2">
+                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                    </div>
+                    <div className="col-xs-3 col-xs-2">
+                        <Button href={this.state.reference}
+                                style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>
                 <div className="row">
@@ -136,11 +162,35 @@ export default class DefaultService extends React.Component {
         )
     }
 
-
     renderComplete() {
+        let status = "Ok\n";
+        let delta_time = "\n";
+        let boxes = "\n";
+        let class_ids = "\n";
+        let confidences = "\n";
+        let img_base64 = "\n";
+
+        if (typeof this.state.response === "object") {
+            delta_time = this.state.response.deltaTime + "s\n";
+            boxes = this.state.response.boxes + "\n";
+            class_ids = this.state.response.classIds + "\n";
+            confidences = this.state.response.confidences + "\n";
+            img_base64 = "\n" + this.state.response.imgBase64;
+        } else {
+            status = this.state.response + "\n";
+        }
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p>
+                <p style={{fontSize: "13px"}}>Response from service is: </p>
+                <pre>
+                    Status     : {status}
+                    Time       : {delta_time}
+                    Boxes      : {boxes}
+                    Classes    : {class_ids}
+                    Confidences: {confidences}
+                    Image      :
+                    {img_base64}
+                </pre>
             </div>
         );
     }
@@ -160,5 +210,4 @@ export default class DefaultService extends React.Component {
             )
         }
     }
-
 }

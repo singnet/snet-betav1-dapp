@@ -1,7 +1,8 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
+import {hasOwnDefinedProperty} from '../../util';
+import Button from '@material-ui/core/Button';
 
-export default class DefaultService extends React.Component {
+export default class Zeta36ChessAlphaZero extends React.Component {
 
     constructor(props) {
         super(props);
@@ -10,10 +11,18 @@ export default class DefaultService extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
+            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/zeta36-chess-alpha-zero.md",
+            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/zeta36-chess-alpha-zero",
+            reference: "https://github.com/Zeta36/chess-alpha-zero",
+
             serviceName: undefined,
             methodName: undefined,
-            response: undefined,
-            paramString: "{}"
+
+            uid: "",
+            move: "",
+            cmd: "",
+
+            response: undefined
         };
         this.isComplete = false;
         this.serviceMethods = [];
@@ -27,12 +36,9 @@ export default class DefaultService extends React.Component {
         if (!this.isComplete) {
             this.parseServiceSpec(nextProps.serviceSpec);
         } else {
+            console.log(nextProps.response);
             if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
-                    this.state.response = nextProps.response;
-                } else {
-                    this.state.response = JSON.stringify(nextProps.response);
-                }
+                this.state.response = nextProps.response;
             }
         }
     }
@@ -67,31 +73,29 @@ export default class DefaultService extends React.Component {
     }
 
     handleFormUpdate(event) {
-        this.setState({
-            [event.target.name]: event.target.value
-        });
+        this.setState({[event.target.name]: event.target.value})
     }
 
     handleServiceName(event) {
-        let strService = event.target.value;
+        var strService = event.target.value;
         this.setState({
             serviceName: strService
         });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
+        console.log("Selected service is " + strService);
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
         }
+        this.serviceMethods = data;
     }
 
     submitAction() {
-        this.props.callApiCallback(
-            this.state.serviceName,
-            this.state.methodName,
-            JSON.parse(this.state.paramString)
-        );
+        this.props.callApiCallback(this.state.serviceName,
+            this.state.methodName, {
+                uid: this.state.uid,
+                move: this.state.move,
+                cmd: this.state.cmd
+            });
     }
 
     renderForm() {
@@ -120,11 +124,41 @@ export default class DefaultService extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Input JSON</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>UID</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="paramString" type="text"
+                        <input name="uid" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.paramString} onChange={this.handleFormUpdate}></input>
+                               value={this.state.uid}onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Move</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="move" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               value={this.state.move}onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Command</div>
+                    <div className="col-md-3 col-lg-2">
+                        <input name="cmd" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               value={this.state.cmd}onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-xs-3 col-xs-2">
+                        <Button href={this.state.users_guide}
+                                style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
+                    </div>
+                    <div className="col-xs-3 col-xs-2">
+                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                    </div>
+                    <div className="col-xs-3 col-xs-2">
+                        <Button href={this.state.reference}
+                                style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>
                 <div className="row">
@@ -136,11 +170,26 @@ export default class DefaultService extends React.Component {
         )
     }
 
-
     renderComplete() {
+        let status = "\n";
+        let uid = "\n";
+        let board = "\n";
+
+        if (typeof this.state.response === "object") {
+            status = this.state.response.status + "\n";
+            uid = this.state.response.uid + "\n";
+            board = "\n" + this.state.response.board;
+        } else {
+            status = this.state.response + "\n";
+        }
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p>
+                <p style={{fontSize: "13px"}}>Response from service is: </p>
+                <pre>
+                    Status: {status}
+                    UID   : {uid}
+                    {board}
+                </pre>
             </div>
         );
     }
@@ -160,5 +209,4 @@ export default class DefaultService extends React.Component {
             )
         }
     }
-
 }
