@@ -147,7 +147,7 @@ export class Profile extends Component {
     console.log("Loading details")
     this.setState({supportedNetwork: true})  
     let mpeURL = getMarketplaceURL(chainId);
-    let _urlfetchprofile = mpeURL + 'channels?user_address='+web3.eth.defaultAccount
+    let _urlfetchprofile = mpeURL + 'expired-channels?user_address='+web3.eth.defaultAccount
     Requests.get(_urlfetchprofile)
       .then((values)=> {
         if(typeof values !== 'undefined' && Array.isArray(values.data)) {
