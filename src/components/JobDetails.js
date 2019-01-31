@@ -28,7 +28,7 @@ export  class Jobdetails extends React.Component {
         ocexpiration:0,
         grpcResponse:undefined,
         grpcErrorOccurred:false,
-        startjobfundinvokeres:false,
+        fundTabEnabled:false,
         depositopenchannelerror:'',
         valueTab:0,
         enableVoting:false,
@@ -116,7 +116,7 @@ export  class Jobdetails extends React.Component {
             console.log("Checking channels " + JSON.stringify(this.channelHelper));
             this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});
             this.setState({ocvalue: this.serviceState['price_in_agi']});
-            this.setState({startjobfundinvokeres: true});
+            this.setState({fundTabEnabled: true});
             this.setState({valueTab: 0});
           }
         });
@@ -394,7 +394,7 @@ export  class Jobdetails extends React.Component {
       this.setState({enableVoting: false})
       this.setState({ocvalue:this.serviceState['price_in_agi']})      
       this.setState({valueTab:0})
-      this.setState({startjobfundinvokeres:false})
+      this.setState({fundTabEnabled:false})
       this.setState({runjobstate:false})
       this.setState({depositopenchannelerror:''})
       if (typeof web3 === 'undefined' || typeof this.props.userAddress === 'undefined') {
@@ -476,14 +476,14 @@ export  class Jobdetails extends React.Component {
                                 <i className="up"></i>
                                 <div className="servicedetailstab">
                                 <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
-                                    <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Fund</span>}/>
-                                    <Tab disabled={(!this.state.startjobfundinvokeres || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
-                                    <Tab disabled={(!this.state.startjobfundinvokeres || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
+                                    <Tab disabled={(!this.state.fundTabEnabled) || valueTab === 1} label={<span className="funds-title">Fund</span>}/>
+                                    <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
+                                    <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
                                 </Tabs>
                                     { valueTab === 0 &&
                                     <TabContainer>
                                         
-                                        <div className={(this.state.startjobfundinvokeres)? "row channels-sec" : "row channels-sec-disabled"}>
+                                        <div className={(this.state.fundTabEnabled)? "row channels-sec" : "row channels-sec-disabled"}>
                                         <div className="col-md-12 no-padding mtb-10">
                                         <div className="col-md-12 no-padding"> 
                                             <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:
@@ -494,7 +494,7 @@ export  class Jobdetails extends React.Component {
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
-                                                 disabled={this.state.startjobfundinvokeres?false:true}/>
+                                                 disabled={this.state.fundTabEnabled?false:true}/>
                                             </div>
                                             </div>
                                             </div>
@@ -506,12 +506,12 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>       
                                             </div>                                     
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={this.state.startjobfundinvokeres?false:true}/>
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={this.state.fundTabEnabled?false:true}/>
                                             </div>
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
-                                                <button type="button" className={this.state.startjobfundinvokeres?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
-                                                disabled={this.state.startjobfundinvokeres?false:true}>Reserve Funds</button>
+                                                <button type="button" className={this.state.fundTabEnabled?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
+                                                        disabled={this.state.fundTabEnabled?false:true}>Reserve Funds</button>
                                             </div>
                                             </div>
 
