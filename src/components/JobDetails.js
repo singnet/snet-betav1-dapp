@@ -37,7 +37,6 @@ export  class Jobdetails extends React.Component {
         showEscrowBalanceAlert:false,
       };
 
-      this.channelExtended = false;
       this.serviceState = {};
       this.channelHelper = new ChannelHelper();
       this.currentBlockNumber = 0;
@@ -86,7 +85,6 @@ export  class Jobdetails extends React.Component {
                           'available-channels?user_address='+this.props.userAddress +
                           '&service_id='+this.serviceState["service_id"] +
                           '&org_id='+this.serviceState["org_id"];
-      this.channelExtended = false;
       return this.channelHelper.reInitialize(channelInfoUrl);
     }
 
@@ -102,37 +100,117 @@ export  class Jobdetails extends React.Component {
         }));
     }
 
+    composeSHA3Message(types,values) {
+      var ethereumjsabi = require('ethereumjs-abi');
+      var sha3Message = ethereumjsabi.soliditySHA3(types, values);
+      var msg = "0x" + sha3Message.toString("hex");
+      return msg;
+    }
+
+    fetchChannelState(signed) {
+      console.log("Found an existing channel " + JSON.stringify(this.serviceState));
+      
+      var caller = this;
+      var stripped = signed.substring(2, signed.length)
+      var byteSig = new Buffer(Buffer.from(stripped, 'hex'));
+      console.log(byteSig.toString('base64'))
+      const byteschannelID = Buffer.alloc(4);
+      byteschannelID.writeUInt32BE(this.channelHelper.getChannelId(), 0);
+
+      let requestObject   = ({"channelId":byteschannelID, "signature":byteSig})
+      console.log('after calling readFile' + serviceStateJSON);
+      const packageName = 'escrow'
+      const serviceName = 'PaymentChannelStateService'
+      const methodName = 'GetChannelState'
+
+      const requestHeaders = {}
+
+      console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + + " request " + JSON.stringify(requestObject));
+      const Service = Root.fromJSON(serviceStateJSON).lookup(serviceName);
+      const serviceObject = Service.create(rpcImpl(this.channelHelper.getEndpoint(), packageName, serviceName, methodName, requestHeaders), false, false)
+      return new Promise(function(resolve, reject) {
+        grpcRequest(serviceObject, methodName, requestObject)
+        .then(response => {
+          console.log("Got a GRPC response " + JSON.stringify(response))
+          console.log(response.currentSignedAmount)
+          let buffer = Buffer.from(response.currentNonce);
+          console.log("Nonce " + buffer.readUIntBE(0, response.currentNonce.length));
+
+          if(typeof response.currentSignedAmount !== 'undefined') {
+            console.log("Setting currentSignedAmount " + response.currentSignedAmount);
+            let buffer = Buffer.from(response.currentSignedAmount);
+            const currentSignedAmount = buffer.readUIntBE(0, response.currentSignedAmount.length);
+            if(typeof currentSignedAmount !== 'undefined') {
+              caller.channelHelper.setCurrentSignedAmount(currentSignedAmount);
+            }
+          }
+          console.log("Signed amount is " + parseInt(caller.channelHelper.getCurrentSignedAmount()));
+          resolve(true);
+        })
+        .catch((err) => {
+          console.log("GRPC call failed")
+          console.log(err);
+          resolve(false);
+        })
+      });
+    }
+
+    seedDefaultValues(enableFundTab, valueTabIndex) {
+      const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET;
+      this.setState({ocexpiration: suggstedExpiration});
+      this.setState({ocvalue: this.serviceState['price_in_agi']});
+      this.setState({fundTabEnabled: enableFundTab});
+      this.setState({valueTab: valueTabIndex});
+    }
+
+    handleNewChannel(balance) {
+      if (typeof balance !== 'undefined' && balance === 0) {
+        this.onOpenEscrowBalanceAlert();
+      } 
+      else {
+        this.seedDefaultValues(true,0);
+      }
+    }
+
+    handleChannel(balance, channelAvailable,thresholdBlockNumber) {
+      let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
+      console.log("Examining existing channel " + JSON.stringify(selectedChannel));
+      if(channelAvailable) {
+        if (parseInt(selectedChannel["balance_in_cogs"]) >= parseInt(this.serviceState["price_in_cogs"]) 
+          && parseInt(selectedChannel["expiration"]) >= thresholdBlockNumber) {
+            this.seedDefaultValues(true, 1);
+        }
+        else {
+          this.seedDefaultValues(true, 0);
+        }
+      } 
+      else {
+        this.handleNewChannel(balance);
+      }
+    }
+
     startjob() {
       var reInitialize = this.reInitializeJobState();
       var serviceSpec = this.fetchServiceSpec();
       Promise.all([reInitialize, serviceSpec]).then(() => {
         let mpeTokenInstance = this.props.network.getMPEInstance(this.props.chainId);
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
-          balance = AGI.inAGI(balance);
           console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
-          let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.currentBlockNumber);
-          if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
-          this.onOpenEscrowBalanceAlert();
-          } else if (foundChannel) {
-            console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
-            this.setState({startjobfundinvokeres: true});
-            this.setState({valueTab: 1});
-          } else {
-            console.log("Checking channels " + JSON.stringify(this.channelHelper));
-            if (this.channelHelper.getChannels().length > 0) {
-              let rrchannel = this.channelHelper.getChannels()[0];
-              console.log("Reusing existing channel " + JSON.stringify(rrchannel));              
-              const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET
-              let newExpiration = rrchannel["expiration"] > suggstedExpiration ? rrchannel["expiration"] : suggstedExpiration
-              console.log("Suggested Expiry block " + suggstedExpiration + " used " + newExpiration);
-              this.setState({ocexpiration: newExpiration});              
-            } 
-            else {
-              this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});              
-            }
-            this.setState({ocvalue: this.serviceState['price_in_agi']});
-            this.setState({fundTabEnabled: true});
-            this.setState({valueTab: 0});
+          
+          const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET;
+          let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, suggstedExpiration);
+          if (foundChannel) {
+            //We have a channel, lets check if this channel can make this call by getting the channel service state
+            //from the daemon. The daemon will return the last amount which was signed by client
+            var msg = this.composeSHA3Message(["uint256"],[this.channelHelper.getChannelId()]);
+            window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
+            .then((signed) => {
+              this.fetchChannelState(signed).then(channelAvailable => 
+                this.handleChannel(balance, channelAvailable, suggstedExpiration));
+            });
+          } 
+          else {
+            this.handleNewChannel(balance);
           }
         });
       });
@@ -149,7 +227,12 @@ export  class Jobdetails extends React.Component {
 
     handleJobInvocation(serviceName, methodName, requestObject) {
       var nonce = this.channelHelper.getNonce(0);
-      var msg = this.composeMessage(this.props.network.getMPEAddress(this.props.chainId), this.channelHelper.getChannelId(), nonce, this.serviceState["price_in_cogs"]);
+      //var msg = this.composeMessage(this.props.network.getMPEAddress(this.props.chainId), this.channelHelper.getChannelId(), nonce, this.serviceState["price_in_cogs"]);
+      let channelPrice = parseInt(this.serviceState["price_in_cogs"]) + 
+      parseInt(this.channelHelper.getCurrentSignedAmount());
+
+      var msg = this.composeSHA3Message(["address", "uint256", "uint256", "uint256"],
+      [this.props.network.getMPEAddress(this.props.chainId), parseInt(this.channelHelper.getChannelId()), parseInt(nonce), parseInt(channelPrice)]);
       this.setState({grpcResponse: undefined})
       this.setState({grpcErrorOccurred: false})
       window.ethjs.personal_sign(msg, this.props.userAddress)
@@ -159,11 +242,14 @@ export  class Jobdetails extends React.Component {
           let buff = new Buffer(byteSig);
           let base64data = buff.toString('base64')
           console.log("Using signature " + base64data)
+
+          console.log("Signed amount is " + parseInt(this.channelHelper.getCurrentSignedAmount()));
+
           const requestHeaders = {
             "snet-payment-type": "escrow",
             "snet-payment-channel-id": parseInt(this.channelHelper.getChannelId()),
             "snet-payment-channel-nonce": parseInt(nonce),
-            "snet-payment-channel-amount": parseInt(this.serviceState["price_in_cogs"]),
+            "snet-payment-channel-amount": channelPrice,
             "snet-payment-channel-signature-bin": base64data
           }
 
@@ -230,38 +316,37 @@ export  class Jobdetails extends React.Component {
         if (typeof this.channelHelper.getChannels() === 'undefined') {
           this.onOpenEscrowBalanceAlert()
         } else {
-        if(this.state.ocexpiration <= this.currentBlockNumber) {
-          //In case somebody left their slideout open for a really long time.
-          this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET;
-        }
-        
-        console.log("MPE has balance but have to check if we need to open a channel or extend one.");
-        console.log("group id is " + this.channelHelper.getGroupId())
-        console.log("recipient address is " + recipientaddress)
-        console.log('groupdidgetter hex is ' + groupIDBytes)
-        console.log('Amount is ' + amountInCogs);
-        console.log(this.state.ocexpiration);
-        console.log(this.props.userAddress);
-
-        var groupIDBytes = atob(this.channelHelper.getGroupId());
-        var recipientaddress = this.channelHelper.getRecipient();
-        console.log("Opening a new channel");
-        this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
-
-        /*
-        if (this.channelHelper.getChannels().length > 0) {
-          var rrchannel = this.channelHelper.getChannels()[0];
-          console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));
-          if(this.state.ocexpiration < rrchannel["expiration"]) {
-            this.processChannelErrors("The payment channel being used has the expiry block set to "+ rrchannel["expiration"] +" which cannot be reduced. Provide a value equal to or greater than " + rrchannel["expiration"]);
+          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET;
+          if(this.state.ocexpiration < threshold) {
+            this.processChannelErrors("Block number provided should be greater than " + threshold + " for the service to accept the request");
             return;
           }
-          this.channelExtend(mpeInstance, rrchannel, amountInCogs);
-        } else {
-          console.log("No Channel found to going to deposit from MPE and open a channel");
-          this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
-        }*/
-      }
+        
+          console.log("MPE has balance but have to check if we need to open a channel or extend one.");
+          console.log("group id is " + this.channelHelper.getGroupId())
+          console.log("recipient address is " + recipientaddress)
+          console.log('groupdidgetter hex is ' + groupIDBytes)
+          console.log('Amount is ' + amountInCogs);
+          console.log(this.state.ocexpiration);
+          console.log(this.props.userAddress);
+
+          let groupIDBytes = atob(this.channelHelper.getGroupId());
+          let recipientaddress = this.channelHelper.getRecipient();
+
+          if (this.channelHelper.getChannels().length > 0) {
+            let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
+            console.log("Found an existing channel, will try to extend it " + JSON.stringify(selectedChannel));
+            if(this.state.ocexpiration < selectedChannel["expiration"]) {
+              this.processChannelErrors("The payment channel being used has the expiry block set to "+ selectedChannel["expiration"] +" which cannot be reduced. Provide a value equal to or greater than " + selectedChannel["expiration"]);
+              return;
+            }
+            this.channelExtend(mpeInstance, selectedChannel, amountInCogs);
+          } 
+          else {
+            console.log("No Channel found to going to deposit from MPE and open a channel");
+            this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+          }
+        }
     }
     catch(e) {
       this.processChannelErrors(e.message);
@@ -278,7 +363,6 @@ export  class Jobdetails extends React.Component {
         {
           if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE
-            //this.processChannelErrors(err,"Unable to invoke the channelExtendAndAddFunds method");
           }
           mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
             gas: estimatedGas,
@@ -291,7 +375,6 @@ export  class Jobdetails extends React.Component {
               console.log("Channel extended and added funds is TXN Has : " + txnHash);
               this.onOpenchaining();
               this.props.network.waitForTransaction(txnHash).then(receipt => {
-                  this.channelExtended = true;
                   this.channelHelper.setChannelId(rrchannel["channelId"]);
                   console.log('Re using channel ' + this.channelHelper.getChannelId());
                   this.nextJobStep();
@@ -333,7 +416,6 @@ export  class Jobdetails extends React.Component {
                   console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.props.userAddress);
                 }).then(() => {
                   this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
-                  this.channelExtended = false;
                 })
                 .catch((error) => {
                   this.processChannelErrors(error,"Open channel failed.");
@@ -407,10 +489,9 @@ export  class Jobdetails extends React.Component {
       //this.setState({serviceState:data})
       this.serviceState = data;
       this.setState({jobDetailsSliderOpen: true });
+      this.seedDefaultValues(false,0);
+            
       this.setState({enableVoting: false})
-      this.setState({ocvalue:this.serviceState['price_in_agi']})      
-      this.setState({valueTab:0})
-      this.setState({fundTabEnabled:false})
       this.setState({runjobstate:false})
       this.setState({depositopenchannelerror:''})
       if (typeof web3 === 'undefined' || typeof this.props.userAddress === 'undefined') {
@@ -510,7 +591,7 @@ export  class Jobdetails extends React.Component {
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
-                                                 disabled={true}/>
+                                                 disabled={!this.state.fundTabEnabled}/>
                                             </div>
                                             </div>
                                             </div>
@@ -522,7 +603,7 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>       
                                             </div>                                     
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={true}/>
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={!this.state.fundTabEnabled}/>
                                             </div>
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">

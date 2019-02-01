@@ -1,15 +1,14 @@
-import { AGI, base64ToHex, BLOCK_OFFSET } from '../util'
+import { base64ToHex } from '../util'
 import { Requests } from '../requests'
-import {serviceStateJSON} from '../service_state'
-import { Root } from 'protobufjs'
 
 export default class ChannelHelper {
   constructor() {
     this.channels = undefined;
     this.groupId = undefined;
     this.endpoint = undefined;
-    this.channelId = undefined;    
+    this.channelId = undefined;
     this.recipient = undefined;
+    this.currentSignedAmount = 0;
   }
 
   reInitialize(channelInfoUrl) {
@@ -18,7 +17,16 @@ export default class ChannelHelper {
     this.endpoint = undefined;
     this.channelId = undefined;
     this.recipient = undefined;
+    this.currentSignedAmount = 0;
     return this.fetchChannels(channelInfoUrl);
+  }
+
+  setCurrentSignedAmount(amount) {
+    this.currentSignedAmount = amount;
+  }
+
+  getCurrentSignedAmount() {
+    return this.currentSignedAmount;
   }
 
   getChannelId() {
@@ -40,8 +48,19 @@ export default class ChannelHelper {
     return this.endpoint[0];
   }
 
+  getChannel(channelId) {
+    let channels = this.getChannels();
+    for(let ii=0; ii < channels.length; ii++) {
+      if (channels[ii]["channelId"] === channelId)
+      {
+        return channels[ii];
+      }
+    }
+    return undefined;
+  }
+
   getExpiryBlock() {
-    let channels = this.getChannels();    
+    let channels = this.getChannels();
     for(let ii=0; ii < channels.length; ii++) {
       var rrchannels = channels[ii];
       if (rrchannels["channelId"] === this.channelId)
@@ -59,7 +78,7 @@ export default class ChannelHelper {
 
   getNonce(defaultValue) {
     let nonce = defaultValue;
-    let channels = this.getChannels();    
+    let channels = this.getChannels();
     for(let ii=0; ii < channels.length; ii++) {
       var rrchannels = channels[ii];
       if (rrchannels["channelId"] === this.channelId)
@@ -122,45 +141,7 @@ export default class ChannelHelper {
     }
   }
 
-  testChannelState(channelDetails) {
-    var ethereumjsabi = require('ethereumjs-abi');
-    var sha3Message = ethereumjsabi.soliditySHA3(
-        ["uint256"],[channelDetails["channelId"]]);
-    var msg = "0x" + sha3Message.toString("hex");
-    window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
-    .then((signed) => {
-      var stripped = signed.substring(2, signed.length)
-      var byteSig = new Buffer(Buffer.from(stripped, 'hex'));
-      console.log(byteSig.toString('base64'))
-      const byteschannelID = Buffer.alloc(4);
-      byteschannelID.writeUInt32BE(20, 0);
-
-      let requestObject   = ({"channelId":byteschannelID, "signature":byteSig})
-      console.log('after calling readFile' + serviceStateJSON);
-      const packageName = 'escrow'
-      const serviceName = 'PaymentChannelStateService'
-      const methodName = 'GetChannelState'
-
-      const requestHeaders = {}
-
-      console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + + " request " + JSON.stringify(requestObject));
-      const Service = Root.fromJSON(serviceStateJSON).lookup(serviceName)
-      const serviceObject = Service.create(rpcImpl(channelDetails["endpoint"], packageName, serviceName, methodName, requestHeaders), false, false)
-      grpcRequest(serviceObject, methodName, requestObject)
-        .then(response => {
-          console.log("Got a GRPC response " + JSON.stringify(response))
-          console.log(response.currentSignedAmount)
-          let buffer = Buffer.from(response.currentSignedAmount);
-          console.log(buffer.readUIntBE(0, response.currentSignedAmount.length));
-        })
-        .catch((err) => {
-          console.log("GRPC call failed")
-          console.log(err);
-        })
-  });
-  }
-
-  findChannelWithBalance(data, currentBlockNumber) {
+  findExistingChannel(data, thresholdBlockNumber) {
     if (typeof this.channels !== 'undefined')
     {
       console.log('channel state information is ' +  this.groupId);
@@ -168,8 +149,8 @@ export default class ChannelHelper {
       {
         for(let ii=0; ii < this.channels.length; ii++) {
           var rrchannels = this.channels[ii];
-          if (parseInt(rrchannels["balance_in_cogs"]) >= parseInt(data["price_in_cogs"])) 
-              //&& parseInt(rrchannels["expiration"]) >= (currentBlockNumber + BLOCK_OFFSET))
+          if (parseInt(rrchannels["balance_in_cogs"]) >= parseInt(data["price_in_cogs"]) 
+              && parseInt(rrchannels["expiration"]) >= thresholdBlockNumber)
           {
             console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
             console.log("Setting channel ID to " + rrchannels["channelId"]);
@@ -177,6 +158,9 @@ export default class ChannelHelper {
             return true;
           }  
         }
+
+        this.channelId = this.channels[0]["channelId"]; 
+        return true; 
       }
     }
     console.log("Did not find a channel with adequate funds");
