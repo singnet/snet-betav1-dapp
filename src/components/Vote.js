@@ -45,8 +45,8 @@ export default class Vote extends React.Component {
       this.updateVote(upVote, downVote)
       
       const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'user-vote'
-      console.log("Message " + this.props.userAddress + orgid + upVote + serviceid + (!upVote))
-      var sha3Message = web3.sha3(this.props.userAddress + orgid + upVote + serviceid + (!upVote));
+      console.log("Message " + this.props.userAddress + orgid + upVote + serviceid + downVote)
+      var sha3Message = web3.sha3(this.props.userAddress + orgid + upVote + serviceid + downVote);
       console.log("Hash " + sha3Message)
       window.ethjs.personal_sign(sha3Message, this.props.userAddress).then((signed) => {
         console.log("Signature " + signed)
