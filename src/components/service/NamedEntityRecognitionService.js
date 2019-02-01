@@ -6,6 +6,11 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import Typography from "@material-ui/core/Typography";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 export default class NamedEntityRecognitionService extends React.Component {
 
@@ -20,7 +25,16 @@ export default class NamedEntityRecognitionService extends React.Component {
             serviceName: undefined,
             methodName: undefined,
             message: undefined,
-            response: undefined
+            response: undefined,
+            styles: {
+                details: {
+                    fontSize: 14,
+                    alignItems: 'center',
+                },
+                defaultFontSize: {
+                    fontSize: 15
+                }
+            }
         };
         this.message = undefined;
         this.isComplete = false;
@@ -99,6 +113,38 @@ export default class NamedEntityRecognitionService extends React.Component {
         this.setState({[event.target.name]: event.target.value});
     };
 
+    parseResponse(response) {
+        try {
+            // [('Texas', 'LOCATION', 'Start span:', 97, 'End span:', 102), ('Arizona', 'LOCATION', 'Start span:', 113, 'End span:', 120), ('California', 'LOCATION', 'Start span:', 131, 'End span:', 141), ('Donald Trump', 'PERSON', 'Start span:', 144, 'End span:', 156), ('Trump Hotels', 'ORGANIZATION', 'Start span:', 332, 'End span:', 344)]
+
+            let resultItems = [];
+            let responseArray = atob(response)
+                .split("[").join("")
+                .split("]").join("")
+                .split(')');
+            console.log("LISTA: "+responseArray.length);
+            for (var i = 0; i < responseArray.length - 1; i++) {
+                console.log(responseArray[i]);
+                // var temp = '';
+                if(i === 0){
+                    temp = responseArray.substring(1,responseArray[i].length);
+                }else {
+                    temp = responseArray.substring(3,responseArray[i].length);
+                    // let stringJson = "{" + arrayItem[1] + "}";
+                    // let item = {
+                    //     sentence: arrayItem[0],
+                    //     result: JSON.parse(stringJson.replace(new RegExp("'", 'g'), "\""))
+                    // };
+                    // resultItems.push(item); ", ('Arizona', 'LOCATION', 'Start span:', 113, 'End span:', 120"
+                }
+                console.log(item);
+            }
+            return resultItems;
+        } catch (e) {
+            return [];
+        }
+    }
+
     renderForm() {
         return (
             <React.Fragment>
@@ -111,16 +157,17 @@ export default class NamedEntityRecognitionService extends React.Component {
                             onChange={this.handleServiceName}
                             displayEmpty
                             name="serviceName"
+                            style={this.state.styles.defaultFontSize}
                         >
-                            <MenuItem value={undefined}>
+                            <MenuItem style={this.state.styles.defaultFontSize} value={undefined}>
                                 <em>Select a Service</em>
                             </MenuItem>
                             {this.allServices.map((item) =>
-                                <MenuItem value={item} key={item}>{item}</MenuItem>
+                                <MenuItem style={this.state.styles.defaultFontSize} value={item}
+                                          key={item}>{item}</MenuItem>
                             )};
                         </Select>
                     </FormControl>
-                    <br/>
                     <br/>
                     <FormControl style={{minWidth: '100%'}}>
                         <Select
@@ -128,25 +175,32 @@ export default class NamedEntityRecognitionService extends React.Component {
                             onChange={this.handleFormUpdate}
                             displayEmpty
                             name="methodName"
+                            style={this.state.styles.defaultFontSize}
                         >
-                            <MenuItem value={undefined}>
+                            <MenuItem style={this.state.styles.defaultFontSize} value={undefined}>
                                 <em>Select a Method</em>
                             </MenuItem>
                             {this.serviceMethods.map((item) =>
-                                <MenuItem value={item}>{item}</MenuItem>
+                                <MenuItem style={this.state.styles.defaultFontSize} value={item}>{item}</MenuItem>
                             )};
                         </Select>
                     </FormControl>
                     <br/>
                     <TextField
                         id="standard-multiline-static"
-                        label="Multiline"
-                        style={{width: "100%"}}
+                        label="Input sentence"
+                        style={{width: "100%", fontSize: 24}}
+                        InputProps={{
+                            style: {fontSize: 15}
+                        }}
+                        InputLabelProps={{
+                            style: {fontSize: 15}
+                        }}
                         multiline
+                        rows="6"
                         value={this.state.message}
                         name="message"
                         onChange={this.handleChange}
-                        rows="6"
                         defaultValue=""
                         margin="normal"
                     />
@@ -154,11 +208,46 @@ export default class NamedEntityRecognitionService extends React.Component {
                 <Grid item xs={12} style={{textAlign: "center"}}>
                     <Button variant="contained" color="primary" onClick={this.submitAction}>Invoke</Button>
                 </Grid>
+                <Grid item xs={12} style={{textAlign: "center"}}>
+                    <br/>
+                    <h2>Examples</h2>
+                    <ExpansionPanel>
+                        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                            <Typography style={this.state.styles.defaultFontSize}>Sentence example</Typography>
+                        </ExpansionPanelSummary>
+                        <ExpansionPanelDetails style={this.state.styles.details}>
+                            <pre style={{
+                                whiteSpace: "pre-wrap",
+                                overflowX: "scroll"
+                            }}>
+                              Our concept of operations is to flow in our military assets with a priority to build up southern Texas,
+                              and then Arizona, and then California," Donald Trump said Monday, adding that the soldiers normally assigned
+                              weapons will be carrying them at the border. " We'll reinforce along priority points of entry, and while this
+                              happens, Trump Hotels is falling down in stock market.
+                            </pre>
+                        </ExpansionPanelDetails>
+                    </ExpansionPanel>
+                    <ExpansionPanel>
+                        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                            <Typography style={this.state.styles.defaultFontSize}>Response example</Typography>
+                        </ExpansionPanelSummary>
+                        <ExpansionPanelDetails style={this.state.styles.details}>
+                            <pre style={{
+                                whiteSpace: "pre-wrap",
+                                overflowX: "scroll"
+                            }}>
+                                oi
+                                {/*[('Texas', 'LOCATION', 'Start span:', 97, 'End span:', 102), ('Arizona', 'LOCATION', 'Start span:', 113, 'End span:', 120), ('California', 'LOCATION', 'Start span:', 131, 'End span:', 141), ('Donald Trump', 'PERSON', 'Start span:', 144, 'End span:', 156), ('Trump Hotels', 'ORGANIZATION', 'Start span:', 331, 'End span:', 343)]*/}
+                            </pre>
+                        </ExpansionPanelDetails>
+                    </ExpansionPanel>
+                </Grid>
             </React.Fragment>
         )
     }
 
     renderComplete() {
+        const result = this.parseResponse(this.props.response.value);
         return (
             <React.Fragment>
                 <Grid item xs={12} style={{textAlign: "center"}}>
@@ -166,11 +255,11 @@ export default class NamedEntityRecognitionService extends React.Component {
                         Response from service is:
                     </h4>
                     <br/>
-                    <div style={{padding: 20, backgroundColor: "#E5EFFC"}}>
-                        <h5>
-                            {atob(this.props.response.value)}
-                        </h5>
-                    </div>
+                    {/*<div style={{textAlign: "left", padding: 20, backgroundColor: "#E5EFFC"}}>*/}
+                        {/*{result.map((item) =>*/}
+                            {/*<h5>{item.sentence}<br/>{JSON.stringify(item.result)}<br/></h5>*/}
+                        {/*)};*/}
+                    {/*</div>*/}
                 </Grid>
             </React.Fragment>
         );

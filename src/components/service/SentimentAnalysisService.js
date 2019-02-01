@@ -6,15 +6,11 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import InfoIcon from "@material-ui/icons/Info";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Chip from "@material-ui/core/Chip";
-import Divider from "@material-ui/core/Divider";
-import ExpansionPanelActions from "@material-ui/core/ExpansionPanelActions";
 
 export default class NamedEntityRecognitionService extends React.Component {
 
@@ -120,8 +116,8 @@ export default class NamedEntityRecognitionService extends React.Component {
 
     parseResponse(response) {
         try {
-            const responseArray = atob(response).split('}');
             let resultItems = [];
+            const responseArray = atob(response).split('}');
             for (let i = 0; i < responseArray.length - 1; i++) {
                 let arrayItem = responseArray[i].split('{');
                 let stringJson = "{" + arrayItem[1] + "}";
@@ -252,7 +248,7 @@ export default class NamedEntityRecognitionService extends React.Component {
         )
     }
 
-    renderComplete() {
+    renderComplete(){
         const result = this.parseResponse(this.props.response.value);
         return (
             <React.Fragment>
