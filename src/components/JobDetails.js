@@ -75,7 +75,6 @@ export  class Jobdetails extends React.Component {
     nextJobStep() {
       this.onClosechaining()
       this.setState({valueTab:(this.state.valueTab + 1)})
-      console.log("Job step " + this.state.valueTab);
     }
 
     reInitializeJobState() {
@@ -118,21 +117,18 @@ export  class Jobdetails extends React.Component {
       byteschannelID.writeUInt32BE(this.channelHelper.getChannelId(), 0);
 
       let requestObject   = ({"channelId":byteschannelID, "signature":byteSig})
-      console.log('after calling readFile' + serviceStateJSON);
+      const requestHeaders = {}
+
       const packageName = 'escrow'
       const serviceName = 'PaymentChannelStateService'
       const methodName = 'GetChannelState'
 
-      const requestHeaders = {}
-
-      console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + + " request " + JSON.stringify(requestObject));
       const Service = Root.fromJSON(serviceStateJSON).lookup(serviceName);
       const serviceObject = Service.create(rpcImpl(this.channelHelper.getEndpoint(), packageName, serviceName, methodName, requestHeaders), false, false)
+
       return new Promise(function(resolve, reject) {
         grpcRequest(serviceObject, methodName, requestObject)
         .then(response => {
-          console.log("Got a GRPC response " + JSON.stringify(response))
-          console.log(response.currentSignedAmount)
           let buffer = Buffer.from(response.currentNonce);
           console.log("Nonce " + buffer.readUIntBE(0, response.currentNonce.length));
 
@@ -144,12 +140,10 @@ export  class Jobdetails extends React.Component {
               caller.channelHelper.setCurrentSignedAmount(currentSignedAmount);
             }
           }
-          console.log("Signed amount is " + parseInt(caller.channelHelper.getCurrentSignedAmount()));
           resolve(true);
         })
         .catch((err) => {
-          console.log("GRPC call failed")
-          console.log(err);
+          console.log("GRPC call failed with error " + err);
           resolve(false);
         })
       });
@@ -174,7 +168,6 @@ export  class Jobdetails extends React.Component {
 
     handleChannel(balance, channelAvailable,thresholdBlockNumber) {
       let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
-      console.log("Examining existing channel " + JSON.stringify(selectedChannel));
       if(channelAvailable) {
         if (parseInt(selectedChannel["balance_in_cogs"]) >= parseInt(this.serviceState["price_in_cogs"]) 
           && parseInt(selectedChannel["expiration"]) >= thresholdBlockNumber) {
@@ -195,7 +188,10 @@ export  class Jobdetails extends React.Component {
       Promise.all([reInitialize, serviceSpec]).then(() => {
         let mpeTokenInstance = this.props.network.getMPEInstance(this.props.chainId);
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
-          console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
+          if(err) {
+            this.processChannelErrors("Unable to retrieve balance. Please retry with a higher gas")
+            return;
+          }
           
           const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET;
           let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, suggstedExpiration);
@@ -216,34 +212,23 @@ export  class Jobdetails extends React.Component {
       });
     }
 
-    composeMessage(contract, channelID, nonce, price) {
-      var ethereumjsabi = require('ethereumjs-abi');
-      var sha3Message = ethereumjsabi.soliditySHA3(
-        ["address", "uint256", "uint256", "uint256"],
-        [contract, parseInt(channelID), parseInt(nonce), parseInt(price)]);
-      var msg = "0x" + sha3Message.toString("hex");
-      return msg;
-    }
-
     handleJobInvocation(serviceName, methodName, requestObject) {
       var nonce = this.channelHelper.getNonce(0);
-      //var msg = this.composeMessage(this.props.network.getMPEAddress(this.props.chainId), this.channelHelper.getChannelId(), nonce, this.serviceState["price_in_cogs"]);
       let channelPrice = parseInt(this.serviceState["price_in_cogs"]) + 
-      parseInt(this.channelHelper.getCurrentSignedAmount());
+                         parseInt(this.channelHelper.getCurrentSignedAmount());
 
       var msg = this.composeSHA3Message(["address", "uint256", "uint256", "uint256"],
       [this.props.network.getMPEAddress(this.props.chainId), parseInt(this.channelHelper.getChannelId()), parseInt(nonce), parseInt(channelPrice)]);
+
       this.setState({grpcResponse: undefined})
       this.setState({grpcErrorOccurred: false})
+      
       window.ethjs.personal_sign(msg, this.props.userAddress)
         .then((signed) => {
           var stripped = signed.substring(2, signed.length)
           var byteSig = Buffer.from(stripped, 'hex');
           let buff = new Buffer(byteSig);
           let base64data = buff.toString('base64')
-          console.log("Using signature " + base64data)
-
-          console.log("Signed amount is " + parseInt(this.channelHelper.getCurrentSignedAmount()));
 
           const requestHeaders = {
             "snet-payment-type": "escrow",
@@ -263,6 +248,7 @@ export  class Jobdetails extends React.Component {
           if (!endpointgetter.startsWith("http")) {
             endpointgetter = "http://" + endpointgetter;
           }
+
           const Service = this.serviceSpecJSON.lookup(serviceName)
           const serviceObject = Service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
           grpcRequest(serviceObject, methodName, requestObject)
@@ -280,7 +266,8 @@ export  class Jobdetails extends React.Component {
               this.setState({enableVoting: true})
               this.nextJobStep();
             })
-          return window.ethjs.personal_ecRecover(msg, signed);
+
+            return window.ethjs.personal_ecRecover(msg, signed);
         });
     }
 
@@ -312,7 +299,6 @@ export  class Jobdetails extends React.Component {
         let mpeInstance = this.props.network.getMPEInstance(this.props.chainId);
         var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
 
-        console.log('channel object ' + this.channelHelper.getEndpoint());
         if (typeof this.channelHelper.getChannels() === 'undefined') {
           this.onOpenEscrowBalanceAlert()
         } else {
@@ -322,14 +308,6 @@ export  class Jobdetails extends React.Component {
             return;
           }
         
-          console.log("MPE has balance but have to check if we need to open a channel or extend one.");
-          console.log("group id is " + this.channelHelper.getGroupId())
-          console.log("recipient address is " + recipientaddress)
-          console.log('groupdidgetter hex is ' + groupIDBytes)
-          console.log('Amount is ' + amountInCogs);
-          console.log(this.state.ocexpiration);
-          console.log(this.props.userAddress);
-
           let groupIDBytes = atob(this.channelHelper.getGroupId());
           let recipientaddress = this.channelHelper.getRecipient();
 
@@ -372,7 +350,6 @@ export  class Jobdetails extends React.Component {
               this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
             }
             else {
-              console.log("Channel extended and added funds is TXN Has : " + txnHash);
               this.onOpenchaining();
               this.props.network.waitForTransaction(txnHash).then(receipt => {
                   this.channelHelper.setChannelId(rrchannel["channelId"]);
@@ -396,7 +373,7 @@ export  class Jobdetails extends React.Component {
         if(err) {
           gasPrice = DEFAULT_GAS_PRICE;
         }
-        console.log("Channel Open amount " + amountInCogs + " expiration " + this.state.ocexpiration)
+
         mpeInstance.openChannel.estimateGas(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) =>
         {
           if(err) {
@@ -410,7 +387,6 @@ export  class Jobdetails extends React.Component {
               this.processChannelErrors(error,"Unable to invoke the openChannel method");
             }
             else {
-              console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
               this.onOpenchaining()
               this.props.network.waitForTransaction(txnHash).then(receipt => {
                   console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.props.userAddress);
@@ -433,7 +409,6 @@ export  class Jobdetails extends React.Component {
     }
 
     getChannelDetails(mpeInstance,startingBlock, recipientaddress) {
-      console.log("Scanning events from " + startingBlock);
       var evt = mpeInstance.ChannelOpen({
         sender: this.props.userAddress
       }, {
@@ -486,7 +461,6 @@ export  class Jobdetails extends React.Component {
 
     onOpenJobDetails(data) {
       (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
-      //this.setState({serviceState:data})
       this.serviceState = data;
       this.setState({jobDetailsSliderOpen: true });
       this.seedDefaultValues(false,0);
@@ -646,8 +620,6 @@ export  class Jobdetails extends React.Component {
                                 </div>
                             </div>
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
-                            
-
                         </div>
                     </Typography>
                 </div>
