@@ -115,6 +115,8 @@ export default class NamedEntityRecognitionService extends React.Component {
     };
 
     parseResponse(response) {
+        //Temporary parse
+        //Will be improved and migrated to backend service soon
         try {
             let resultItems = [];
             const responseArray = atob(response).split('}');
