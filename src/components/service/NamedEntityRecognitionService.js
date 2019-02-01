@@ -114,30 +114,42 @@ export default class NamedEntityRecognitionService extends React.Component {
     };
 
     parseResponse(response) {
+        //Temporary parse
+        //Will be improved and migrated to backend service soon
         try {
-            // [('Texas', 'LOCATION', 'Start span:', 97, 'End span:', 102), ('Arizona', 'LOCATION', 'Start span:', 113, 'End span:', 120), ('California', 'LOCATION', 'Start span:', 131, 'End span:', 141), ('Donald Trump', 'PERSON', 'Start span:', 144, 'End span:', 156), ('Trump Hotels', 'ORGANIZATION', 'Start span:', 332, 'End span:', 344)]
-
             let resultItems = [];
             let responseArray = atob(response)
                 .split("[").join("")
                 .split("]").join("")
                 .split(')');
-            console.log("LISTA: "+responseArray.length);
-            for (var i = 0; i < responseArray.length - 1; i++) {
-                console.log(responseArray[i]);
-                // var temp = '';
-                if(i === 0){
-                    temp = responseArray.substring(1,responseArray[i].length);
-                }else {
-                    temp = responseArray.substring(3,responseArray[i].length);
-                    // let stringJson = "{" + arrayItem[1] + "}";
-                    // let item = {
-                    //     sentence: arrayItem[0],
-                    //     result: JSON.parse(stringJson.replace(new RegExp("'", 'g'), "\""))
-                    // };
-                    // resultItems.push(item); ", ('Arizona', 'LOCATION', 'Start span:', 113, 'End span:', 120"
+            for (let i = 0; i < responseArray.length - 1; i++) {
+                let temp = '';
+                if (i === 0) {
+                    temp = responseArray[i].substring(1, responseArray[i].length);
+                } else {
+                    temp = responseArray[i].substring(3, responseArray[i].length);
                 }
-                console.log(item);
+                let entityArrayItem = temp.split(",");
+                let tempEntity, tempStartSpan, tempEndSpan = {};
+                for (let j = 0; j < entityArrayItem.length; j++) {
+                    let tempProperty = entityArrayItem[j];
+                    tempProperty = entityArrayItem[j].replace(":", "").replace(",", "")
+                    if(j % 2 === 0) {
+                        if (tempProperty.includes('Start span')) {
+                            tempStartSpan = {startSpan: entityArrayItem[j + 1]};
+                        } else if (tempProperty.includes('End span')) {
+                            tempEndSpan = {endSpan: entityArrayItem[j + 1]};
+                        } else if (typeof tempProperty === 'string') {
+                            tempEntity = {
+                                entity: {
+                                name: entityArrayItem[j].split("'").join(""),
+                                type: entityArrayItem[j + 1].split("'").join("")
+                                }
+                            };
+                        }
+                    }
+                }
+                resultItems.push(Object.assign(tempEntity, tempStartSpan, tempEndSpan));
             }
             return resultItems;
         } catch (e) {
@@ -248,6 +260,8 @@ export default class NamedEntityRecognitionService extends React.Component {
 
     renderComplete() {
         const result = this.parseResponse(this.props.response.value);
+        console.log("RESULT");
+        console.log(result);
         return (
             <React.Fragment>
                 <Grid item xs={12} style={{textAlign: "center"}}>
@@ -255,11 +269,16 @@ export default class NamedEntityRecognitionService extends React.Component {
                         Response from service is:
                     </h4>
                     <br/>
-                    {/*<div style={{textAlign: "left", padding: 20, backgroundColor: "#E5EFFC"}}>*/}
-                        {/*{result.map((item) =>*/}
-                            {/*<h5>{item.sentence}<br/>{JSON.stringify(item.result)}<br/></h5>*/}
-                        {/*)};*/}
-                    {/*</div>*/}
+                    <div style={{textAlign: "left", padding: 20, backgroundColor: "#E5EFFC"}}>
+                        <h4>This is the entities found and it's positions in the inputed sentence.</h4>
+                        <br/>
+                        {result.map((item) =>
+                        <div>
+                            <h5>{item.entity.name} : {item.entity.type}</h5>
+                            <p>Start span: {item.startSpan} - End span: {item.endSpan}</p>
+                        </div>
+                    )};
+                    </div>
                 </Grid>
             </React.Fragment>
         );
