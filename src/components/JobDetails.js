@@ -28,7 +28,7 @@ export  class Jobdetails extends React.Component {
         ocexpiration:0,
         grpcResponse:undefined,
         grpcErrorOccurred:false,
-        startjobfundinvokeres:false,
+        fundTabEnabled:false,
         depositopenchannelerror:'',
         valueTab:0,
         enableVoting:false,
@@ -80,7 +80,7 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
-      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)})
       this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
                           'available-channels?user_address='+this.props.userAddress +
@@ -112,7 +112,7 @@ export  class Jobdetails extends React.Component {
           console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
           let foundChannel = this.channelHelper.findChannelWithBalance(this.serviceState, this.currentBlockNumber);
           if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
-            this.onOpenEscrowBalanceAlert();
+          this.onOpenEscrowBalanceAlert();
           } else if (foundChannel) {
             console.log("Found a channel with enough balance Details " + JSON.stringify(this.serviceState));
             this.setState({startjobfundinvokeres: true});
@@ -122,7 +122,7 @@ export  class Jobdetails extends React.Component {
             if (this.channelHelper.getChannels().length > 0) {
               let rrchannel = this.channelHelper.getChannels()[0];
               console.log("Reusing existing channel " + JSON.stringify(rrchannel));              
-              const suggstedExpiration = this.currentBlockNumber + BLOCK_OFFSET
+              const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET
               let newExpiration = rrchannel["expiration"] > suggstedExpiration ? rrchannel["expiration"] : suggstedExpiration
               console.log("Suggested Expiry block " + suggstedExpiration + " used " + newExpiration);
               this.setState({ocexpiration: newExpiration});              
@@ -131,7 +131,7 @@ export  class Jobdetails extends React.Component {
               this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});              
             }
             this.setState({ocvalue: this.serviceState['price_in_agi']});
-            this.setState({startjobfundinvokeres: true});
+            this.setState({fundTabEnabled: true});
             this.setState({valueTab: 0});
           }
         });
@@ -231,8 +231,8 @@ export  class Jobdetails extends React.Component {
           this.onOpenEscrowBalanceAlert()
         } else {
         if(this.state.ocexpiration <= this.currentBlockNumber) {
-          this.processChannelErrors("Block number provided should be greater than current block number " + this.currentBlockNumber);
-          return;
+          //In case somebody left their slideout open for a really long time.
+          this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET;
         }
         
         console.log("MPE has balance but have to check if we need to open a channel or extend one.");
@@ -410,7 +410,7 @@ export  class Jobdetails extends React.Component {
       this.setState({enableVoting: false})
       this.setState({ocvalue:this.serviceState['price_in_agi']})      
       this.setState({valueTab:0})
-      this.setState({startjobfundinvokeres:false})
+      this.setState({fundTabEnabled:false})
       this.setState({runjobstate:false})
       this.setState({depositopenchannelerror:''})
       if (typeof web3 === 'undefined' || typeof this.props.userAddress === 'undefined') {
@@ -422,7 +422,7 @@ export  class Jobdetails extends React.Component {
         this.watchBlocknumberTimer = setInterval(() => this.watchBlocknumber(), 500);
       }
       this.setState({runjobstate: data["is_available"]});
-      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET)})
     }
 
   onOpenEscrowBalanceAlert() {
@@ -445,7 +445,7 @@ export  class Jobdetails extends React.Component {
                 <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
             </div>              
             <div>
-              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from wallet to escrow account to proceed."} showProgress={false} link={"/Profile"} linkText="Go to Profile"/>
+              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from your wallet to the escrow account to proceed."} showProgress={false} link={"/Profile"} linkText="Deposit"/>
             </div>              
             <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
             <PerfectScrollbar>
@@ -492,14 +492,14 @@ export  class Jobdetails extends React.Component {
                                 <i className="up"></i>
                                 <div className="servicedetailstab">
                                 <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
-                                    <Tab disabled={(!this.state.startjobfundinvokeres)} label={<span className="funds-title">Fund</span>}/>
-                                    <Tab disabled={(!this.state.startjobfundinvokeres || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
-                                    <Tab disabled={(!this.state.startjobfundinvokeres || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
+                                    <Tab disabled={(!this.state.fundTabEnabled) || valueTab === 1} label={<span className="funds-title">Fund</span>}/>
+                                    <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
+                                    <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
                                 </Tabs>
                                     { valueTab === 0 &&
                                     <TabContainer>
                                         
-                                        <div className={(this.state.startjobfundinvokeres)? "row channels-sec" : "row channels-sec-disabled"}>
+                                        <div className={(this.state.fundTabEnabled)? "row channels-sec" : "row channels-sec-disabled"}>
                                         <div className="col-md-12 no-padding mtb-10">
                                         <div className="col-md-12 no-padding"> 
                                             <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:
@@ -510,7 +510,7 @@ export  class Jobdetails extends React.Component {
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
-                                                 disabled={this.state.startjobfundinvokeres?false:true}/>
+                                                 disabled={true}/>
                                             </div>
                                             </div>
                                             </div>
@@ -522,19 +522,19 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>       
                                             </div>                                     
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={this.state.startjobfundinvokeres?false:true}/>
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={true}/>
                                             </div>
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
-                                                <button type="button" className={this.state.startjobfundinvokeres?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
-                                                disabled={this.state.startjobfundinvokeres?false:true}>Reserve Funds</button>
+                                                <button type="button" className={this.state.fundTabEnabled?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
+                                                        disabled={!this.state.fundTabEnabled}>Reserve Funds</button>
                                             </div>
                                             </div>
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
                                         <p className="job-details-text">
-                                        The first step in invoking the API is to open a payment. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a channel or extend a pre-existing channel. You can view the channel details in the profile page
+                                        The first step in invoking the API is to open a payment channel. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a new channel. This will prompt an interaction with Metamask to initiate a transaction.
                                         </p>
                                         </div>
                                     </TabContainer>

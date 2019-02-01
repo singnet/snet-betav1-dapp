@@ -9355,7 +9355,6 @@ body.modal-open .modal .close {
   font-size: 16px;
   color:#333;
   display: inline-block;
-  text-transform: uppercase;
 }
 
 .mtb-10 {
@@ -11128,12 +11127,14 @@ nav .nav-tabs .nav-link:hover {
   } 
 
   .get-started {
-    background-color:#fff;
-    padding: 6px 10px;
-    float: left;
+    background-color: #fff;
+    padding: 3px 10px !important;
+    float: right;
     border-radius: 4px;
     margin: 0 11px 0 0;
-    } 
+    font-size: 14px;
+    color: #4086ff !important;
+  }
 
 .search-panel {
   position: relative;
@@ -11280,6 +11281,14 @@ h1 {
   float: right;
   } 
 
+  .error-msg {
+    background-color: #efced1;
+    border: 1px solid #efced1;
+    padding: 5px;
+    font-size: 12px;
+    color: black;
+  } 
+
 .network-name {
   padding: 5px;
   vertical-align: text-bottom;
@@ -11287,6 +11296,37 @@ h1 {
   color: #fff;
   font-size: 18px;
 }
+
+.navigation {
+  padding: 5px 0 0 0;
+  vertical-align: text-bottom;
+  text-align: right;
+  color: #fff;
+}
+
+.navigation li {
+  list-style-type: none;
+  display: inline-block;
+  padding: 0 15px 0 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+ .navigation ul {
+  margin:0px;
+  padding:0px;
+  }
+
+  .get-started a {
+    color: #4086ff !important;
+  }
+  .navigation li a {
+      color: #fff;
+  }
+  .navigation li a:hover {
+      color: #fff;
+      text-decoration: underline;
+  } 
 
 .job-details-text {
   font-size: 14px;
@@ -11302,11 +11342,29 @@ h1 {
 }
 
 .search {
-  border: none;
-  padding: 7px 10px;
+  border: 1px solid #e4e4e4;
+  padding: 6px 10px;
   border-radius: 5px;
-  background-color: #3e3ae3;
-  width:250px;
+  background-color: #fff;
+  width: 250px;
+  float: right;
+  font-size: 13px;
+}
+
+.service-agents {
+  font-size: 17px;
+  font-weight: bold;
+  border-bottom: 2px solid #4086ff;
+  padding: 0 0 7px 0;
+}
+
+.btn-search {
+  width: 30px;
+  height: 32px;
+  position: absolute;
+  background: transparent;
+  right: 23px;
+  border: 0;
 }
 
 .serviceinputs {
@@ -11415,7 +11473,6 @@ h4 { display: inline-block; }
 
 
 i {
-  border: solid #0066ff;
   border-width: 0 2px 2px 0;
   display: inline-block;
   padding: 6px;
@@ -11498,7 +11555,6 @@ position: absolute;
 
   .agent-boxes-label {
     font-weight: bold;
-    text-transform: uppercase;
     display: none;
   }
 .profile-content {
@@ -11806,9 +11862,9 @@ position: absolute;
   .head-txt-sec {
     padding: 0;
   }
+
   .agent-boxes-label {
     font-weight: bold;
-    text-transform: uppercase;
     display: block;
     padding: 0;
     margin:10px 0 0 0;
@@ -11934,20 +11990,32 @@ position: absolute;
 }
 
 .get-started {
-  background-color:#fff;
-  padding: 6px 10px;
-  float: left;
+  background-color: #fff;
+  padding: 3px 10px !important;
+  float: right;
   border-radius: 4px;
   margin: 0 11px 0 0;
-  } 
+  font-size: 14px;
+  color: #4086ff !important;
+} 
 
   .search {
-    border: none;
-    padding: 7px 10px;
+    border: 1px solid #e4e4e4;
+    padding: 6px 10px;
     border-radius: 5px;
-    background-color: #3e3ae3;
-    color: white;
-    width: 100%;
+    background-color: #fff;
+    width: 250px;
+    float: right;
+    font-size: 13px;
+  } 
+
+  .btn-search {
+    width: 30px;
+    height: 32px;
+    position: absolute;
+    background: transparent;
+    right: 23px;
+    border: 0;
   }
 
   .card-deck .card-body {
@@ -11966,7 +12034,6 @@ position: absolute;
   }
   .agent-boxes-label {
     font-weight: bold;
-    text-transform: uppercase;
     display: block;
   }
   .agent-name-align {
