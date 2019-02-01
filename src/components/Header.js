@@ -51,7 +51,7 @@ export default class Header extends React.Component {
                         <li className="get-started"><Link to="/GetStarted">Get Started</Link></li>
                         <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
                         <li><Link to="/Profile">Account</Link></li>
-                        <li>Blog</li>
+                        <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
                     </ul>
                 </div> 
               </div>

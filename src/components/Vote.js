@@ -104,7 +104,7 @@ export default class Vote extends React.Component {
                     </div>
                 </div>
               </div> :
-              <div className="col-xs-12 col-sm-12 col-md-12 vote no-padding"></div>}
+              <div className="col-xs-12 col-sm-12 col-md-12"></div>}
             </React.Fragment>
         )
     }
