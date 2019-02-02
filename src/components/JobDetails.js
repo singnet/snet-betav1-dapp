@@ -167,6 +167,7 @@ export  class Jobdetails extends React.Component {
     }
 
     handleChannel(balance, channelAvailable,thresholdBlockNumber) {
+      console.log("Got channel " + channelAvailable);
       let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
       if(channelAvailable) {
         if (parseInt(selectedChannel["balance_in_cogs"]) >= parseInt(this.serviceState["price_in_cogs"]) 
@@ -178,6 +179,8 @@ export  class Jobdetails extends React.Component {
         }
       } 
       else {
+        //We couldnt find a usable channel so create a new one
+        this.channelHelper.setChannelId(undefined);
         this.handleNewChannel(balance);
       }
     }
@@ -302,7 +305,7 @@ export  class Jobdetails extends React.Component {
         if (typeof this.channelHelper.getChannels() === 'undefined') {
           this.onOpenEscrowBalanceAlert()
         } else {
-          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET;
+          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
           if(this.state.ocexpiration < threshold) {
             this.processChannelErrors("Block number provided should be greater than " + threshold + " for the service to accept the request");
             return;
@@ -311,7 +314,7 @@ export  class Jobdetails extends React.Component {
           let groupIDBytes = atob(this.channelHelper.getGroupId());
           let recipientaddress = this.channelHelper.getRecipient();
 
-          if (this.channelHelper.getChannels().length > 0) {
+          if (typeof this.channelHelper.getChannelId() !== 'undefined') {
             let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
             console.log("Found an existing channel, will try to extend it " + JSON.stringify(selectedChannel));
             if(this.state.ocexpiration < selectedChannel["expiration"]) {
@@ -391,6 +394,7 @@ export  class Jobdetails extends React.Component {
               this.props.network.waitForTransaction(txnHash).then(receipt => {
                   console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.props.userAddress);
                 }).then(() => {
+                  console.log('Getting channel details');
                   this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
                 })
                 .catch((error) => {
@@ -409,16 +413,20 @@ export  class Jobdetails extends React.Component {
     }
 
     getChannelDetails(mpeInstance,startingBlock, recipientaddress) {
+      console.log("Reading events from " + startingBlock + " for " + this.props.userAddress);
       var evt = mpeInstance.ChannelOpen({
         sender: this.props.userAddress
       }, {
         fromBlock: startingBlock,
         toBlock: 'latest'
       });
+
+      console.log("Starting to listen")
       evt.watch((error, result) => {
         if (error) {
           this.processChannelErrors(error,"Reading event for channel open failed with error");
         } else {
+          console.log("Starting matching of events");
           this.channelHelper.matchEvent(evt, result, this.props.userAddress, this.channelHelper.getGroupId(), recipientaddress);
           if(typeof this.channelHelper.getChannelId() !== 'undefined') {
             this.nextJobStep();
