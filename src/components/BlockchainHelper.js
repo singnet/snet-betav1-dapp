@@ -109,10 +109,12 @@ export default class BlockchainHelper {
         
         web3.eth.getBlockNumber((error, result) => {
             if(error) {
-                console.log("Error reading blocknumber " + err)
+                console.log("Error reading blocknumber " + error)
+            } 
+            else {
+                callBack(result);
             }
-            callBack(result)
-        })
+        });
     }
 
     getChainID(callBack) {
