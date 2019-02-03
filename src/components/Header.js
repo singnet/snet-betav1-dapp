@@ -3,17 +3,16 @@ import {Link} from 'react-router-dom';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { faCheckSquare, faCoffee } from '@fortawesome/free-solid-svg-icons'
-import { NETWORKS } from './networks'
-import GetStarted from './components/GetStarted'
+import { NETWORKS } from '../networks'
+import GetStarted from './GetStarted'
 
-export default class App extends React.Component {
+export default class Header extends React.Component {
   constructor(props) {
     super(props);
     library.add(fab, faCheckSquare, faCoffee);
   }
 
   render() {
-      
     return (
       <React.Fragment>
             <div className="inner">
@@ -33,7 +32,7 @@ export default class App extends React.Component {
                     </svg>
                 </div>            
               <div className="header">
-                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 logo">
+                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 logo">
                       {(typeof web3 !== 'undefined')?
                       <Link to="/SampleServices">
                       <h1><span className="icon-logo"></span></h1></Link>:
@@ -41,34 +40,25 @@ export default class App extends React.Component {
                       <h1><span className="icon-logo"></span></h1></Link>}
                   </div>
                   {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
-                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 network-name">
+                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name">
                         You are on {NETWORKS[this.props.chainId].name}
                     </div>
                     :
-                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-3 network-name"/>
-                  }                      
-                  <div className="search-user">
-                    <div className="get-started">
-                        <Link to="/GetStarted"><span>Get Started</span> </Link>
-                    </div>                        
-                      {
-                        (typeof this.props.searchCallBack !== 'undefined')?
-                          <input className="search" placeholder={this.props.searchTerm === '' ? 'Search by Agent or Tags' : this.props.searchTerm} name="srch-term" id="srch-term" type="label" onClick={this.props.searchCallBack} />:null
-                      }                
-                      <div className="user">
-                          {(typeof web3 !== 'undefined')?
-                          <Link to="/SampleServices"><span className="icon-home-icon-silhouette"></span> </Link>:
-                          <Link to="/"><span className="icon-home-icon-silhouette"></span></Link>}
-                      </div>
-                      <div className="user">
-                          <Link to="/Profile"><span className="icon-user-3"></span></Link>
-                      </div>
-                  </div>
+                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name"/>
+                  }
+                <div className="col-xs-3 col-sm-3 col-md-3 col-lg-4 navigation">
+                    <ul>
+                        <li className="get-started"><Link to="/GetStarted">Get Started</Link></li>
+                        <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
+                        <li><Link to="/Profile">Account</Link></li>
+                        <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
+                    </ul>
+                </div> 
               </div>
           </div>
           </div>
           {this.props.children}
-      </React.Fragment>              
+      </React.Fragment>
     );
   }
 }

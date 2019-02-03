@@ -80,7 +80,7 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
-      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)})
       this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
                           'available-channels?user_address='+this.props.userAddress +
@@ -109,12 +109,12 @@ export  class Jobdetails extends React.Component {
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
           balance = AGI.inAGI(balance);
           console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
-          if (typeof balance !== 'undefined' && balance === 0 && !foundChannel) {
+          if (typeof balance !== 'undefined' && balance === 0) {
             this.onOpenEscrowBalanceAlert();
           } 
           else {
             console.log("Checking channels " + JSON.stringify(this.channelHelper));
-            this.setState({ocexpiration: (this.currentBlockNumber + BLOCK_OFFSET)});
+            this.setState({ocexpiration: (this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)});
             this.setState({ocvalue: this.serviceState['price_in_agi']});
             this.setState({fundTabEnabled: true});
             this.setState({valueTab: 0});
@@ -217,8 +217,8 @@ export  class Jobdetails extends React.Component {
           this.onOpenEscrowBalanceAlert()
         } else {
         if(this.state.ocexpiration <= this.currentBlockNumber) {
-          this.processChannelErrors("Block number provided should be greater than current block number " + this.currentBlockNumber);
-          return;
+          //In case somebody left their slideout open for a really long time.
+          this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET;
         }
         
         console.log("MPE has balance but have to check if we need to open a channel or extend one.");
@@ -406,7 +406,7 @@ export  class Jobdetails extends React.Component {
         this.watchBlocknumberTimer = setInterval(() => this.watchBlocknumber(), 500);
       }
       this.setState({runjobstate: data["is_available"]});
-      this.setState({ocexpiration:(this.currentBlockNumber + BLOCK_OFFSET)})
+      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET)})
     }
 
   onOpenEscrowBalanceAlert() {
@@ -429,7 +429,7 @@ export  class Jobdetails extends React.Component {
                 <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
             </div>              
             <div>
-              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from wallet to escrow account to proceed."} showProgress={false} link={"/Profile"} linkText="Go to Profile"/>
+              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from your wallet to the escrow account to proceed."} showProgress={false} link={"/Profile"} linkText="Deposit"/>
             </div>              
             <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
             <PerfectScrollbar>
@@ -494,7 +494,7 @@ export  class Jobdetails extends React.Component {
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
                                                 <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
-                                                 disabled={this.state.fundTabEnabled?false:true}/>
+                                                 disabled={true}/>
                                             </div>
                                             </div>
                                             </div>
@@ -506,19 +506,19 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>       
                                             </div>                                     
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={this.state.fundTabEnabled?false:true}/>
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={true}/>
                                             </div>
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
                                                 <button type="button" className={this.state.fundTabEnabled?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
-                                                        disabled={this.state.fundTabEnabled?false:true}>Reserve Funds</button>
+                                                        disabled={!this.state.fundTabEnabled}>Reserve Funds</button>
                                             </div>
                                             </div>
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
                                         <p className="job-details-text">
-                                        The first step in invoking the API is to open a payment. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a channel or extend a pre-existing channel. You can view the channel details in the profile page
+                                        The first step in invoking the API is to open a payment channel. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a new channel. This will prompt an interaction with Metamask to initiate a transaction.
                                         </p>
                                         </div>
                                     </TabContainer>
