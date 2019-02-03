@@ -13,6 +13,7 @@ import NamedEntityRecognitionService from "./NamedEntityRecognitionService.js";
 import SentimentAnalysisService from "./SentimentAnalysisService";
 import EmotionRecognitionService from "./EmotionRecognitionService";
 import HolisticEdgeDetectionService from "./HolisticEdgeDetectionService";
+import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
 
 import DefaultService from './DefaultService.js';
 
@@ -33,6 +34,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "emotion-recognition-service")] = EmotionRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "holistic-edge-detection-service")] = HolisticEdgeDetectionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
     }
 
     generateUniqueID(orgId,serviceId) {
