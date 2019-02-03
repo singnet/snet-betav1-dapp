@@ -161,7 +161,7 @@ export default class QAnet extends React.Component {
     renderComplete() {
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is: {this.state.response} </p>
+                <p style={{fontSize: "13px"}}>Response from service is: <b>{this.state.response}</b> </p>
             </div>
         );
     }

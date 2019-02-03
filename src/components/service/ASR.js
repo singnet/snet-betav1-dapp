@@ -70,7 +70,6 @@ export default class ASR extends React.Component {
     handleFormUpdate(event) {
         if (event.target.name === "data" && event.target.type === "file") {
             var file = event.target.files[0];
-            var data = new ArrayBuffer();
             var self = this;
             if (file) {
                 var reader = new FileReader();
@@ -81,7 +80,7 @@ export default class ASR extends React.Component {
                 }
         
                 reader.onload = function (e) {
-                    data = e.target.result;
+                    var data = new Uint8Array(e.target.result);
 
                     var blob = new Blob([data], {type : 'audio/wav'});
                     var ac = document.getElementById("audio-container");
@@ -180,7 +179,7 @@ export default class ASR extends React.Component {
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Audio</div>
                     <div id="audio-container" className="col-md-3 col-lg-2">
                     <audio controls style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}>
-                        <source id="asrAudio" src="http://bonch-ikt.ru:8209/tacotron1/audio/default.wav" type="audio/wav"></source>
+                        <source id="asrAudio" src="http://bonch-ikt.ru:8209/tacotron1/audio/hoho.wav" type="audio/wav"></source>
                     </audio>
                     </div>
                 </div>
@@ -197,7 +196,7 @@ export default class ASR extends React.Component {
     renderComplete() {
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p>
+                <p style={{fontSize: "13px"}}>Response from service is <b>{this.state.response}</b> </p>
             </div>
         );
     }

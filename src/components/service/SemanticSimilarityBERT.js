@@ -161,7 +161,7 @@ export default class SemanticSimilarityBERT extends React.Component {
     renderComplete() {
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is: This sentences is {this.state.response === "1" ? "similar" : "distant"} </p>
+                <p style={{fontSize: "13px"}}>Response from service is <b>This sentences is {this.state.response === "1" ? "similar" : "distant"}</b> </p>
             </div>
         );
     }

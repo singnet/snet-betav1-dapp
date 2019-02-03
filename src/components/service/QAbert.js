@@ -130,10 +130,6 @@ export default class QAbert extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <textarea name="context" placeholder="Enter a context." className="w3-input w3-border" style={{resize: "none", width: "250px"}} rows="12" maxLength="40000" value={this.state.context} onChange={this.handleFormUpdate}
                                onKeyPress={(e) => this.onKeyPressvalidator(e)}></textarea> 
-                        {/* <input name="a" type="text"
-                               style={{height: "30px", width: "80px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.a} onChange={this.handleFormUpdate}
-                               onKeyPress={(e) => this.onKeyPressvalidator(e)}></input> */}
                     </div>
                    
                 </div>
@@ -142,10 +138,6 @@ export default class QAbert extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <textarea name="question" placeholder="Enter a question." className="w3-input w3-border" style={{resize: "none", width: "250px"}} rows="4" maxLength="5000" value={this.state.question} onChange={this.handleFormUpdate}
                                onKeyPress={(e) => this.onKeyPressvalidator(e)}></textarea>
-                        {/* <input name="b" type="text"
-                               style={{height: "30px", width: "80px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.b} onChange={this.handleFormUpdate}
-                               onKeyPress={(e) => this.onKeyPressvalidator(e)}></input> */}
                     </div>
                 </div>
                 <div className="row">
@@ -160,7 +152,7 @@ export default class QAbert extends React.Component {
     renderComplete() {
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is: {this.state.response} </p>
+                <p style={{fontSize: "13px"}}>Response from service is: <b>{this.state.response}</b> </p>
             </div>
         );
     }
