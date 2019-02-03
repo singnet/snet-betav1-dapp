@@ -15,6 +15,9 @@ import ASR from './ASR.js';
 import TTS from './TTS.js';
 import SemanticSimilarityBERT from './SemanticSimilarityBERT.js';
 import Test from './Test.js';
+import NamedEntityRecognitionService from "./NamedEntityRecognitionService.js";
+import SentimentAnalysisService from "./SentimentAnalysisService";
+import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
 
 import DefaultService from './DefaultService.js';
 
@@ -37,6 +40,9 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "TTS")] = TTS;
         this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "SSbert")] = SemanticSimilarityBERT;
         this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShaliapin", "test_service")] = Test;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition")] = NamedEntityRecognitionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
     }
 
     generateUniqueID(orgId,serviceId) {
