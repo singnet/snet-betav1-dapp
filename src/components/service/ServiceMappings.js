@@ -11,6 +11,7 @@ import YOLOv3ObjectDetection from './YOLOv3ObjectDetection.js';
 import Zeta36ChessAlphaZero from './Zeta36ChessAlphaZero.js';
 import NamedEntityRecognitionService from "./NamedEntityRecognitionService.js";
 import SentimentAnalysisService from "./SentimentAnalysisService";
+import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
 
 import DefaultService from './DefaultService.js';
 
@@ -29,6 +30,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "zeta36-chess-alpha-zero")] = Zeta36ChessAlphaZero;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition")] = NamedEntityRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
     }
 
     generateUniqueID(orgId,serviceId) {
