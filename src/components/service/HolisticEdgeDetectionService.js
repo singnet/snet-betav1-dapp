@@ -2,12 +2,11 @@ import React from 'react';
 import {hasOwnDefinedProperty} from '../../util'
 import ImageUploader from './image-services-base/ImageUploader.js'
 import {getBase64} from "./image-services-base/util";
-import Result from './emotion-recognition-service/Result';
-import {utf8} from "utf8"
-import {base64js} from 'base64-js';
+import {Grid} from '@material-ui/core';
+import {ResultGrid} from "./image-services-base/ResultGrid";
 
 
-export default class EmotionRecognitionService extends React.Component {
+export default class HolisticEdgeDetectionService extends React.Component {
 
     constructor(props) {
         super(props);
@@ -39,11 +38,7 @@ export default class EmotionRecognitionService extends React.Component {
             this.parseServiceSpec(nextProps.serviceSpec);
         } else {
             if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
                     this.state.response = nextProps.response;
-                } else {
-                    this.state.response = nextProps.response;
-                }
             }
         }
     }
@@ -165,7 +160,7 @@ export default class EmotionRecognitionService extends React.Component {
                 <div className="row" align="center">
                     <button type="button" className="btn btn-primary"
                             disabled={!this.state.uploadedFile || !(this.state.methodName !== 'Select a method') || !(this.state.serviceName !== 'Select a service')}
-                            onClick={this.submitAction}>Call Emotion Recognizer
+                            onClick={this.submitAction}>Call Edge Detection Service
                     </button>
                 </div>
             </React.Fragment>
@@ -174,10 +169,12 @@ export default class EmotionRecognitionService extends React.Component {
 
     renderComplete() {
         return (
-            <Result
-                jobResult={this.state.response}
-                inputImage={this.state.previewImage}
-            />
+            <Grid container>
+                <Grid item xs={12}>
+                    <ResultGrid result={[this.state.response]}/>
+                </Grid>
+            </Grid>
+
         );
     }
 

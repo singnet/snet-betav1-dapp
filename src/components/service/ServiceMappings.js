@@ -12,6 +12,7 @@ import Zeta36ChessAlphaZero from './Zeta36ChessAlphaZero.js';
 import NamedEntityRecognitionService from "./NamedEntityRecognitionService.js";
 import SentimentAnalysisService from "./SentimentAnalysisService";
 import EmotionRecognitionService from "./EmotionRecognitionService";
+import HolisticEdgeDetectionService from "./HolisticEdgeDetectionService";
 
 import DefaultService from './DefaultService.js';
 
@@ -31,6 +32,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition")] = NamedEntityRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "emotion-recognition-service")] = EmotionRecognitionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "holistic-edge-detection-service")] = HolisticEdgeDetectionService;
     }
 
     generateUniqueID(orgId,serviceId) {
