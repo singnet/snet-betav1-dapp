@@ -113,7 +113,7 @@ export  class Jobdetails extends React.Component {
             this.onOpenEscrowBalanceAlert();
           } 
           else {
-            console.log("Checking channels " + JSON.stringify(this.channelHelper));
+            //console.log("Checking channels " + JSON.stringify(this.channelHelper));
             this.setState({ocexpiration: (this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)});
             this.setState({ocvalue: this.serviceState['price_in_agi']});
             this.setState({fundTabEnabled: true});
@@ -172,10 +172,9 @@ export  class Jobdetails extends React.Component {
               this.nextJobStep();
             })
             .catch((err) => {
-              console.log("GRPC call failed")
-              this.setState({grpcResponse: err});
+              console.log("GRPC call failed with error " + JSON.stringify(err));
+              this.setState({grpcResponse: JSON.stringify(err)});
               this.setState({grpcErrorOccurred: true})
-              console.log(err);
               this.setState({enableVoting: true})
               this.nextJobStep();
             })
