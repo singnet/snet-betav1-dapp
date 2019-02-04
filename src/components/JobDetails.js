@@ -443,7 +443,7 @@ export  class Jobdetails extends React.Component {
                     <Typography component={ 'div'}>
                         <div className="right-panel agentdetails-sec p-3 pb-5">
                             <div className="col-xs-12 col-sm-12 col-md-12 name no-padding">
-                                <h3>{this.serviceState["service_id"]} </h3>
+                                <h3>{this.serviceState["display_name"]} </h3>
                                 <p> {this.state.tagsall.map(rowtags =>
                                     <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
                                 <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
