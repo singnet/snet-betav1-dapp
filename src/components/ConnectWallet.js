@@ -14,7 +14,7 @@ export default class ConnectWallet extends React.Component {
 					<div id="roadmap-row" data-midnight="light" data-bg-mobile-hidden="" className="wpb_row vc_row-fluid vc_row full-width-section standard_section" style={{visibility: "visible"}} data-top-percent="4%" data-bottom-percent="4%">
 						<div className="header">
 							<div className="col-xs-6 col-sm-4 col-md-6 col-lg-6 logo">
-								<h1><a href="index.html" title="SingularityNET"><span className="icon-logo"></span></a></h1> 
+								<h1><a href="/SampleServices" title="SingularityNET"><span className="icon-logo"></span></a></h1>
 							</div>
 						</div>
 						<main role="content">

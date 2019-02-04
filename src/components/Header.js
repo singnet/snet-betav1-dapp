@@ -41,7 +41,7 @@ export default class Header extends React.Component {
                   </div>
                   {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
                     <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name">
-                        You are on {NETWORKS[this.props.chainId].name}
+                        {NETWORKS[this.props.chainId].name}
                     </div>
                     :
                     <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name"/>
