@@ -80,12 +80,12 @@ class SampleServices extends React.Component {
   handlehealthsort() {
     var healthSort = this.state.agents
     if (this.state.togglehealth === false) {
-      healthSort.sort((a, b) => (a === b)? 0 : a ? -1 : 1)
+      healthSort.sort((a, b) => b.is_available - a.is_available)
       this.setState({
         togglehealth: true
       })
     } else if (this.state.togglehealth === true) {
-      healthSort.sort((b, a) => (a === b)? 0 : a ? -1 : 1)
+      healthSort.sort((a, b) => a.is_available - b.is_available)
       this.setState({
         togglehealth: false
       })
@@ -171,7 +171,7 @@ class SampleServices extends React.Component {
         if(Array.isArray(values[0].data)) {
           values[0].data.map(agent => {
             agent["price_in_agi"] = AGI.inAGI(agent["price_in_cogs"]);
-            agent["is_available"] = true;
+            agent["is_available"] = 0;
             agent["up_vote_count"] = 0;
             agent["down_vote_count"] = 0;
             agent["up_vote"] = false;
@@ -197,7 +197,7 @@ class SampleServices extends React.Component {
             values[0].data.map(agent => 
               values[1].data.map(healthDetail => {
                 if(healthDetail["service_id"] === agent["service_id"] && healthDetail["org_id"] === agent["org_id"]) {
-                  agent["is_available"] = (healthDetail["is_available"] === 1)
+                  agent["is_available"] = healthDetail["is_available"]
                 }
             }))            
           }      
@@ -264,11 +264,12 @@ class SampleServices extends React.Component {
               {(rown.hasOwnProperty('tags'))? rown["tags"].map((rowtag,rindex) =>
               <button key={rindex} className='btn btn-secondary mr-15'>{rowtag}</button>):null}
           </div>
-          <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Status</div>
+          <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Health</div>
           <div className="col-sm-12 col-md-1 col-lg-1 health-align">
-              {(rown["is_available"])? 
-              <span className="agent-health green"></span>: 
-              <span className="agent-health red"></span>}
+
+              {(rown["is_available"] ===1)?
+                  <span className="agent-health green"></span>:
+                  <span className="agent-health red"></span>}
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Action</div>
           <div className="col-sm-12 col-md-2 col-lg-2 action-align">
@@ -330,7 +331,7 @@ class SampleServices extends React.Component {
                         <div className="col-sm-1 col-md-1 col-lg-1 text-center">
                             <div className="toggle">
                                 <button onClick={this.handlehealthsort}>
-                                    <h3>Status</h3>
+                                    <h3>Health</h3>
                                     <i className="fa fa-sort sort-icon" aria-hidden="true"></i>
                                 </button>
                             </div>
