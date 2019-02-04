@@ -264,7 +264,7 @@ class SampleServices extends React.Component {
               {(rown.hasOwnProperty('tags'))? rown["tags"].map((rowtag,rindex) =>
               <button key={rindex} className='btn btn-secondary mr-15'>{rowtag}</button>):null}
           </div>
-          <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Health</div>
+          <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Status</div>
           <div className="col-sm-12 col-md-1 col-lg-1 health-align">
 
               {(rown["is_available"] ===1)?
@@ -331,7 +331,7 @@ class SampleServices extends React.Component {
                         <div className="col-sm-1 col-md-1 col-lg-1 text-center">
                             <div className="toggle">
                                 <button onClick={this.handlehealthsort}>
-                                    <h3>Health</h3>
+                                    <h3>Status</h3>
                                     <i className="fa fa-sort sort-icon" aria-hidden="true"></i>
                                 </button>
                             </div>
