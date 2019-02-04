@@ -19,11 +19,13 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
         this.state = {
             serviceName: undefined,
             methodName: undefined,
+            
             timeseries: undefined,
             alphabet: undefined,
             slidingwindowsize: undefined,
             paasize: undefined,
-            debug: 0,
+            debugflag: "0",
+
             response: undefined
         };
 
@@ -100,7 +102,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                 alphabet: this.state.alphabet,
                 slidingwindowsize: this.state.slidingwindowsize,
                 paasize: this.state.paasize,
-                debugflag: this.state.debug
+                debugflag: this.state.debugflag
             });
     }
 
@@ -161,7 +163,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                             style: {fontSize: 15}
                         }}
                         value={this.state.timeseries}
-                        name="message"
+                        name="timeseries"
                         onChange={this.handleChange}
                         rows="6"
                         defaultValue=""
@@ -178,7 +180,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                             style: {fontSize: 15}
                         }}
                         value={this.state.alphabet}
-                        name="message"
+                        name="alphabet"
                         onChange={this.handleChange}
                         rows="6"
                         defaultValue=""
@@ -195,7 +197,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                             style: {fontSize: 15}
                         }}
                         value={this.state.slidingwindowsize}
-                        name="message"
+                        name="slidingwindowsize"
                         onChange={this.handleChange}
                         rows="6"
                         defaultValue=""
@@ -212,7 +214,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                             style: {fontSize: 15}
                         }}
                         value={this.state.paasize}
-                        name="message"
+                        name="paasize"
                         onChange={this.handleChange}
                         rows="6"
                         defaultValue=""
@@ -236,7 +238,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                     <br/>
                     <div style={{padding: 20, backgroundColor: "#E5EFFC"}}>
                         <h5>
-                            {this.props.response.value}
+                            {this.state.response}
                         </h5>
                     </div>
                 </Grid>
