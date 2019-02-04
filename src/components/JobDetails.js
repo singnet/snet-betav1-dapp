@@ -549,7 +549,7 @@ export  class Jobdetails extends React.Component {
                                 </div>
                             </div>
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
-
+                            
 
                         </div>
                     </Typography>
