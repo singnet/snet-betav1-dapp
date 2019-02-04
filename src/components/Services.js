@@ -232,12 +232,13 @@ class SampleServices extends React.Component {
 
   render() {
     const {open} = this.state;
-    const arraylimit = this.state.agents.length
+    let arraylimit = this.state.agents.length
 
     let agentsample = this.state.agents
     console.log("Size of search results " + this.state.searchResults.length)
     if (this.state.searchTerm != '' || this.state.searchResults.length > 0) {
       agentsample = this.state.searchResults
+      arraylimit = this.state.searchResults.length
     }
 
     const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
@@ -346,7 +347,7 @@ class SampleServices extends React.Component {
                         {agents}
                     </div>
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-right no-padding">
-                        {arraylimit>5?
+                        {arraylimit>15?
                         <MuiThemeProvider theme={theme}>
                             <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
                         </MuiThemeProvider>
