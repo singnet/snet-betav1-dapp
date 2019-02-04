@@ -244,13 +244,30 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                 </Grid>
                 <Grid item xs={12} style={{textAlign: "left", fontSize: 15, lineHeight: 2}}>
                     <br/>
+                    <h3>
+                    This service allows to detect anomalies in time series. It follows the summarized pipeline bellow:
+                    </h3>
                     <br/>
-                    <h2>
-                    Here is an example time series that simulates spikes.
-                    </h2>
+                    <ul>
+                        <li><b>Piecewise Aggregate approximation:</b> discretise the time series sub-sequences with a sliding window.</li>
+                        <li><b>Symbolic Aggregate Approximation:</b> transform the driscretized sub-sequences symbols based on an alphabet.</li>
+                        <li><b>Sequitur:</b> build a context-free grammar with all the generated symbols from the entire time series.</li>
+                        <li><b>Density Curve:</b> build a density curve based on the context-free generated grammar rules.</li>
+                        <li><b>Optimization and Detection:</b> detect anomalies in the density curve with a hill-climbing inspired algorithm.</li>
+                    </ul>
+                    <br/>
+                    <h3>
+                    A brief explanation about the parameters:
+                    </h3>
+                    <ul>
+                        <li><b>Time Series:</b>The time series in which anomalies will be detected.</li>
+                        <li><b>Alphabet:</b> Alphabet used to discretizise the paa apporximation.</li>
+                        <li><b>Sliding Window Size:</b> Sliding window used to create the time series symbols to build the free context grammar through the Sequitur algorithm.</li>
+                        <li><b>Piecewise Aggregate Approximation:</b> Number of sub-samples that will be generated for each sliding window position.</li>
+                    </ul>
                     <br/>
                     <p>
-                    With the input parameters bellow, the algorithms should be able to detect each simulated spike in the time series.
+                    With the bellow presented example input parameters, the algorithms should be able to detect each simulated spike in the time series.
                     A spike is represented by the number 1000 while a normal sample is represented by the number 1.
                     </p>
                     <br/>
@@ -265,11 +282,11 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                             }}>
                                 Time Series: 1 1 1 1 1 1000 1 1 1 1 1 1000 1 1 1 1 1 1000 1 1 1 1 1 1000 1 1 1 1 1 100
                                 <br/>
-                                alphabet: a b c d e f g h i j
+                                Alphabet: a b c d e f g h i j
                                 <br/>
-                                sliding window size: 4
+                                Sliding Window Size: 4
                                 <br/>
-                                paa size: 2
+                                Piecewise Aggregate Approximation Size: 2
                             </pre>
                         </ExpansionPanelDetails>
                     </ExpansionPanel>
