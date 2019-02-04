@@ -628,6 +628,7 @@ export default class SNETImageUpload extends React.Component {
                             style={{}}
                             title={<Typography
                                 style={{
+                                    alignText: 'center',
                                     fontFamily: snetFont,
                                     fontVariantCaps: "normal",
                                     textTransform: 'initial',
@@ -740,7 +741,7 @@ export default class SNETImageUpload extends React.Component {
             >
                 <Grid container
                       direction="row"
-                      justify="space-between"
+                      justify="flex-start"
                       alignItems="center"
                       style={{
                           color: "black",
@@ -749,7 +750,12 @@ export default class SNETImageUpload extends React.Component {
                       spacing={0}
                 >
                     <Grid item xs={12}>
-                        <Grid container direction="row" alignItems="center" style={{flexGrow: 1,}}>
+                        <Grid
+                            container
+                            direction="row"
+                            alignItems="center"
+                            justify="space-around"
+                        >
                             <Grid item xs={3}>
                                 <Typography
                                     color="inherit"
@@ -771,21 +777,27 @@ export default class SNETImageUpload extends React.Component {
                                         onChange={this.handleTabChange.bind(this)}
                                         indicatorColor="primary"
                                         textColor="primary"
-                                        scrollButtons="on"
+                                        // scrollButtons="on"
+                                        // centered
                                         variant="fullWidth"
                                         style={{
                                             color: snetGrey,
                                         }}
                                         // TabIndicatorProps={{ style: { backgroundColor: this.mainColor } }}
                                     >
-                                        <Tab style={{width:"50%"}} value={0} label={<span style={this.tabLabelStyle}>Upload</span>}/>
-                                        <Tab value={1} label={<span style={this.tabLabelStyle}>URL</span>}/>
+                                        <Tab style={{minWidth: '5%'}} value={0} label={<span style={this.tabLabelStyle}>Upload</span>}/>
+                                        <Tab style={{minWidth: '5%'}} value={1} label={<span style={this.tabLabelStyle}>URL</span>}/>
                                         {this.props.imageGallery.length > 0 &&
-                                        <Tab value={2} label={<span style={this.tabLabelStyle}>Gallery</span>}/>}
+                                        <Tab style={{minWidth: '5%'}} value={2} label={<span style={this.tabLabelStyle}>Gallery</span>}/>}
                                     </Tabs>
                                 </MuiThemeProvider>
                             </Grid>
-                            <Grid item xs={1}>
+                            <Grid item xs={1} style={{
+                                flexGrow: 1,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: "center"
+                            }}>
                                 {this.props.infoTip.length > 0 &&
                                 <Tooltip title={
                                     <Typography style={{fontFamily: snetFont, fontSize: 12, color: "white"}}>
@@ -793,14 +805,18 @@ export default class SNETImageUpload extends React.Component {
                                     </Typography>
                                 }>
                                     <InfoIcon style={{
-                                        fontSize: 24,
-                                        size: "large",
+                                        fontSize: 20,
                                         color: snetGrey
                                     }}/>
                                 </Tooltip>
                                 }
                             </Grid>
-                            <Grid item xs={1}>
+                            <Grid item xs={1} style={{
+                                flexGrow: 1,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: "center"
+                            }}>
                                 {this.state.mainState === "uploaded" &&
                                 <Fade in={this.state.mainState === "uploaded"}>
                                     <Tooltip title={
@@ -808,11 +824,9 @@ export default class SNETImageUpload extends React.Component {
                                             Click to reset!
                                         </Typography>
                                     }>
-                                        <IconButton style={{width: "20", height: "20"}}
-                                                    onClick={this.handleImageReset.bind(this)}>
+                                        <IconButton onClick={this.handleImageReset.bind(this)}>
                                             <RefreshIcon style={{
-                                                fontSize: 24,
-                                                size: "large",
+                                                fontSize: 20,
                                                 color: this.mainColor
                                             }}/>
                                         </IconButton>
@@ -841,12 +855,12 @@ SNETImageUpload.propTypes = {
     imageDataFunc: PropTypes.func.isRequired,
     imageName: PropTypes.string.isRequired,
     returnByteArray: PropTypes.bool, // whether to return base64 or byteArray image data
-    outputFormat: PropTypes.oneOf(["image/png", "image/jpg", "image/jpeg"]), //TODO: test
-    allowedInputTypes: PropTypes.oneOfType([PropTypes.string, PropTypes.array]), // TODO: specify which strings are allowed
+    outputFormat: PropTypes.oneOf(["image/png", "image/jpg", "image/jpeg"]),
+    allowedInputTypes: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     maxImageSize: PropTypes.number, // 10 mb
     displayProportionalImage: PropTypes.bool,
     allowURL: PropTypes.bool,
-    imageGallery: PropTypes.arrayOf(PropTypes.string), // TODO: check that items are URLs
+    imageGallery: PropTypes.arrayOf(PropTypes.string),
     galleryCols: PropTypes.number,
     infoTip: PropTypes.string,
     mainColor: PropTypes.object,

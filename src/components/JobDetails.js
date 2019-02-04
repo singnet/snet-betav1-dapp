@@ -15,25 +15,7 @@ import { Root } from 'protobufjs'
 import Vote from './Vote.js';
 import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
-import SNETImageUpload from './service/standardComponents/SNETImageUpload';
 
-
-const imageGallery = [
-    "http://cdn01.cdn.justjared.com/wp-content/uploads/headlines/2018/02/skyscraper-trailer-social.jpg",
-    "https://static2.yan.vn/EYanNews/201807/the-tallest-building-in-vietnam-and-southeast-asia-is-almost-finished-e0926100.jpg",
-    "https://raw.githubusercontent.com/dxyang/StyleTransfer/master/style_imgs/mosaic.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
-    "https://raw.githubusercontent.com/ShafeenTejani/fast-style-transfer/master/examples/dora-maar-picasso.jpg",
-    "https://pbs.twimg.com/profile_images/925531519858257920/IyYLHp-u_400x400.jpg",
-    "https://raw.githubusercontent.com/ShafeenTejani/fast-style-transfer/master/examples/dog.jpg",
-    "http://r.ddmcdn.com/s_f/o_1/cx_462/cy_245/cw_1349/ch_1349/w_720/APL/uploads/2015/06/caturday-shutterstock_149320799.jpg",
-    "https://raw.githubusercontent.com/dxyang/StyleTransfer/master/style_imgs/mosaic.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
-    "https://raw.githubusercontent.com/ShafeenTejani/fast-style-transfer/master/examples/dora-maar-picasso.jpg",
-    "https://pbs.twimg.com/profile_images/925531519858257920/IyYLHp-u_400x400.jpg",
-    "https://raw.githubusercontent.com/ShafeenTejani/fast-style-transfer/master/examples/dog.jpg",
-    "http://r.ddmcdn.com/s_f/o_1/cx_462/cy_245/cw_1349/ch_1349/w_720/APL/uploads/2015/06/caturday-shutterstock_149320799.jpg",
-];
 
 export  class Jobdetails extends React.Component {
     constructor() {
@@ -567,22 +549,10 @@ export  class Jobdetails extends React.Component {
                                 </div>
                             </div>
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
+
+
                         </div>
                     </Typography>
-                    <div style={{height: "500px", width:"100%", backgroundColor: "green", position: "relative"}}>
-                        <SNETImageUpload
-                            imageDataFunc={function(data){console.log(data)}}
-                            imageName="Input Image"
-                            imageGallery={imageGallery}
-                            returnByteArray = {true}
-                            galleryCols={3}
-                            tabHeight={400}
-                            maxImageSize={10000000}
-                            allowedInputTypes={["image/jpg", "image/jpeg"]}
-                            width="80%"
-                            infoTip="Upload the image that will be processed by the service."
-                        />
-                    </div>
                 </div>
               </Slide>
              </PerfectScrollbar>
