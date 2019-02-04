@@ -80,12 +80,12 @@ class SampleServices extends React.Component {
   handlehealthsort() {
     var healthSort = this.state.agents
     if (this.state.togglehealth === false) {
-      healthSort.sort((a, b) => (a === b)? 0 : a ? -1 : 1)
+      healthSort.sort((a, b) => b.is_available - a.is_available)
       this.setState({
         togglehealth: true
       })
     } else if (this.state.togglehealth === true) {
-      healthSort.sort((b, a) => (a === b)? 0 : a ? -1 : 1)
+      healthSort.sort((a, b) => a.is_available - b.is_available)
       this.setState({
         togglehealth: false
       })
@@ -171,7 +171,7 @@ class SampleServices extends React.Component {
         if(Array.isArray(values[0].data)) {
           values[0].data.map(agent => {
             agent["price_in_agi"] = AGI.inAGI(agent["price_in_cogs"]);
-            agent["is_available"] = true;
+            agent["is_available"] = 0;
             agent["up_vote_count"] = 0;
             agent["down_vote_count"] = 0;
             agent["up_vote"] = false;
@@ -197,7 +197,7 @@ class SampleServices extends React.Component {
             values[0].data.map(agent => 
               values[1].data.map(healthDetail => {
                 if(healthDetail["service_id"] === agent["service_id"] && healthDetail["org_id"] === agent["org_id"]) {
-                  agent["is_available"] = (healthDetail["is_available"] === 1)
+                  agent["is_available"] = healthDetail["is_available"]
                 }
             }))            
           }      
@@ -232,12 +232,13 @@ class SampleServices extends React.Component {
 
   render() {
     const {open} = this.state;
-    const arraylimit = this.state.agents.length
+    let arraylimit = this.state.agents.length
 
     let agentsample = this.state.agents
     console.log("Size of search results " + this.state.searchResults.length)
     if (this.state.searchTerm != '' || this.state.searchResults.length > 0) {
       agentsample = this.state.searchResults
+      arraylimit = this.state.searchResults.length
     }
 
     const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
@@ -266,9 +267,10 @@ class SampleServices extends React.Component {
           </div>
           <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Status</div>
           <div className="col-sm-12 col-md-1 col-lg-1 health-align">
-              {(rown["is_available"])? 
-              <span className="agent-health green"></span>: 
-              <span className="agent-health red"></span>}
+
+              {(rown["is_available"] ===1)?
+                  <span className="agent-health green"></span>:
+                  <span className="agent-health red"></span>}
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Action</div>
           <div className="col-sm-12 col-md-2 col-lg-2 action-align">
@@ -346,7 +348,7 @@ class SampleServices extends React.Component {
                         {agents}
                     </div>
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-right no-padding">
-                        {arraylimit>5?
+                        {arraylimit>15?
                         <MuiThemeProvider theme={theme}>
                             <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
                         </MuiThemeProvider>
