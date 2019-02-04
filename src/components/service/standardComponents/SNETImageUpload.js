@@ -72,7 +72,10 @@ export default class SNETImageUpload extends React.Component {
         this.handleDropzoneUpload = this.handleDropzoneUpload.bind(this);
 
         this.state = {
-            value: 0, // Current tab value
+            value: this.props.disableUploadTab?
+                (this.props.disableUploadTab + this.props.disableUrlTab)
+                :
+                0, // Current tab value
             mainState: "initial", // initial, loading, uploaded
             searchText: null,
             selectedImage: null,
@@ -553,7 +556,12 @@ export default class SNETImageUpload extends React.Component {
                         height: this.tabHeight + "px"
                     }}
                 >
-                    <Grid item xs={12}>
+                    <Grid item xs={12} style={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: "center"
+                    }}>
                         <Fade
                             in={this.state.mainState === "loading"}
                             unmountOnExit
@@ -785,8 +793,10 @@ export default class SNETImageUpload extends React.Component {
                                         }}
                                         // TabIndicatorProps={{ style: { backgroundColor: this.mainColor } }}
                                     >
-                                        <Tab style={{minWidth: '5%'}} value={0} label={<span style={this.tabLabelStyle}>Upload</span>}/>
-                                        <Tab style={{minWidth: '5%'}} value={1} label={<span style={this.tabLabelStyle}>URL</span>}/>
+                                        {!this.props.disableUploadTab &&
+                                        <Tab style={{minWidth: '5%'}} value={0} label={<span style={this.tabLabelStyle}>Upload</span>}/>}
+                                        {!this.props.disableUrlTab &&
+                                            <Tab style={{minWidth: '5%'}} value={1} label={<span style={this.tabLabelStyle}>URL</span>}/>}
                                         {this.props.imageGallery.length > 0 &&
                                         <Tab style={{minWidth: '5%'}} value={2} label={<span style={this.tabLabelStyle}>Gallery</span>}/>}
                                     </Tabs>
@@ -854,6 +864,8 @@ SNETImageUpload.propTypes = {
     tabHeight: PropTypes.number.isRequired, // a number without units
     imageDataFunc: PropTypes.func.isRequired,
     imageName: PropTypes.string.isRequired,
+    disableUploadTab: PropTypes.bool, // If true disables upload tab
+    disableUrlTab: PropTypes.bool, // If true disables url tab
     returnByteArray: PropTypes.bool, // whether to return base64 or byteArray image data
     outputFormat: PropTypes.oneOf(["image/png", "image/jpg", "image/jpeg"]),
     allowedInputTypes: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
@@ -870,6 +882,8 @@ SNETImageUpload.defaultProps = {
     width: "500px",
     tabHeight: 300,
     imageName: "Input Image",
+    disableUploadTab: false, // If true disables upload tab
+    disableUrlTab: false, // If true disables url tab
     returnByteArray: false,
     outputFormat: "image/png",
     allowedInputTypes: "image/*",
