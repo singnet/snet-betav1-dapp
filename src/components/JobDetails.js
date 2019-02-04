@@ -342,6 +342,7 @@ export  class Jobdetails extends React.Component {
 
         mpeInstance.channelExtendAndAddFunds.estimateGas(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, (err, estimatedGas) =>
         {
+          console.log("Estimation for channel extend " + estimatedGas)
           if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE
           }
@@ -379,6 +380,7 @@ export  class Jobdetails extends React.Component {
 
         mpeInstance.openChannel.estimateGas(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) =>
         {
+          console.log("Estimation for channel open " + estimatedGas)
           if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE
           }
@@ -614,7 +616,7 @@ export  class Jobdetails extends React.Component {
                                     <TabContainer>
                                       { (this.state.grpcErrorOccurred)?
                                         <div>
-                                           <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
+                                           <div className="job-details-error-text">Error: {JSON.stringify(this.state.grpcResponse)}</div>
                                         </div>:
                                         <React.Fragment>
                                           <CallComponent isComplete={true} response={this.state.grpcResponse}/>
