@@ -40,7 +40,10 @@
     "react-dom": "^16.3.1",
     "react-perfect-scrollbar": "^1.4.4",
     "styled-components": "^3.2.5",
-    "underscore": "^1.9.1"
+    "underscore": "^1.9.1",
+    "react-file-drop": "latest",
+    "react-swipeable-views": "latest",
+    "prop-types": "latest"
   },
   "devDependencies": {
     "@material-ui/core": "^3.5.1",
