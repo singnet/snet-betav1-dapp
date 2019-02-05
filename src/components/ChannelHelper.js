@@ -61,15 +61,16 @@ export default class ChannelHelper {
 
   getExpiryBlock() {
     let channels = this.getChannels();
+    let expiryBlock = 0;
     for(let ii=0; ii < channels.length; ii++) {
       var rrchannels = channels[ii];
       if (rrchannels["channelId"] === this.channelId)
       {
-        nonce = rrchannels["expiration"];
+        expiryBlock = rrchannels["expiration"];
         break;
       }
     }
-    return nonce;
+    return expiryBlock;
   }
 
   getRecipient() {
@@ -117,6 +118,7 @@ export default class ChannelHelper {
     this.endpoint = channels[0]["endpoint"]
     this.groupId = channels[0]["groupId"];
     this.recipient = channels[0]["recipient"];
+    console.log("Populated channels");
   }
 
   matchEvent(evt, result, senderAddress, groupidgetter, recipientaddress) {

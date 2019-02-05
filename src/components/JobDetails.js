@@ -78,6 +78,7 @@ export  class Jobdetails extends React.Component {
     }
 
     reInitializeJobState() {
+      this.setState({depositopenchannelerror: ""})
       this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)})
       this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
@@ -94,7 +95,7 @@ export  class Jobdetails extends React.Component {
       return fetch(encodeURI(_urlservicebuf))
         .then(serviceSpecResponse => serviceSpecResponse.json())
         .then(serviceSpec => new Promise(function(resolve) {
-          caller.serviceSpecJSON = Root.fromJSON(serviceSpec[0])
+          caller.serviceSpecJSON = Root.fromJSON(serviceSpec[0]);
           resolve();
         }));
     }
@@ -170,12 +171,19 @@ export  class Jobdetails extends React.Component {
       console.log("Got channel " + channelAvailable);
       let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
       if(channelAvailable) {
-        if (parseInt(selectedChannel["balance_in_cogs"]) >= parseInt(this.serviceState["price_in_cogs"]) 
+        const channelAmount = parseInt(this.channelHelper.getCurrentSignedAmount()) + 
+                              parseInt(this.serviceState["price_in_cogs"]);
+        if (parseInt(selectedChannel["balance_in_cogs"]) >= channelAmount 
           && parseInt(selectedChannel["expiration"]) >= thresholdBlockNumber) {
             this.seedDefaultValues(true, 1);
         }
         else {
           this.seedDefaultValues(true, 0);
+          const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET;
+          console.log(suggstedExpiration + " " + this.channelHelper.getExpiryBlock())
+          if(this.channelHelper.getExpiryBlock() > suggstedExpiration) {
+            this.setState({ocexpiration: this.channelHelper.getExpiryBlock()});
+          }
         }
       } 
       else {
@@ -206,6 +214,9 @@ export  class Jobdetails extends React.Component {
             .then((signed) => {
               this.fetchChannelState(signed).then(channelAvailable => 
                 this.handleChannel(balance, channelAvailable, suggstedExpiration));
+            }).catch(error => {
+              this.processChannelErrors(error);
+              this.setState({fundTabEnabled: false});
             });
           } 
           else {
@@ -260,6 +271,7 @@ export  class Jobdetails extends React.Component {
               this.setState({grpcResponse: response})
               this.setState({enableVoting: true})
               this.nextJobStep();
+              this.setState({fundTabEnabled: false});
             })
             .catch((err) => {
               console.log("GRPC call failed with error " + JSON.stringify(err));
@@ -267,6 +279,7 @@ export  class Jobdetails extends React.Component {
               this.setState({grpcErrorOccurred: true})
               this.setState({enableVoting: true})
               this.nextJobStep();
+              this.setState({fundTabEnabled: false});
             })
 
             return window.ethjs.personal_ecRecover(msg, signed);
@@ -556,7 +569,7 @@ export  class Jobdetails extends React.Component {
                                 <i className="up"></i>
                                 <div className="servicedetailstab">
                                 <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
-                                    <Tab disabled={(!this.state.fundTabEnabled) || valueTab === 1} label={<span className="funds-title">Fund</span>}/>
+                                    <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 0)} label={<span className="funds-title">Fund</span>}/>
                                     <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
                                     <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
                                 </Tabs>
