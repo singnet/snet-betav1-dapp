@@ -232,12 +232,13 @@ class SampleServices extends React.Component {
 
   render() {
     const {open} = this.state;
-    const arraylimit = this.state.agents.length
+    let arraylimit = this.state.agents.length
 
     let agentsample = this.state.agents
     console.log("Size of search results " + this.state.searchResults.length)
     if (this.state.searchTerm != '' || this.state.searchResults.length > 0) {
       agentsample = this.state.searchResults
+      arraylimit = this.state.searchResults.length
     }
 
     const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
@@ -277,12 +278,13 @@ class SampleServices extends React.Component {
           </div>
           <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
-                  <div className="thumbsup-img "><span className="icon-like"></span></div>
+                  <div className="thumbsup-img ">
+                  <span className={rown["up_vote_count"] > 0 ? "icon-count-like-enabled" : "icon-count-like"}></span></div>
                   <div className="likes-text">{rown["up_vote_count"]}</div>
               </div>
               <div className="col-md-6 thumbsdown-icon">
               <div className="thumbsdown-img">
-                <span className="icon-dislike"></span>
+                <span className={rown["down_vote_count"] > 0 ? "icon-count-dislike-enabled" : "icon-count-dislike"}></span>
               </div> 
               <div className="dislikes-text">{rown["down_vote_count"]}</div>
               </div>
@@ -347,7 +349,7 @@ class SampleServices extends React.Component {
                         {agents}
                     </div>
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-right no-padding">
-                        {arraylimit>5?
+                        {arraylimit>15?
                         <MuiThemeProvider theme={theme}>
                             <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
                         </MuiThemeProvider>
