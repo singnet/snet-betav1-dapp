@@ -101,9 +101,6 @@ export default class AutomaticSpeechRecognition extends React.Component {
                 }
         
                 reader.readAsArrayBuffer(file);
-                self.setState({
-                    ["data"]: data
-                }); 
             }
             else {
                 console.log("ASR Service say: Bad file!");
