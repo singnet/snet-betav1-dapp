@@ -220,14 +220,14 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.users_guide}
+                        <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                        <Button target="_blank" href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.reference}
+                        <Button target="_blank" href={this.state.reference}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>
