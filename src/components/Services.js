@@ -246,24 +246,24 @@ class SampleServices extends React.Component {
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "14px"}}>
-                      {rown["display_name"]}</Typography>
+                  <div className="m-0">
+                      {rown["display_name"]}</div>
               </label>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Organization</div>
           <div className="col-sm-12 col-md-2 col-lg-2 org-name-align">
-              <Typography className="m-0" style={{fontSize: "14px",fontFamily: "Arial", }}>{rown["org_id"]}</Typography>
+              <div className="m-0" >{rown["org_id"]}</div>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Price</div>
           <div className="col-sm-12 col-md-2 col-lg-2 price-align">
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{(rown["price_in_agi"])} AGI</Typography>
+                  <div className="m-0" >{(rown["price_in_agi"])} AGI</div>
               </label>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
           <div className="col-sm-12 col-md-2 col-lg-2 tag-align">
               {(rown.hasOwnProperty('tags'))? rown["tags"].map((rowtag,rindex) =>
-              <button key={rindex} className='btn btn-secondary mr-15'>{rowtag}</button>):null}
+              <label key={rindex} className='btn-tag mr-15'>{rowtag}</label>):null}
           </div>
           <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Status</div>
           <div className="col-sm-12 col-md-1 col-lg-1 health-align">
