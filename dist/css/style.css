@@ -9277,6 +9277,18 @@ body.modal-open .modal .close {
   border-radius: 6px;
   padding:6px 14px;
 }
+
+.btn-tag {
+  color: #0066ff;
+  background-color: #fff;
+  border: 1px solid #0066ff;
+  border-radius: 50px;
+  padding: 2px 5px;
+  font-size: 14px;
+  font-weight: normal;
+  margin: 2px;
+}
+
 .btn-secondary {
     color: #0066ff;
     background-color: #fff;
@@ -11052,6 +11064,9 @@ nav .nav-tabs .nav-link:hover {
   justify-content: left;
   align-items: center;
 }
+.agent-name-align label {
+  font-weight: normal;
+}
 .org-name-align {
   height: 60px;
   color: #303030;
@@ -11068,7 +11083,7 @@ nav .nav-tabs .nav-link:hover {
   text-align: center;
   padding:0;
   margin:0;
-  display: flex;
+  display: table;
   justify-content: center;
   align-items: center;
 }
@@ -11081,6 +11096,10 @@ nav .nav-tabs .nav-link:hover {
   justify-content: left;
   align-items: center;
 }
+.price-align label {
+  font-weight: normal;
+}
+
 .health-align {
   height: 60px;
   color: #303030;
@@ -11296,6 +11315,36 @@ h1 {
   color: #fff;
   font-size: 18px;
 }
+
+.steps-circle {
+  background-color: #4f88f7;
+  color: #fff;
+  border-radius: 76px;
+  width: 120px;
+  height: 120px;
+  padding: 45px 30px;
+  font-size: 19px;
+  margin: 20px 0 0 0;
+  float: left;
+  z-index: 1;
+  position: relative;
+}
+  
+  .position-relative {
+    position:relative;
+  } 
+
+  .steps-details {
+    background-color: #efefef;
+    padding: 20px 20px 20px 97px;
+    float: left;
+    margin: 20px 0 0 0;
+    position: absolute;
+    left: 60px;
+    z-index: 0;
+    height: 120px;
+    width: 100%;
+  }
 
 .navigation {
   padding: 5px 0 0 0;
@@ -11882,6 +11931,9 @@ position: absolute;
     justify-content: center;
     align-items: center;
 }
+.agent-name-align label {
+  font-weight: normal;
+}
 
 .org-name-align {
   height: 70px;
@@ -11902,7 +11954,7 @@ position: absolute;
   padding:0;
   margin:0;
   border-bottom:1px solid #E4E4E4;
-  display: flex;
+  display: table;
   justify-content: center;
   align-items: center;
 }
@@ -11916,6 +11968,9 @@ position: absolute;
   justify-content: center;
   align-items: center;
   padding: 0;
+}
+.price-align label {
+  font-weight: normal;
 }
 
 .health-align {
@@ -12041,7 +12096,9 @@ position: absolute;
     padding:10px 0;
     border-bottom: 1px solid #ddd;
   }
-
+  .agent-name-align label {
+    font-weight: normal;
+  }
   .org-name-align {
     margin: 0 0 10px 0;
     padding:14px 0;
@@ -12060,6 +12117,10 @@ position: absolute;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+  .price-align label {
+    font-weight: normal;
+  }
+
   .health-align {
     margin: 0 0 10px 0;
     padding:14px 0;
