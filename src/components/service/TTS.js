@@ -12,9 +12,8 @@ export default class TTS extends React.Component {
         this.state = {
             serviceName: undefined,
             methodName: undefined,
-            response: undefined, 
-            a: 0,
-            b: 0
+            response: undefined,
+            text: ""
         };
 
         this.isComplete = false;
@@ -29,11 +28,11 @@ export default class TTS extends React.Component {
         if (!this.isComplete) {
             this.parseServiceSpec(nextProps.serviceSpec);
         } else {
-            if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
-                    this.state.response = nextProps.response;
-                } else {
-                    this.state.response = nextProps.response.value;
+          if (typeof nextProps.response !== 'undefined') {
+            if (typeof nextProps.response === 'string') {
+              this.state.response = nextProps.response;
+            } else {
+                    this.state.response = nextProps.response.data;
                 }
             }
         }
@@ -89,21 +88,17 @@ export default class TTS extends React.Component {
     }
 
     onKeyPressvalidator(event) {
-        const keyCode = event.keyCode || event.which;
-        if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
-            event.preventDefault()
-        } else {
-            let dots = event.target.value.split('.');
-            if (dots.length > 1 && keyCode == 46)
-                event.preventDefault()
-        }
+        // console.log(event.target.value);
     }
 
     submitAction() {
+        var btn = document.getElementById("invoke-button");
+        btn.disabled = true;
+        btn.innerHTML = "Waiting...";
+
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                a: this.state.a,
-                b: this.state.b
+                text: this.state.text
             });
     }
 
@@ -133,24 +128,17 @@ export default class TTS extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Number 1</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Sentence</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="a" type="text"
-                               style={{height: "30px", width: "80px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.a} onChange={this.handleFormUpdate}
-                               onKeyPress={(e) => this.onKeyPressvalidator(e)}></input>
+                        <textarea name="text" placeholder="Enter a sentence." className="w3-input w3-border" style={{resize: "none", width: "250px"}} rows="3" maxLength="5000" value={this.state.text} onChange={this.handleFormUpdate}
+                               onKeyPress={(e) => this.onKeyPressvalidator(e)}></textarea> 
                     </div>
-                    <div className="col-md-3 col-lg-1" style={{fontSize: "13px", marginLeft: "40px"}}>Number 2</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="b" type="text"
-                               style={{height: "30px", width: "80px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.b} onChange={this.handleFormUpdate}
-                               onKeyPress={(e) => this.onKeyPressvalidator(e)}></input>
-                    </div>
+                   
                 </div>
+               
                 <div className="row">
-                    <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                    <div className="col-md-6 col-lg-6" style={{textAlign: "right", marginTop: "5px", width: "250px"}}>
+                        <button id="invoke-button" type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
@@ -160,9 +148,28 @@ export default class TTS extends React.Component {
     renderComplete() {
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p>
+                <div style={{fontSize: "13px", marginLeft: "10px"}}>Result</div>
+                <div id="audio-container"> </div>
             </div>
         );
+    }
+
+    componentDidMount() {
+      if (this.isComplete) {
+          var data = new Uint8Array(this.state.response);
+          var blob = new Blob([data], {type : 'audio/wav'});
+          var ac = document.getElementById("audio-container");
+          ac.innerHTML = "";
+          var audio = document.createElement('audio');
+          audio.setAttribute('controls', '');
+
+          var audioURL = window.URL.createObjectURL(blob);
+          audio.src = audioURL;
+          audio.style.height = "30px";
+          audio.style.width = "250px";
+          audio.style.marginLeft = "10px";
+          ac.appendChild(audio);
+      }
     }
 
     render() {
