@@ -278,12 +278,13 @@ class SampleServices extends React.Component {
           </div>
           <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
-                  <div className="thumbsup-img "><span className="icon-like"></span></div>
+                  <div className="thumbsup-img ">
+                  <span className={rown["up_vote_count"] > 0 ? "icon-count-like-enabled" : "icon-count-like"}></span></div>
                   <div className="likes-text">{rown["up_vote_count"]}</div>
               </div>
               <div className="col-md-6 thumbsdown-icon">
               <div className="thumbsdown-img">
-                <span className="icon-dislike"></span>
+                <span className={rown["down_vote_count"] > 0 ? "icon-count-dislike-enabled" : "icon-count-dislike"}></span>
               </div> 
               <div className="dislikes-text">{rown["down_vote_count"]}</div>
               </div>
