@@ -27,6 +27,8 @@ export default class MosesService extends React.Component {
             message: nextProps.response.description,
             busy: false
           };
+        } else {
+          this.state.notification = null;
         }
       }
     }
@@ -61,11 +63,11 @@ export default class MosesService extends React.Component {
   render() {
     return (
       <div>
+        {this.isComplete ? this.renderComplete() : this.renderForm()}
         {this.state.notification &&
           showNotification(this.state.notification, () => {
             this.setState({ notification: null });
           })}
-        {this.isComplete ? this.renderComplete() : this.renderForm()}
       </div>
     );
   }

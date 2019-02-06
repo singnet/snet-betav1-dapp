@@ -60,7 +60,7 @@ export default class MosesServiceForm extends React.Component {
       datasetFile: undefined,
       currentStep: Options.DATASET,
       isValid: {
-        dataset: true,
+        dataset: false,
         mosesOptions: true,
         crossValOptions: true,
         targetFeatureAndFilters: true
@@ -213,7 +213,7 @@ export default class MosesServiceForm extends React.Component {
               color: this.state.isValid.dataset ? "black" : "red"
             }}
           >
-            <h4>Upload Dataset</h4>
+            <h5>Upload Dataset</h5>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <DatasetUpload
@@ -231,7 +231,7 @@ export default class MosesServiceForm extends React.Component {
               color: this.state.isValid.mosesOptions ? "black" : "red"
             }}
           >
-            <h4>Moses options</h4>
+            <h5>Moses options</h5>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <MosesOptionsForm
@@ -254,7 +254,7 @@ export default class MosesServiceForm extends React.Component {
               color: this.state.isValid.crossValOptions ? "black" : "red"
             }}
           >
-            <h4>Cross validation options</h4>
+            <h5>Cross validation options</h5>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <CrossValidationOptionsForm
@@ -276,7 +276,7 @@ export default class MosesServiceForm extends React.Component {
                 : "red"
             }}
           >
-            <h4>Target feature & filters</h4>
+            <h5>Target feature & filters</h5>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <TargetFeatureForm

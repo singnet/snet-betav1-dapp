@@ -120,7 +120,12 @@ export const showNotification = ({ message, busy }, callBack) => {
         vertical: "bottom",
         horizontal: "right"
       }}
-      style={{ margin: "15px" }}
+      style={{
+        position: "fixed",
+        bottom: "15px",
+        right: "15px",
+        margin: "15px"
+      }}
       open
       autoHideDuration={null}
       onClose={callBack}
