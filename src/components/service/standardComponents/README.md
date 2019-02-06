@@ -11,7 +11,7 @@ ___
 
 This repository contains the official [Material UI](https://material-ui.com/) based image upload component for SingularityNET services.
 
-### General Funcionality
+### General Functionality
 
 This component is composed of a tool bar (at the top) and a main tab below it. The top bar consists of:
  
@@ -53,27 +53,25 @@ If the user types an invalid image URL or if the chosen image server blocks the 
 
 ### Example Usage
 
-This is an example of the most basic usage of the component. The tabHeight and width parameters are smaller than their minimum, so this is the minimum size of the component. The only required parameter is "imageDataFunc" so that the parent component receives the encoded image data.
+This is an example of the most basic usage of the component. The only required parameter is "imageDataFunc" so that the parent component receives the encoded image data.
  
 ```javascript
-import React, {Component} from 'react';
-import './App.css';
-import ImageUploadComponent from "./standardComponents/ImageUploadComponent";
+import SNETImageUpload from "./standardComponents/SNETImageUpload";
 
-
-class App extends Component {
+export default class App extends Component {
+    
+    getData(imageData){
+        console.log(imageData)
+    }
     
     render() {
         return (
-            <div className="App" style={{height: "2000px", width:"80%", backgroundColor: "green", position: "absolute"}}>
-                <ImageUploadComponent imageDataFunc={function(data){console.log(data)}} tabHeight={50} width="10%" />
+            <div>
+                <SNETImageUpload imageDataFunc={this.getData} />
             </div>
         );
     }
 }
-
-//
-export default App;
 ```
 
 For a service that takes only image URLs, for example, the service provider could set the parameters `disableUploadTab={true}` and `allowURL={true}`. That way the users could upload their images and see them rendered on the screen but the service would only receive its URL.
