@@ -497,7 +497,7 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>                                            
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue.toFixed(8)} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)}
                                                  disabled={true}/>
                                             </div>
                                             </div>
