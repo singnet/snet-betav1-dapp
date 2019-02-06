@@ -655,12 +655,18 @@ export default class SNETImageUpload extends React.Component {
     *  -----------------*/
 
     handleTabChange(event, value) {
-        this.setState({
-            value: value,
-            mainState: "initial",
-            selectedImage: null,
-            filename: null,
-        }, () => this.props.imageDataFunc(this.state.selectedImage));
+        if(this.state.selectedImage === null){ // If no image has been selected, simply changes tab
+            this.setState({
+                value: value,
+            });
+        } else {
+            this.setState({ // If an image had been uploaded, resets it and sends "null" to parent component
+                value: value,
+                mainState: "initial",
+                selectedImage: null,
+                filename: null,
+            }, () => this.props.imageDataFunc(this.state.selectedImage));
+        }
     };
 
     renderTabs() {
