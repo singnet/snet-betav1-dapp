@@ -208,11 +208,7 @@ export default class MosesServiceForm extends React.Component {
         )}
 
         <ExpansionPanel defaultExpanded={true}>
-          <ExpansionPanelSummary
-            style={{
-              color: this.state.isValid.dataset ? "black" : "red"
-            }}
-          >
+          <ExpansionPanelSummary>
             <h5>Upload Dataset</h5>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -226,11 +222,7 @@ export default class MosesServiceForm extends React.Component {
           </ExpansionPanelDetails>
         </ExpansionPanel>
         <ExpansionPanel style={{ width: "100%" }}>
-          <ExpansionPanelSummary
-            style={{
-              color: this.state.isValid.mosesOptions ? "black" : "red"
-            }}
-          >
+          <ExpansionPanelSummary>
             <h5>Moses options</h5>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -249,11 +241,7 @@ export default class MosesServiceForm extends React.Component {
           </ExpansionPanelDetails>
         </ExpansionPanel>
         <ExpansionPanel style={{ width: "100%" }}>
-          <ExpansionPanelSummary
-            style={{
-              color: this.state.isValid.crossValOptions ? "black" : "red"
-            }}
-          >
+          <ExpansionPanelSummary>
             <h5>Cross validation options</h5>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
@@ -269,13 +257,7 @@ export default class MosesServiceForm extends React.Component {
           </ExpansionPanelDetails>
         </ExpansionPanel>
         <ExpansionPanel style={{ width: "100%" }}>
-          <ExpansionPanelSummary
-            style={{
-              color: this.state.isValid.targetFeatureAndFilters
-                ? "black"
-                : "red"
-            }}
-          >
+          <ExpansionPanelSummary>
             <h5>Target feature & filters</h5>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
