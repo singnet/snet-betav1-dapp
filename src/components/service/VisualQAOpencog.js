@@ -1,6 +1,8 @@
 import React from 'react';
 import {hasOwnDefinedProperty} from '../../util'
 import Button from '@material-ui/core/Button';
+import SNETImageUpload from "./standardComponents/SNETImageUpload";
+
 
 export default class VisualQAOpencog extends React.Component {
 
@@ -9,6 +11,7 @@ export default class VisualQAOpencog extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+	this.getImageData = this.getImageData.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/semantic-vision/tree/master/services/vqa-service",
@@ -18,7 +21,7 @@ export default class VisualQAOpencog extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            imgPath: undefined,
+            imageData: undefined,
             question: "",
 	    use_pm: false,
 
@@ -89,20 +92,17 @@ export default class VisualQAOpencog extends React.Component {
         this.serviceMethods = data;
     }
 
-    submitAction() {
-	let oReq = new XMLHttpRequest();
-	let bl = this;
-        oReq.open("GET", this.state.imgPath, true);
-	oReq.responseType = "blob";
-	oReq.onload = function(oEvent) {
-              let blob = oReq.response;
-              bl.props.callApiCallback(bl.state.serviceName,
-                  bl.state.methodName, {
-                      image_data: blob,
-                      model: bl.state.use_pm
-                  });
-	}
-	oReq.send(null);
+    getImageData(imgData) {
+	this.state.imageData = imgData;
+    }
+
+    submitAction(){
+        this.props.callApiCallback(this.state.serviceName,
+            this.state.methodName, {
+                image_data: this.state.imageData,
+                use_pm: this.state.use_pm,
+		question: this.state.question
+            });
     }
 
     renderForm() {
@@ -143,9 +143,10 @@ export default class VisualQAOpencog extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="imgPath" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+	             <div>
+                           <SNETImageUpload imageDataFunc={this.getImageData} disableUrlTab={true} returnByteArray={true}/>
+                      </div>
+
                     </div>
                 </div>
                 <div className="row">
@@ -183,10 +184,14 @@ export default class VisualQAOpencog extends React.Component {
         let status = "Ok\n";
         let top_5 = "\n";
         let delta_time = "\n";
-
+        let answer = "\n";
         if (typeof this.state.response === "object") {
             delta_time = this.state.response.deltaTime + "s\n";
-            top_5 = this.state.response.top_5;
+	    if (this.state.response.ok) {
+	        answer = "answer " + this.state.response.answer;
+	    } else {
+		answer = "Request failed with " + this.state.response.error_message;
+	    }
         } else {
             status = this.state.response + "\n";
         }
@@ -196,7 +201,7 @@ export default class VisualQAOpencog extends React.Component {
                 <pre>
                     Status : {status}
                     Time   : {delta_time}
-                    {top_5}
+                    {answer}
                 </pre>
             </div>
         );
