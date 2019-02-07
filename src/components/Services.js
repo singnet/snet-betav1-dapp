@@ -126,7 +126,8 @@ class SampleServices extends React.Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        console.log("Initializing the watchNetwork timer")
+        console.log("Initializing the watchNetwork timer");
+        this.watchNetwork();
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
       } 
       else {
