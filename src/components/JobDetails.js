@@ -191,10 +191,7 @@ export  class Jobdetails extends React.Component {
     }
 
     changeocvalue(e) {
-        //will be used one we have the reuse channel functionality
-        if (e.target.value > this.serviceState['price_in_agi']) {
-            this.setState({ocvalue: e.target.value})
-        }
+      this.setState({ocvalue: e.target.value})
     }
 
     changeocexpiration(e) {
