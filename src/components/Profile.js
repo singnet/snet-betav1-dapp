@@ -254,7 +254,7 @@ export class Profile extends Component {
     var amountInCogs = AGI.inCogs(web3, this.state.depositAmount);
     const balanceInCogs = AGI.inCogs(web3, this.state.agiBalance);
     if(balanceInCogs < amountInCogs) {
-        this.processError("Deposit failed as available tokens " + this.state.agiBalance + " is less than amount deposited");
+        this.processError("Deposit failed as available tokens " + this.state.agiBalance + " is less than amount deposited", "contractMessage");
         return;
     }
 
