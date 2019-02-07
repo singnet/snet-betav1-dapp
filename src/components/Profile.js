@@ -79,6 +79,8 @@ export class Profile extends Component {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
         console.log("Initializing timers")
+        this.watchNetwork();
+        this.watchWallet();
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
         this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
       }
@@ -249,9 +251,14 @@ export class Profile extends Component {
       return;
     }
 
-    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
     var amountInCogs = AGI.inCogs(web3, this.state.depositAmount);
+    const balanceInCogs = AGI.inCogs(web3, this.state.agiBalance);
+    if(balanceInCogs < amountInCogs) {
+        this.processError("Deposit failed as available tokens " + this.state.agiBalance + " is less than amount deposited");
+        return;
+    }
 
+    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
     web3.eth.getGasPrice((err, gasPrice) => {
       if(err) {
         gasPrice = DEFAULT_GAS_PRICE;
