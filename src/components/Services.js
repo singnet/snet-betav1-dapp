@@ -205,7 +205,7 @@ class SampleServices extends React.Component {
           this.setState({agents: values[0].data})
         }   
       }
-    }
+        this.handlehealthsort() }
     ).catch((err)=> console.log(err))
 
     if (typeof web3 === 'undefined') {
