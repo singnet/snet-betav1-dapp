@@ -9,14 +9,15 @@ export default class Zeta36ChessAlphaZero extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/zeta36-chess-alpha-zero.md",
             code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/zeta36-chess-alpha-zero",
             reference: "https://github.com/Zeta36/chess-alpha-zero",
 
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "AlphaZero",
+            methodName: "play",
 
             uid: "",
             move: "",
@@ -58,18 +59,26 @@ export default class Zeta36ChessAlphaZero extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
-        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
                 this.allServices.push(rr);
                 this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
+                this.methodsForAllServices[rr] = Object.keys(items[rr]["methods"]);
             }
-        })
+        });
+        this.getServiceMethods(this.allServices[0]);
+    }
+
+    getServiceMethods(strService) {
+        this.setState({
+            serviceName: strService
+        });
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
     }
 
     handleFormUpdate(event) {
