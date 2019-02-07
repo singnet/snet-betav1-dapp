@@ -499,7 +499,10 @@ export  class Jobdetails extends React.Component {
         this.watchBlocknumberTimer = setInterval(() => this.watchBlocknumber(), 500);
       }
       this.setState({runjobstate: (data["is_available"] === 1)});
-      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET)})
+        this.props.network.getCurrentBlockNumber((blockNumber) => {
+            this.currentBlockNumber = blockNumber
+            this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET)})
+        })
     }
 
   onOpenEscrowBalanceAlert() {

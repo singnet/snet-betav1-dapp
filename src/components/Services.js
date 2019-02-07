@@ -126,7 +126,8 @@ class SampleServices extends React.Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        console.log("Initializing the watchNetwork timer")
+        console.log("Initializing the watchNetwork timer");
+        this.watchNetwork();
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
       } 
       else {
@@ -204,7 +205,7 @@ class SampleServices extends React.Component {
           this.setState({agents: values[0].data})
         }   
       }
-    }
+        this.handlehealthsort() }
     ).catch((err)=> console.log(err))
 
     if (typeof web3 === 'undefined') {
