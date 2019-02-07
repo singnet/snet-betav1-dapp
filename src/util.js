@@ -13,11 +13,11 @@ export const STRINGS = {
 
 export class AGI {
   static toDecimal(agi) {
-    return agi / 100000000;
+    return (agi / 100000000).toFixed(8);
   }
 
   static inAGI(cogs) {
-    return cogs / 100000000;
+    return (cogs / 100000000).toFixed(8);
   }
 
   static inCogs(web3, value) {
