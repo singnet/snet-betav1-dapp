@@ -7,11 +7,10 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AGI,ERROR_UTILS,DEFAULT_GAS_PRICE, getMarketplaceURL, isSupportedNetwork } from '../util';
+import { AGI,ERROR_UTILS,DEFAULT_GAS_PRICE, DEFAULT_GAS_ESTIMATE, getMarketplaceURL, isSupportedNetwork } from '../util';
 import { Requests } from '../requests'
-import App from "../App.js";
+import Header from "./Header.js";
 import Tooltip from '@material-ui/core/Tooltip';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import BlockchainHelper from "./BlockchainHelper.js"
 import {ProfileTabContainer} from './ReactStyles.js';
 import DAppModal from './DAppModal.js'
@@ -39,7 +38,8 @@ export class Profile extends Component {
       openchaining: false,
       chainId: undefined,
       contractMessage: '',
-      channelExtendMessage:'',
+      channelMessage:'',
+      isErrorMessage:false,
       supportedNetwork: false
     }
 
@@ -49,7 +49,8 @@ export class Profile extends Component {
     this.handlewithdraw = this.handlewithdraw.bind(this)
     this.handleAmountChange = this.handleAmountChange.bind(this)
     this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this)
-    this.handleChannelExtendAddFunds = this.handleChannelExtendAddFunds.bind(this)
+    //this.handleChannelExtendAddFunds = this.handleChannelExtendAddFunds.bind(this)
+    this.handleClaimTimeout = this.handleClaimTimeout.bind(this)
     this.Expirationchange = this.Expirationchange.bind(this)
     this.extamountchange = this.extamountchange.bind(this)
     this.onOpenchaining = this.onOpenchaining.bind(this)
@@ -78,6 +79,8 @@ export class Profile extends Component {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
         console.log("Initializing timers")
+        this.watchNetwork();
+        this.watchWallet();
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
         this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
       }
@@ -98,7 +101,7 @@ export class Profile extends Component {
   watchWallet() {
     this.network.getAccount((account) => {
       if (account !== this.state.account) {
-        console.log("Account changed from " + account +" to " + this.state.account)
+        console.log("Account changed from " + this.state.account +" to " + account)
         this.setState({account:account})
         this.loadAGIBalances(this.state.chainId)
       }
@@ -110,9 +113,9 @@ export class Profile extends Component {
       return;
     }
 
-    console.log("Loading AGI Balance for " + web3.eth.defaultAccount)
+    console.log("Loading AGI Balance for " + this.state.account)
     let mpeTokenInstance = this.network.getMPEInstance(chainId);
-    mpeTokenInstance.balances(web3.eth.defaultAccount, ((err, balance) => {
+    mpeTokenInstance.balances(this.state.account, ((err, balance) => {
       if (err) {
         console.log(err);
         return;
@@ -121,7 +124,7 @@ export class Profile extends Component {
     }));
 
     let instanceTokenContract = this.network.getTokenInstance(chainId);
-    instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
+    instanceTokenContract.allowance(this.state.account, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
       if (err) {
         console.log(err);
       }
@@ -130,7 +133,7 @@ export class Profile extends Component {
       }
     });
 
-    this.network.getAGIBalance(chainId, web3.eth.defaultAccount,((balance) => {
+    this.network.getAGIBalance(chainId, this.state.account,((balance) => {
         if (balance !== this.state.agiBalance) {
           this.setState({ agiBalance: balance });
         }
@@ -146,7 +149,7 @@ export class Profile extends Component {
     console.log("Loading details")
     this.setState({supportedNetwork: true})  
     let mpeURL = getMarketplaceURL(chainId);
-    let _urlfetchprofile = mpeURL + 'channels?user_address='+web3.eth.defaultAccount
+    let _urlfetchprofile = mpeURL + 'expired-channels?user_address='+web3.eth.defaultAccount;
     Requests.get(_urlfetchprofile)
       .then((values)=> {
         if(typeof values !== 'undefined' && Array.isArray(values.data)) {
@@ -185,8 +188,13 @@ export class Profile extends Component {
     this.setState({ extamount: e.target.value })
   }
 
+  clearMessage(name) {
+    this.setState({isErrorMessage:false})
+    this.setState({[name]:''})
+  }
+
   handleChange(value) {
-    this.setState({contractMessage:''})
+    this.clearMessage("contractMessage");
     this.setState({ value });
   };
 
@@ -195,7 +203,8 @@ export class Profile extends Component {
   }
 
   processError(error, errorLabel) {
-    this.setState({[errorLabel]: ERROR_UTILS.sanitizeError(error)})
+    this.setState({[errorLabel]: ERROR_UTILS.sanitizeError(error)});
+    this.setState({isErrorMessage:true});
     this.nextJobStep();
   }
 
@@ -237,25 +246,29 @@ export class Profile extends Component {
   }
 
   handleAuthorize() {
-    this.setState({contractMessage:''})
+    this.clearMessage("contractMessage");
     if (typeof web3 === 'undefined' || !this.state.supportedNetwork) {
       return;
     }
 
-    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
     var amountInCogs = AGI.inCogs(web3, this.state.depositAmount);
+    const balanceInCogs = AGI.inCogs(web3, this.state.agiBalance);
+    if(balanceInCogs < amountInCogs) {
+        this.processError("Deposit failed as available tokens " + this.state.agiBalance + " is less than amount deposited", "contractMessage");
+        return;
+    }
 
+    let instanceTokenContract = this.network.getTokenInstance(this.state.chainId);
     web3.eth.getGasPrice((err, gasPrice) => {
       if(err) {
         gasPrice = DEFAULT_GAS_PRICE;
       }      
       instanceTokenContract.approve.estimateGas(this.network.getMPEAddress(this.state.chainId),amountInCogs, (err, estimatedGas) => {
         if(err) {
-            this.processError(err,"contractMessage");
-            return;
+            estimatedGas = DEFAULT_GAS_ESTIMATE;
         }        
         this.executeContractMethod(instanceTokenContract.approve, this.handleDeposit, estimatedGas, gasPrice, "contractMessage", 
-        "You have successfully authorized tokens. Please deposit them to the Escrow account from the Deposit Tab",
+        "",
         [this.network.getMPEAddress(this.state.chainId),amountInCogs]);
       })
     })
@@ -267,7 +280,7 @@ export class Profile extends Component {
     }
     
     let instanceTokenContract = caller.network.getTokenInstance(caller.state.chainId);
-    instanceTokenContract.allowance(web3.eth.defaultAccount, caller.network.getMPEAddress(caller.state.chainId), async (err, allowedbalance) => {
+    instanceTokenContract.allowance(caller.state.account, caller.network.getMPEAddress(caller.state.chainId), async (err, allowedbalance) => {
       var amountInCogs = AGI.inCogs(web3, caller.state.depositAmount);
       console.log("Attempting to deposit " + amountInCogs + " attempt " + counter)
       if (Number(amountInCogs) > Number(allowedbalance)) {
@@ -278,21 +291,19 @@ export class Profile extends Component {
               caller.handleDeposit(caller, counter+1)
           }
           else {
-            //caller.setState({contractMessage: 'Deposit amount should be less than approved balance ' + allowedbalance});
             caller.processError("Deposit failed. Please retry with a higher gas fee","contractMessage");
           }
       }
       else {
         let instanceEscrowContract = caller.network.getMPEInstance(caller.state.chainId);
-        caller.setState({contractMessage: ''})
+        caller.clearMessage("contractMessage");
         web3.eth.getGasPrice((err, gasPrice) => {
           if(err) {
             gasPrice = DEFAULT_GAS_PRICE;
           }          
           instanceEscrowContract.deposit.estimateGas(amountInCogs, (err, estimatedGas) => {
             if(err) {
-                caller.processError(err,"contractMessage");
-                return;
+                estimatedGas = DEFAULT_GAS_ESTIMATE;
             }                 
             caller.executeContractMethod(instanceEscrowContract.deposit, undefined, estimatedGas, gasPrice, "contractMessage", 
             "You have successfully deposited tokens to the escrow. You can now invoke services from the Home page",
@@ -304,11 +315,11 @@ export class Profile extends Component {
   }
   
   handleExpansion() {
-    this.setState({channelExtendMessage:''})
+    this.clearMessage("channelMessage");
   }
 
   handlewithdraw() {
-    this.setState({contractMessage:''})
+    this.clearMessage("contractMessage");
     if (typeof web3 === undefined || !this.state.supportedNetwork) {
       return;
     }
@@ -322,16 +333,37 @@ export class Profile extends Component {
       }
       instanceEscrowContract.withdraw.estimateGas(amountInCogs, (err, estimatedGas) => {
         if(err) {
-            this.processError(err,"contractMessage");
-            return;
+            estimatedGas = DEFAULT_GAS_ESTIMATE;
         }             
         this.executeContractMethod(instanceEscrowContract.withdraw, undefined,estimatedGas, gasPrice, "contractMessage", "You have successfully withdrawn tokens into your account", [amountInCogs]);
       })
     })
   }
 
+  handleClaimTimeout(data) {
+    this.clearMessage("channelMessage");
+    if (typeof web3 === undefined) {
+      return;
+    }
+
+    var channelID = data["channel_id"]
+    let instanceEscrowContract = this.network.getMPEInstance(this.state.chainId);
+        web3.eth.getGasPrice((err, gasPrice) => {
+        if(err) {
+            gasPrice = DEFAULT_GAS_PRICE;
+        }      
+        instanceEscrowContract.channelClaimTimeout.estimateGas(channelID, (err, estimatedGas) => {
+            if(err) {
+                console.log("Estimation failed for " + channelID + " estimation is " + estimatedGas)
+                estimatedGas = DEFAULT_GAS_ESTIMATE
+            }
+            this.executeContractMethod(instanceEscrowContract.channelClaimTimeout, undefined, estimatedGas, gasPrice, "channelMessage", "You have successfully claimed the unused tokens. Please check your escrow balance in a bit", [channelID]);
+            })
+        })
+  }
+
   handleChannelExtendAddFunds(data) {
-    this.setState({channelExtendMessage:''})
+    this.clearMessage("channelMessage");
     if (typeof web3 === undefined) {
       return;
     }
@@ -339,13 +371,13 @@ export class Profile extends Component {
     const channelID = data["channel_id"]
     const currentExpiryBlock = data["expiration"]
     if(this.state.extexp < currentExpiryBlock) {
-        this.processError("Expiry block number cannot be reduced. Previously provided value is " + currentExpiryBlock, "channelExtendMessage")
+        this.processError("Expiry block number cannot be reduced. Previously provided value is " + currentExpiryBlock, "channelMessage")
         return;
     }
 
     this.network.getCurrentBlockNumber((blockNumber) => {
         if(this.state.extexp <= blockNumber) {
-            this.processError("Block number provided should be greater than current ethereum block number " + blockNumber, "channelExtendMessage")
+            this.processError("Block number provided should be greater than current ethereum block number " + blockNumber, "channelMessage")
             return;
         }
 
@@ -357,10 +389,9 @@ export class Profile extends Component {
         }      
         instanceEscrowContract.channelExtendAndAddFunds.estimateGas(channelID, this.state.extexp, amountInCogs, (err, estimatedGas) => {
             if(err) {
-                this.processError(err,"contractMessage");
-                return;
+                estimatedGas = DEFAULT_GAS_ESTIMATE;                
             }
-            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, undefined, estimatedGas, gasPrice, "channelExtendMessage", "You have successfully extended the channel", [channelID, this.state.extexp, amountInCogs]);
+            this.executeContractMethod(instanceEscrowContract.channelExtendAndAddFunds, undefined, estimatedGas, gasPrice, "channelMessage", "You have successfully extended the channel", [channelID, this.state.extexp, amountInCogs]);
             })
         })
     })
@@ -371,7 +402,7 @@ export class Profile extends Component {
     window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true
     return (
             <React.Fragment>
-                <App searchTerm="" chainId={this.state.chainId}/>
+                <Header chainId={this.state.chainId}/>
                 <div className="container">
                     <div className="row">
                         <div className=" col-xs-12 col-sm-12 col-md-6 col-lg-6 your-account-details">
@@ -384,17 +415,7 @@ export class Profile extends Component {
                                     {(typeof window.web3 !== 'undefined') ?
                                     <React.Fragment>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 word-break no-padding">
-                                            <Tooltip title={<span style={{ fontSize: "15px" }}>Account</span>}>
-                                                <label>{web3.eth.accounts[0]}</label>
-                                            </Tooltip>
-                                            &nbsp; {(web3.eth.defaultAccount !== null) ?
-                                            <CopyToClipboard text={web3.eth.accounts[0]} onCopy={()=> message.success('Account address copied', 1)}>
-                                                <a>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 23 23">
-                                                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
-                                                    </svg>
-                                                </a>
-                                            </CopyToClipboard> : null}
+                                                <label>{this.state.account}</label>
                                         </div>
                                     </React.Fragment>
                                     : null}
@@ -403,31 +424,25 @@ export class Profile extends Component {
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
                                         <label>Token Balance</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Token Balance</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
                                             <label>{this.state.agiBalance} AGI</label>
                                         </div>
-                                    </Tooltip>
                                 </div>
                                 <div className="row">
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
                                         <label>Escrow Balance</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Escrow Balance</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
                                             <label>{AGI.toDecimal(this.state.escrowaccountbalance)} AGI</label>
                                         </div>
-                                    </Tooltip>
                                 </div>
                                 <div className="row">
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
                                         <label>Authorized Tokens</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Authorized Tokens</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
                                             <label>{AGI.toDecimal(this.state.allowedtokenbalance)} AGI</label>
                                         </div>
-                                    </Tooltip>
                                 </div>
                             </div>
                         </div>
@@ -451,29 +466,29 @@ export class Profile extends Component {
                                     <TextField id="depositamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="depositAmount" onChange={this.handleAmountChange} value={this.state.depositAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
-                                            <div className="col-xs-6 col-sm-6 col-md-6 transaction-message">{this.state.contractMessage}</div>
+                                            <div className={this.state.isErrorMessage ? "col-xs-6 col-sm-6 col-md-6 error-msg":"col-xs-6 col-sm-6 col-md-6 transaction-message"}>
+                                            {this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(this.state.supportedNetwork && web3.eth.defaultAccount !== null && this.state.depositAmount > 0) ?
+                                                {(this.state.supportedNetwork && this.state.account !== null && this.state.depositAmount > 0) ?
                                                 <button className="btn btn-primary" onClick={this.handleAuthorize}><span style={{ fontSize: "15px" }}>Deposit</span></button> :
                                                 <button className="btn " disabled><span style={{ fontSize: "15px" }}>Deposit</span></button>
                                                 }
                                             </div>
                                         </div>
-                                        <p className="transaction-message">{this.state.contractMessage}</p>
                                 </ProfileTabContainer>} {value === 1 &&
                                 <ProfileTabContainer>
                                     <TextField id="withdrawamt" label={<span style={{ fontSize: "13px" }}>Amount</span>} margin="normal" name="withdrawalAmount" onChange={this.handleAmountChange} value={this.state.withdrawalAmount} style={{ width: "100%", fontWeight: "bold" }} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
                                         <br />
                                         <div className="row">
-                                            <div className="col-xs-6 col-sm-6 col-md-6 transaction-message">{this.state.contractMessage}</div>
+                                            <div className={this.state.isErrorMessage ? "col-xs-6 col-sm-6 col-md-6 error-msg":"col-xs-6 col-sm-6 col-md-6 transaction-message"}>
+                                            {this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(this.state.supportedNetwork && web3.eth.defaultAccount !== null && this.state.withdrawalAmount > 0) ?
+                                                {(this.state.supportedNetwork && this.state.account !== null && this.state.withdrawalAmount > 0) ?
                                                 <button type="button" className="btn btn-primary " onClick={this.handlewithdraw}><span style={{ fontSize: "15px" }}>Withdraw</span></button>:
                                                 <button className="btn" disabled><span style={{ fontSize: "15px" }}>Withdraw</span></button>
                                                 }
                                             </div>
                                         </div>
-                                        <p></p>
                                 </ProfileTabContainer>}
                             </div>
                         </div>
@@ -517,45 +532,17 @@ export class Profile extends Component {
                                 </ExpansionPanelSummary>
                                 <ExpansionPanelDetails style={{ backgroundColor: "#F1F1F1" }}>
                                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-7 no-padding">
-                                        You can add additional funds to the channel and / or set the expiry block number.
-                                        In order to add funds to the channel you need to ensure that your escrow has sufficient balance. The expiry block represents the block number at which the channel becomes eligible for you to reclaim funds. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number.
+                                        This channel has unused funds and has expired. You can claim your unused tokens which will be added to your escrow balance.
                                     </div>
                                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-5 pull-right">
-                                        <div className="row">
-                                            <div className="col-md-12 pull-right no-padding">
-                                                <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
-                                                    <label>Amount</label>
-                                                </div>
-                                                <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
-                                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Amount</span>}>
-                                                        <input type="text" value={this.state.extamount} name="amount" className="channels-input" onChange={(e)=> this.extamountchange(e)} onKeyPress={(e) => this.onKeyPressvalidator(e)} />
-                                                    </Tooltip>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-md-12 pull-right no-padding">
-                                                <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
-                                                    <label>Expiry Blocknumber</label>
-                                                </div>
-                                                <div className="col-sm-6 col-md-6 col-lg-6 pull-left mtb-10">
-                                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Expiry Blocknumber</span>}>
-                                                        <input type="text" value={this.state.extexp} name="newexpiration" className="channels-input" onChange={(e)=> this.Expirationchange(e)} />
-                                                    </Tooltip>
-                                                </div>
-                                            </div>
-                                        </div>
                                         <div style={{ textAlign: "right" }}>
-                                            {(this.state.supportedNetwork && web3.eth.defaultAccount !== null) ?
-                                            <Tooltip title={<span>Confirm</span>} >
-                                                <button type="button" className="btn btn-primary " onClick={()=> this.handleChannelExtendAddFunds(row)}><span style={{ fontSize: "15px" }}>Confirm</span></button>
-                                            </Tooltip> :
-                                            <Tooltip title={<span>Confirm</span>} >
-                                                <button type="button" className="btn " disabled><span style={{ fontSize: "15px" }}>Confirm</span></button>
-                                            </Tooltip>
+                                            {(this.state.supportedNetwork && this.state.account !== null) ?
+                                                <button type="button" className="btn btn-primary " onClick={()=> this.handleClaimTimeout(row)}><span style={{ fontSize: "15px" }}>Claim Channel</span></button>
+                                            :
+                                                <button type="button" className="btn " disabled><span style={{ fontSize: "15px" }}>Claim Channel</span></button>
                                             }
                                         </div>
-                                        <p className="transaction-message">{this.state.channelExtendMessage}</p>
+                                        <p className={this.state.isErrorMessage ? "error-msg":"transaction-message"}>{this.state.channelMessage}</p>
                                     </div>
                                 </ExpansionPanelDetails>
                             </ExpansionPanel>

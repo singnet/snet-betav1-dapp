@@ -3,16 +3,13 @@ import PropTypes from 'prop-types'
 import { MuiThemeProvider } from "@material-ui/core/styles"
 import Pagination from "material-ui-flat-pagination"
 import Typography from '@material-ui/core/Typography'
-import Modal from '@material-ui/core/Modal'
-import Slide from '@material-ui/core/Slide'
 import { withRouter } from 'react-router-dom'
 import { AGI, getMarketplaceURL, isSupportedNetwork } from '../util'
 import { Requests } from '../requests'
 import BlockchainHelper from "./BlockchainHelper.js"
-import {Carddeckers} from './CardDeckers.js';
 import {Jobdetails} from './JobDetails.js';
 import {theme} from './ReactStyles.js';
-import App from "../App.js";
+import Header from "./Header.js";
 
 class SampleServices extends React.Component {
   constructor(props) {
@@ -20,10 +17,8 @@ class SampleServices extends React.Component {
     this.state = {
       agents : [],
       offset:0,
-      searchBarOpen:false,
       searchTerm:'',
-      bestestsearchresults:[],
-      besttagresult:[],
+      searchResults:[],
       togglePrice: false,
       toggleServiceName:false,
       togglehealth:false,
@@ -32,20 +27,14 @@ class SampleServices extends React.Component {
     };
 
     this.network = new BlockchainHelper();
-    
     this.account = undefined;
     this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
-    this.onOpenSearchBar = this.onOpenSearchBar.bind(this)
-    this.onCloseSearchBar = this.onCloseSearchBar.bind(this)
-    this.handlesearch = this.handlesearch.bind(this)
     this.captureSearchTerm = this.captureSearchTerm.bind(this)
-    this.handlesearchbytag = this.handlesearchbytag.bind(this)
     this.handlepricesort = this.handlepricesort.bind(this)
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
     this.handlehealthsort = this.handlehealthsort.bind(this)
-    this.handlesearchkeyup = this.handlesearchkeyup.bind(this)
-    this.handlesearchclear = this.handlesearchclear.bind(this)
+    this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
     this.watchNetworkTimer = undefined;
   }
 
@@ -58,27 +47,45 @@ class SampleServices extends React.Component {
     });
   }
 
-  handlesearchclear() {
-    this.setState({searchTerm: ''})
-    this.setState({besttagresult: []})
+  inArray(haystack, needle) {
+    for (var i = 0; i < haystack.length; i++) {
+      if (haystack[i].indexOf(needle) !== -1) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  handlesearchkeyup(e) {
+  handleSearchKeyUp(e) {
     e.preventDefault();
-    if (e.keyCode === 13) {
-      this.handlesearch()
+    if(this.state.searchTerm === '') {
+      this.setState({searchResults:[]});
+      return;
     }
+
+    let ucSearchTerm = this.state.searchTerm.toUpperCase();
+    this.state.agents.map(row => 
+      (this.inArray(row["tags_uc"], ucSearchTerm)) ? 
+      console.log("Matched " + row["tags_uc"]) : console.log("Not Matched " + row["tags_uc"]))
+
+    let searchedagents = this.state.agents.map(row => 
+        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1 
+        || (this.inArray(row["tags_uc"], ucSearchTerm)) ? row : null))
+    
+    let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
+    console.log("Setting search results to " + bestsearchresults.length)
+    this.setState({searchResults:bestsearchresults});
   }
 
   handlehealthsort() {
     var healthSort = this.state.agents
     if (this.state.togglehealth === false) {
-      healthSort.sort((a, b) => (a === b)? 0 : a ? -1 : 1)
+      healthSort.sort((a, b) => b.is_available - a.is_available)
       this.setState({
         togglehealth: true
       })
     } else if (this.state.togglehealth === true) {
-      healthSort.sort((b, a) => (a === b)? 0 : a ? -1 : 1)
+      healthSort.sort((a, b) => a.is_available - b.is_available)
       this.setState({
         togglehealth: false
       })
@@ -119,7 +126,8 @@ class SampleServices extends React.Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        console.log("Initializing the watchNetwork timer")
+        console.log("Initializing the watchNetwork timer");
+        this.watchNetwork();
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
       } 
       else {
@@ -154,7 +162,7 @@ class SampleServices extends React.Component {
     const marketPlaceURL = getMarketplaceURL(chainId);
     const url = marketPlaceURL + "service"
     const urlfetchservicestatus = marketPlaceURL + 'group-info'
-    const urlfetchvote = marketPlaceURL + 'fetch-vote?user_address=' + (typeof web3 === 'undefined' ? "" : web3.eth.defaultAccount)
+    const urlfetchvote = marketPlaceURL + 'fetch-vote?user_address=' + (typeof web3 === 'undefined' ? "0x" : web3.eth.defaultAccount)
     console.log("Fetching data for " + chainId)
     Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.get(urlfetchvote)])
     .then((values) =>
@@ -163,12 +171,15 @@ class SampleServices extends React.Component {
       {
         if(Array.isArray(values[0].data)) {
           values[0].data.map(agent => {
-            agent["price_in_agi"] = AGI.inAGI(agent["price_in_cogs"])
-            agent["is_available"] = true
-            agent["up_vote_count"] = 0
-            agent["down_vote_count"] = 0
-            agent["up_vote"] = false
-            agent["down_vote"] = false
+            agent["price_in_agi"] = AGI.inAGI(agent["price_in_cogs"]);
+            agent["is_available"] = 0;
+            agent["up_vote_count"] = 0;
+            agent["down_vote_count"] = 0;
+            agent["up_vote"] = false;
+            agent["down_vote"] = false;
+            agent["display_name_uc"] = agent["display_name"].toUpperCase();
+            agent["tags_uc"] = []
+            agent["tags"].map(tag => agent["tags_uc"].push(tag.toUpperCase()));
           })
 
           if(Array.isArray(values[2].data)) {
@@ -187,14 +198,14 @@ class SampleServices extends React.Component {
             values[0].data.map(agent => 
               values[1].data.map(healthDetail => {
                 if(healthDetail["service_id"] === agent["service_id"] && healthDetail["org_id"] === agent["org_id"]) {
-                  agent["is_available"] = (healthDetail["is_available"] === 1)
+                  agent["is_available"] = healthDetail["is_available"]
                 }
             }))            
           }      
           this.setState({agents: values[0].data})
         }   
       }
-    }
+        this.handlehealthsort() }
     ).catch((err)=> console.log(err))
 
     if (typeof web3 === 'undefined') {
@@ -216,46 +227,19 @@ class SampleServices extends React.Component {
     this.refs.jobdetailsComp.onCloseJobDetailsSlider();
   }
 
-  onOpenSearchBar(e) {
-    this.setState({ searchBarOpen: true });
-  }
-
-  onCloseSearchBar(){
-    this.setState({ searchBarOpen: false });
-  }
-
-  handlesearch() {
-    console.log("Starting search for " + this.state.searchTerm)
-    this.setState({besttagresult: []});
-    let searchedagents = []
-    searchedagents = this.state.agents.map(row => (row["display_name"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1 || row["service_id"].toUpperCase().indexOf(this.state.searchTerm.toUpperCase()) !== -1) ? row : null)
-    let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
-    this.setState({bestestsearchresults: bestsearchresults})
-  }
-
-  handlesearchbytag(e, data) {
-    let tagresult = [];
-    this.state.agents.map(rowagents =>
-      (rowagents["tags"].map(rowtag => (rowtag === data) ? tagresult.push(rowagents) : null))
-    )
-    //inner loop trap//
-    this.setState({besttagresult: tagresult})
-  }
-
   captureSearchTerm(e) {
     this.setState({searchTerm:e.target.value})
   }
 
   render() {
     const {open} = this.state;
-    const arraylimit = this.state.agents.length
+    let arraylimit = this.state.agents.length
 
     let agentsample = this.state.agents
-    if (this.state.searchTerm !== '') {
-      agentsample = this.state.bestestsearchresults
-    }
-    if (this.state.besttagresult.length > 0) {
-      agentsample = this.state.besttagresult
+    console.log("Size of search results " + this.state.searchResults.length)
+    if (this.state.searchTerm != '' || this.state.searchResults.length > 0) {
+      agentsample = this.state.searchResults
+      arraylimit = this.state.searchResults.length
     }
 
     const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
@@ -263,30 +247,31 @@ class SampleServices extends React.Component {
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "14px"}}>
-                      {rown["display_name"]}</Typography>
+                  <div className="m-0">
+                      {rown["display_name"]}</div>
               </label>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Organization</div>
           <div className="col-sm-12 col-md-2 col-lg-2 org-name-align">
-              <Typography className="m-0" style={{fontSize: "14px",fontFamily: "Arial", }}>{rown["org_id"]}</Typography>
+              <div className="m-0" >{rown["org_id"]}</div>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Price</div>
           <div className="col-sm-12 col-md-2 col-lg-2 price-align">
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{(rown["price_in_agi"])} AGI</Typography>
+                  <div className="m-0" >{(rown["price_in_agi"])} AGI</div>
               </label>
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
           <div className="col-sm-12 col-md-2 col-lg-2 tag-align">
               {(rown.hasOwnProperty('tags'))? rown["tags"].map((rowtag,rindex) =>
-              <button key={rindex} className='btn btn-secondary mr-15'>{rowtag}</button>):null}
+              <label key={rindex} className='btn-tag mr-15'>{rowtag}</label>):null}
           </div>
           <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Status</div>
           <div className="col-sm-12 col-md-1 col-lg-1 health-align">
-              {(rown["is_available"])? 
-              <span className="agent-health green"></span>: 
-              <span className="agent-health red"></span>}
+
+              {(rown["is_available"] ===1)?
+                  <span className="agent-health green"></span>:
+                  <span className="agent-health red"></span>}
           </div>
           <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Action</div>
           <div className="col-sm-12 col-md-2 col-lg-2 action-align">
@@ -294,12 +279,13 @@ class SampleServices extends React.Component {
           </div>
           <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
-                  <div className="thumbsup-img "><span className="icon-like"></span></div>
+                  <div className="thumbsup-img ">
+                  <span className={rown["up_vote_count"] > 0 ? "icon-count-like-enabled" : "icon-count-like"}></span></div>
                   <div className="likes-text">{rown["up_vote_count"]}</div>
               </div>
               <div className="col-md-6 thumbsdown-icon">
               <div className="thumbsdown-img">
-                <span className="icon-dislike"></span>
+                <span className={rown["down_vote_count"] > 0 ? "icon-count-dislike-enabled" : "icon-count-dislike"}></span>
               </div> 
               <div className="dislikes-text">{rown["down_vote_count"]}</div>
               </div>
@@ -309,10 +295,19 @@ class SampleServices extends React.Component {
 
     return(
           <React.Fragment>
-          <App searchTerm={this.state.searchTerm} searchCallBack={this.onOpenSearchBar} chainId={this.state.chainId}/>
+          <Header chainId={this.state.chainId}/>
             <main role="content" className="content-area">
+              <div className="blue-boxes-head">
+                  <h4 className="align-self-center text-uppercase "></h4>
+              </div>
                 <div className="container-fluid p-4  ">
-                     <Carddeckers/>
+                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                        <span className="service-agents">Service Agents</span>
+                    </div>
+                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <input className="search" placeholder={this.state.searchTerm === '' ? 'Search by Agent or Tags' : this.state.searchTerm} name="srch-term" id="srch-term" type="label" onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handleSearchKeyUp(e)} />
+                    <button className="btn-search"><i className="fa fa-search search-icon" aria-hidden="true"></i></button> 
+                    </div>
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 head-txt-sec">
                         <div className="col-sm-2 col-md-2 col-lg-2">
                             <div className="toggle">
@@ -355,7 +350,7 @@ class SampleServices extends React.Component {
                         {agents}
                     </div>
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-right no-padding">
-                        {arraylimit>5?
+                        {arraylimit>15?
                         <MuiThemeProvider theme={theme}>
                             <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
                         </MuiThemeProvider>
@@ -367,44 +362,6 @@ class SampleServices extends React.Component {
                             userAddress={this.state.userAddress}
                             chainId={this.state.chainId}
                             network={this.network}/>
-                </div>
-                <div>
-                    <Modal open={this.state.searchBarOpen} onClose={this.onCloseSearchBar}>
-                        <Slide direction="down" in={this.state.searchBarOpen} mountOnEnter unmountOnExit>
-                            <div className="container popover-wrapper search-panel">
-                                <div className='row'>
-                                    <div className='col-sm-1 col-md-1 col-lg-1  rborder '>
-                                    </div>
-                                    <div className='col-sm-6 col-md-6 col-lg-6  rborder '>
-                                        <div className='form-group'>
-                                            <div className="search-title">
-                                                <label htmlFor='search'>Search</label>
-                                            </div>
-                                            <div className="col-sm-12 col-md-12 col-lg-12 no-padding">
-                                                <div className="col-sm-9 col-md-9 col-lg-9 no-padding">
-                                                    <input id='str' className="search-box-text" name='str' type='text' placeholder='Search...' value={this.state.searchTerm} onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handlesearchkeyup(e)} />
-                                                </div>
-                                                <div className="col-sm-3 col-md-3 col-lg-3">
-                                                    <input className='btn btn-primary' id='phSearchButton' type='button' defaultValue='Search' onClick={this.handlesearch} />
-                                                    <input className='btn btn-primary clear-btn' id='phSearchButtonclear' type='button' defaultValue='Clear' onClick={this.handlesearchclear} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-sm-4 col-md-4 col-lg-4 tags-panel">
-                                        <div className="tags-title">Tags</div>
-                                        <ul>
-                                            {this.state.agents.map((agents) => agents["tags"].map((tag,tagIndex) =>
-                                            <a key={tagIndex} href="#">
-                                                <li key={tagIndex} onClick={(e)=>{this.handlesearchbytag(e,tag)}}>{tag}</li>
-                                            </a>))}
-                                        </ul>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </Slide>
-                    </Modal>
                 </div>
             </main>
             </React.Fragment>

@@ -18,16 +18,16 @@ export default class CNTKLSTMForecast extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            window_len: undefined,
-            word_len: undefined,
-            alphabet_size: undefined,
+            window_len: "",
+            word_len: "",
+            alphabet_size: "",
 
-            source_type: undefined,
-            source: undefined,
-            contract: undefined,
+            source_type: "",
+            source: "",
+            contract: "",
 
-            start_date: undefined,
-            end_date: undefined,
+            start_date: "",
+            end_date: "",
 
             response: undefined
         };
@@ -141,7 +141,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="window_len" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.window_len} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -150,7 +150,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="word_len" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.word_len} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -160,7 +160,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="alphabet_size" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.alphabet_size} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -168,7 +168,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="source_type" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.source_type} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -176,7 +176,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="source" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.source} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -184,7 +184,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="contract" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.contract} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -192,7 +192,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="start_date" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.start_date} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -200,20 +200,20 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="end_date" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.end_date} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.users_guide}
+                        <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                        <Button target="_blank" href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.reference}
+                        <Button target="_blank" href={this.state.reference}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>

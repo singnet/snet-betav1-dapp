@@ -18,11 +18,11 @@ export default class CNTKNextDayTrend extends React.Component {
             serviceName: undefined,
             methodName: undefined,
 
-            source: undefined,
-            contract: undefined,
-            start: undefined,
-            end: undefined,
-            target_date: undefined,
+            source: "",
+            contract: "",
+            start: "",
+            end: "",
+            target_date: "",
 
             response: undefined
         };
@@ -131,7 +131,7 @@ export default class CNTKNextDayTrend extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="source" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.source} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -139,7 +139,7 @@ export default class CNTKNextDayTrend extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="contract" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.contract} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -147,7 +147,7 @@ export default class CNTKNextDayTrend extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="start" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.start} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -155,7 +155,7 @@ export default class CNTKNextDayTrend extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="end" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.end} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -163,20 +163,20 @@ export default class CNTKNextDayTrend extends React.Component {
                     <div className="col-md-3 col-lg-2">
                         <input name="target_date" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               onChange={this.handleFormUpdate}></input>
+                               value={this.state.target_date} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.users_guide}
+                        <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                        <Button target="_blank" href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.reference}
+                        <Button target="_blank" href={this.state.reference}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>

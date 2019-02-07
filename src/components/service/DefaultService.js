@@ -27,7 +27,6 @@ export default class DefaultService extends React.Component {
         if (!this.isComplete) {
             this.parseServiceSpec(nextProps.serviceSpec);
         } else {
-            debugger;
             if (typeof nextProps.response !== 'undefined') {
                 if (typeof nextProps.response === 'string') {
                     this.state.response = nextProps.response;
