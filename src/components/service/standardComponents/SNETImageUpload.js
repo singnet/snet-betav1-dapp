@@ -655,12 +655,18 @@ export default class SNETImageUpload extends React.Component {
     *  -----------------*/
 
     handleTabChange(event, value) {
-        this.setState({
-            value: value,
-            mainState: "initial",
-            selectedImage: null,
-            filename: null,
-        }, () => this.props.imageDataFunc(this.state.selectedImage));
+        if(this.state.selectedImage === null){ // If no image has been selected, simply changes tab
+            this.setState({
+                value: value,
+            });
+        } else {
+            this.setState({ // If an image had been uploaded, resets it and sends "null" to parent component
+                value: value,
+                mainState: "initial",
+                selectedImage: null,
+                filename: null,
+            }, () => this.props.imageDataFunc(this.state.selectedImage));
+        }
     };
 
     renderTabs() {
@@ -744,7 +750,7 @@ export default class SNETImageUpload extends React.Component {
                     width: this.props.width,
                     minHeight: "264px",
                     minWidth: minimumWidth,
-                    position: "absolute"
+                    position: "relative"
                 }}
             >
                 <Grid container
@@ -861,9 +867,9 @@ export default class SNETImageUpload extends React.Component {
 
 SNETImageUpload.propTypes = {
     width: PropTypes.string, // e.g.: "500px", "50%" (of parent component width)
-    tabHeight: PropTypes.number.isRequired, // a number without units
+    tabHeight: PropTypes.number, // a number without units
     imageDataFunc: PropTypes.func.isRequired,
-    imageName: PropTypes.string.isRequired,
+    imageName: PropTypes.string,
     disableUploadTab: PropTypes.bool, // If true disables upload tab
     disableUrlTab: PropTypes.bool, // If true disables url tab
     returnByteArray: PropTypes.bool, // whether to return base64 or byteArray image data
