@@ -512,7 +512,7 @@ export  class Jobdetails extends React.Component {
   onCloseEscrowBalanceAlert() {
     this.setState({showEscrowBalanceAlert: false})
     this.onCloseJobDetailsSlider()
-    this.props.history.push("/Profile")
+    this.props.history.push("/Account")
   }
   
     render()
@@ -525,7 +525,7 @@ export  class Jobdetails extends React.Component {
                 <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
             </div>              
             <div>
-              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from your wallet to the escrow account to proceed."} showProgress={false} link={"/Profile"} linkText="Deposit"/>
+              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from your wallet to the escrow account to proceed."} showProgress={false} link={"/Account"} linkText="Deposit"/>
             </div>              
             <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
             <PerfectScrollbar>
