@@ -29,7 +29,7 @@ export default class GetStarted extends React.Component {
                     </div>
                     
                     <div className="steps-details">
-                        You can add tokens to the Escrow from the Deposit tab of the {<Link to="/Profile"><span>Profile</span> </Link>} page.
+                        You can add tokens to the Escrow from the Deposit tab of the {<Link to="/Account"><span>Account</span> </Link>} page.
                         You are now set to start calling agents. 
                     </div>
                 </div>
