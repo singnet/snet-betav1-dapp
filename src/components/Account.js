@@ -15,7 +15,7 @@ import BlockchainHelper from "./BlockchainHelper.js"
 import {ProfileTabContainer} from './ReactStyles.js';
 import DAppModal from './DAppModal.js'
 
-export class Profile extends Component {
+export class Account extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -101,7 +101,7 @@ export class Profile extends Component {
   watchWallet() {
     this.network.getAccount((account) => {
       if (account !== this.state.account) {
-        console.log("Account changed from " + account +" to " + this.state.account)
+        console.log("Account changed from " + this.state.account +" to " + account)
         this.setState({account:account})
         this.loadAGIBalances(this.state.chainId)
       }
@@ -113,9 +113,9 @@ export class Profile extends Component {
       return;
     }
 
-    console.log("Loading AGI Balance for " + web3.eth.defaultAccount)
+    console.log("Loading AGI Balance for " + this.state.account)
     let mpeTokenInstance = this.network.getMPEInstance(chainId);
-    mpeTokenInstance.balances(web3.eth.defaultAccount, ((err, balance) => {
+    mpeTokenInstance.balances(this.state.account, ((err, balance) => {
       if (err) {
         console.log(err);
         return;
@@ -124,7 +124,7 @@ export class Profile extends Component {
     }));
 
     let instanceTokenContract = this.network.getTokenInstance(chainId);
-    instanceTokenContract.allowance(web3.eth.defaultAccount, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
+    instanceTokenContract.allowance(this.state.account, this.network.getMPEAddress(chainId), (err, allowedbalance) => {
       if (err) {
         console.log(err);
       }
@@ -133,7 +133,7 @@ export class Profile extends Component {
       }
     });
 
-    this.network.getAGIBalance(chainId, web3.eth.defaultAccount,((balance) => {
+    this.network.getAGIBalance(chainId, this.state.account,((balance) => {
         if (balance !== this.state.agiBalance) {
           this.setState({ agiBalance: balance });
         }
@@ -149,7 +149,7 @@ export class Profile extends Component {
     console.log("Loading details")
     this.setState({supportedNetwork: true})  
     let mpeURL = getMarketplaceURL(chainId);
-    let _urlfetchprofile = mpeURL + 'expired-channels?user_address='+web3.eth.defaultAccount
+    let _urlfetchprofile = mpeURL + 'expired-channels?user_address='+web3.eth.defaultAccount;
     Requests.get(_urlfetchprofile)
       .then((values)=> {
         if(typeof values !== 'undefined' && Array.isArray(values.data)) {
@@ -233,6 +233,7 @@ export class Profile extends Component {
             } else {            
                 this.nextJobStep();
                 this.setState({[messageField]:successMessage})
+                this.setState({depositAmount: 0})
                 this.loadAGIBalances(this.state.chainId);
             }
           })
@@ -280,7 +281,7 @@ export class Profile extends Component {
     }
     
     let instanceTokenContract = caller.network.getTokenInstance(caller.state.chainId);
-    instanceTokenContract.allowance(web3.eth.defaultAccount, caller.network.getMPEAddress(caller.state.chainId), async (err, allowedbalance) => {
+    instanceTokenContract.allowance(caller.state.account, caller.network.getMPEAddress(caller.state.chainId), async (err, allowedbalance) => {
       var amountInCogs = AGI.inCogs(web3, caller.state.depositAmount);
       console.log("Attempting to deposit " + amountInCogs + " attempt " + counter)
       if (Number(amountInCogs) > Number(allowedbalance)) {
@@ -415,9 +416,7 @@ export class Profile extends Component {
                                     {(typeof window.web3 !== 'undefined') ?
                                     <React.Fragment>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 word-break no-padding">
-                                            <Tooltip title={<span style={{ fontSize: "15px" }}>Account</span>}>
-                                                <label>{web3.eth.accounts[0]}</label>
-                                            </Tooltip>
+                                                <label>{this.state.account}</label>
                                         </div>
                                     </React.Fragment>
                                     : null}
@@ -426,31 +425,25 @@ export class Profile extends Component {
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
                                         <label>Token Balance</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Token Balance</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
                                             <label>{this.state.agiBalance} AGI</label>
                                         </div>
-                                    </Tooltip>
                                 </div>
                                 <div className="row">
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
                                         <label>Escrow Balance</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Escrow Balance</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
                                             <label>{AGI.toDecimal(this.state.escrowaccountbalance)} AGI</label>
                                         </div>
-                                    </Tooltip>
                                 </div>
                                 <div className="row">
                                     <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
                                         <label>Authorized Tokens</label>
                                     </div>
-                                    <Tooltip title={<span style={{ fontSize: "15px" }}>Authorized Tokens</span>}>
                                         <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
                                             <label>{AGI.toDecimal(this.state.allowedtokenbalance)} AGI</label>
                                         </div>
-                                    </Tooltip>
                                 </div>
                             </div>
                         </div>
@@ -477,7 +470,7 @@ export class Profile extends Component {
                                             <div className={this.state.isErrorMessage ? "col-xs-6 col-sm-6 col-md-6 error-msg":"col-xs-6 col-sm-6 col-md-6 transaction-message"}>
                                             {this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(this.state.supportedNetwork && web3.eth.defaultAccount !== null && this.state.depositAmount > 0) ?
+                                                {(this.state.supportedNetwork && this.state.account !== null && this.state.depositAmount > 0) ?
                                                 <button className="btn btn-primary" onClick={this.handleAuthorize}><span style={{ fontSize: "15px" }}>Deposit</span></button> :
                                                 <button className="btn " disabled><span style={{ fontSize: "15px" }}>Deposit</span></button>
                                                 }
@@ -491,7 +484,7 @@ export class Profile extends Component {
                                             <div className={this.state.isErrorMessage ? "col-xs-6 col-sm-6 col-md-6 error-msg":"col-xs-6 col-sm-6 col-md-6 transaction-message"}>
                                             {this.state.contractMessage}</div>
                                             <div className="col-xs-6 col-sm-6 col-md-6" style={{ textAlign: "right" }}>
-                                                {(this.state.supportedNetwork && web3.eth.defaultAccount !== null && this.state.withdrawalAmount > 0) ?
+                                                {(this.state.supportedNetwork && this.state.account !== null && this.state.withdrawalAmount > 0) ?
                                                 <button type="button" className="btn btn-primary " onClick={this.handlewithdraw}><span style={{ fontSize: "15px" }}>Withdraw</span></button>:
                                                 <button className="btn" disabled><span style={{ fontSize: "15px" }}>Withdraw</span></button>
                                                 }
@@ -544,13 +537,10 @@ export class Profile extends Component {
                                     </div>
                                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-5 pull-right">
                                         <div style={{ textAlign: "right" }}>
-                                            {(this.state.supportedNetwork && web3.eth.defaultAccount !== null) ?
-                                            <Tooltip title={<span>Claim Channel</span>} >
+                                            {(this.state.supportedNetwork && this.state.account !== null) ?
                                                 <button type="button" className="btn btn-primary " onClick={()=> this.handleClaimTimeout(row)}><span style={{ fontSize: "15px" }}>Claim Channel</span></button>
-                                            </Tooltip> :
-                                            <Tooltip title={<span>Claim Channel</span>} >
+                                            :
                                                 <button type="button" className="btn " disabled><span style={{ fontSize: "15px" }}>Claim Channel</span></button>
-                                            </Tooltip>
                                             }
                                         </div>
                                         <p className={this.state.isErrorMessage ? "error-msg":"transaction-message"}>{this.state.channelMessage}</p>
