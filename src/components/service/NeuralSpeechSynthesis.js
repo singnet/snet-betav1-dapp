@@ -126,7 +126,6 @@ export default class NeuralSpeechSynthesis extends React.Component {
     renderComplete() {
         return (
             <div>
-                <div style={{fontSize: "13px", marginLeft: "10px"}}>Result</div>
                 <div id="audio-container"> </div>
             </div>
         );
