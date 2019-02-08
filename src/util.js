@@ -11,6 +11,15 @@ export const STRINGS = {
   "NULL_ADDRESS": "0x0000000000000000000000000000000000000000"
 };
 
+export const MESSAGES = {
+  "WAIT_FOR_MM": "Waiting for Metamask interaction",
+  "WAIT_FOR_TRANSACTION": "Waiting for transaction to be mined",
+  "WAIT_FOR_BC_CALL": "Waiting for blockchain call to complete",
+  "WAIT_FOR_NEW_CHANNEL": "Waiting to get a new channel",
+  "WAIT_FOR_RESPONSE": "Waiting for the response",
+  "ZERO_ESCROW_BALANCE": "You do not have any balance in your escrow account. Please transfer tokens from your wallet to the escrow account to proceed."
+};
+
 export class AGI {
   static toDecimal(agi) {
     return (agi / 100000000).toFixed(8);
