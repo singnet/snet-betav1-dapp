@@ -9,14 +9,15 @@ export default class S2VTVideoCaptioning extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/s2vt-video-captioning.md",
             code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/s2vt-video-captioning",
             reference: "https://vsubhashini.github.io/s2vt.html",
 
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "VideoCaptioning",
+            methodName: "video_cap",
 
             url: "",
             start_time_sec: "",
@@ -58,18 +59,26 @@ export default class S2VTVideoCaptioning extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
-        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
                 this.allServices.push(rr);
                 this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
+                this.methodsForAllServices[rr] = Object.keys(items[rr]["methods"]);
             }
-        })
+        });
+        this.getServiceMethods(this.allServices[0]);
+    }
+
+    getServiceMethods(strService) {
+        this.setState({
+            serviceName: strService
+        });
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
     }
 
     handleFormUpdate(event) {
@@ -93,8 +102,8 @@ export default class S2VTVideoCaptioning extends React.Component {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
                 url: this.state.url,
-                startTimeSec: this.state.start_time_sec,
-                stopTimeSec: this.state.stop_time_sec
+                start_time_sec: this.state.start_time_sec,
+                stop_time_sec: this.state.stop_time_sec
             });
     }
 
