@@ -233,6 +233,7 @@ export class Account extends Component {
             } else {            
                 this.nextJobStep();
                 this.setState({[messageField]:successMessage})
+                this.setState({depositAmount: 0})
                 this.loadAGIBalances(this.state.chainId);
             }
           })
