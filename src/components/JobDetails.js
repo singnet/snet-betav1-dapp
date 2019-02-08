@@ -521,30 +521,25 @@ export  class Jobdetails extends React.Component {
                                         </p>
                                         </div>
                                     </TabContainer>
-                                    } {(valueTab === 1) &&
-                                    <TabContainer>
-                                      <React.Fragment>
-                                        <CallComponent isComplete={false} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation}/>
-                                      </React.Fragment>
-                                      <div className="row">
-                                        <p className="job-details-text">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
-                                        </div>
-                                    </TabContainer>
-                                    } {(valueTab === 2) &&
-                                    <TabContainer>
-                                      { (this.state.grpcErrorOccurred)?
-                                        <div>
-                                           <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
-                                        </div>:
-                                        <React.Fragment>
-                                          <CallComponent isComplete={true} response={this.state.grpcResponse}/>
-                                        </React.Fragment>
-                                      }
-                                      <div className="row">
-                                       <p></p>
-                                        <p className="job-details-text">Your request has been completed. You can now vote for the agent below.</p>
-                                        </div>
-                                    </TabContainer>}
+                                    } {(valueTab === 2 || valueTab === 1) &&
+                                      <TabContainer>
+                                        { (valueTab === 2 && this.state.grpcErrorOccurred)?
+                                          <div>
+                                             <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
+                                          </div>:
+                                          <React.Fragment>
+                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse}/>
+                                          </React.Fragment>
+                                        }
+                                        <div className="row">
+                                         <p></p>
+                                         {(valueTab === 2) ?
+                                          <p className="job-details-text">Your request has been completed. You can now vote for the agent below.
+                                          </p> :
+                                          <p className="job-details-text">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
+                                         }
+                                          </div>
+                                      </TabContainer>}
                                 </div>
                             </div>
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>

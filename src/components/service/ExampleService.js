@@ -24,6 +24,12 @@ export default class ExampleService extends React.Component {
         this.parseProps(props);
     }
 
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+    }
+    
     parseProps(nextProps) {
         this.isComplete = nextProps.isComplete;
         if (!this.isComplete) {
