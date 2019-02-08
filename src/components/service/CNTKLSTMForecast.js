@@ -9,14 +9,15 @@ export default class CNTKLSTMForecast extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/time-series-analysis/blob/master/docs/users_guide/generic/cntk-lstm-forecast.md",
             code_repo: "https://github.com/singnet/time-series-analysis/blob/master/generic/cntk-lstm-forecast",
             reference: "https://cntk.ai/pythondocs/CNTK_106B_LSTM_Timeseries_with_IOT_Data.html",
 
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "Forecast",
+            methodName: "forecast",
 
             window_len: "",
             word_len: "",
@@ -65,18 +66,26 @@ export default class CNTKLSTMForecast extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
-        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
                 this.allServices.push(rr);
                 this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
+                this.methodsForAllServices[rr] = Object.keys(items[rr]["methods"]);
             }
-        })
+        });
+        this.getServiceMethods(this.allServices[0]);
+    }
+
+    getServiceMethods(strService) {
+        this.setState({
+            serviceName: strService
+        });
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
     }
 
     handleFormUpdate(event) {
@@ -99,14 +108,14 @@ export default class CNTKLSTMForecast extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                windowLen: this.state.window_len,
-                wordLen: this.state.word_len,
-                alphabetSize: this.state.alphabet_size,
-                sourceType: this.state.source_type,
+                window_len: this.state.window_len,
+                word_len: this.state.word_len,
+                alphabet_size: this.state.alphabet_size,
+                source_type: this.state.source_type,
                 source: this.state.source,
                 contract: this.state.contract,
-                startDate: this.state.start_date,
-                endDate: this.state.end_date
+                start_date: this.state.start_date,
+                end_date: this.state.end_date
             });
     }
 
@@ -233,9 +242,9 @@ export default class CNTKLSTMForecast extends React.Component {
         let position_in_sax_interval = "\n";
 
         if (typeof this.state.response === "object") {
-            last_sax_word = this.state.response.lastSaxWord + "\n";
-            forecast_sax_letter = this.state.response.forecastSaxLetter + "\n";
-            position_in_sax_interval = this.state.response.positionInSaxInterval;
+            last_sax_word = this.state.response.last_sax_word + "\n";
+            forecast_sax_letter = this.state.response.forecast_sax_letter + "\n";
+            position_in_sax_interval = this.state.response.position_in_sax_interval;
         } else {
             status = this.state.response + "\n";
         }
