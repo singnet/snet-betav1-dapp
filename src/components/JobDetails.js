@@ -398,7 +398,7 @@ export  class Jobdetails extends React.Component {
       this.serviceState = data;
       this.setState({jobDetailsSliderOpen: true });
       this.setState({enableVoting: false})
-      this.setState({ocvalue:this.serviceState['price_in_agi']})      
+      this.setState({ocvalue:this.serviceState['price_in_agi']})
       this.setState({valueTab:0})
       this.setState({fundTabEnabled:false})
       this.setState({runjobstate:false})
@@ -412,7 +412,10 @@ export  class Jobdetails extends React.Component {
         this.watchBlocknumberTimer = setInterval(() => this.watchBlocknumber(), 500);
       }
       this.setState({runjobstate: (data["is_available"] === 1)});
-      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET)})
+        this.props.network.getCurrentBlockNumber((blockNumber) => {
+            this.currentBlockNumber = blockNumber
+            this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET)})
+        })
     }
 
   onOpenEscrowBalanceAlert() {
@@ -422,7 +425,7 @@ export  class Jobdetails extends React.Component {
   onCloseEscrowBalanceAlert() {
     this.setState({showEscrowBalanceAlert: false})
     this.onCloseJobDetailsSlider()
-    this.props.history.push("/Profile")
+    this.props.history.push("/Account")
   }
   
     render()
@@ -435,7 +438,7 @@ export  class Jobdetails extends React.Component {
                 <DAppModal open={this.state.showModal} message={this.chainMessage} showProgress={true}/>
             </div>              
             <div>
-              <DAppModal open={this.state.showEscrowBalanceAlert} message={MESSAGES.ZERO_ESCROW_BALANCE} showProgress={false} link={"/Profile"} linkText="Deposit"/>
+              <DAppModal open={this.state.showEscrowBalanceAlert} message={MESSAGES.ZERO_ESCROW_BALANCE} showProgress={false} link={"/Account"} linkText="Deposit"/>
             </div>              
             <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
             <PerfectScrollbar>
@@ -499,7 +502,7 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>                                            
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)}
                                                  disabled={true}/>
                                             </div>
                                             </div>
