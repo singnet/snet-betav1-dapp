@@ -12,12 +12,13 @@ ReactDOM.render(
   <BrowserRouter>
   <div>
    <Switch>
-  <Route path="/" component={Landingpage} exact />
-    <Route path="/Header" component ={Header}>
-    <Route path="/Account" component={Account}></Route>
-    <Route path="/GetStarted" component={GetStarted}/></Route>
+   <Route path="/" component={Landingpage} exact />
+    <Route path="/Header" component ={Header}/>
     <Route path="/sampleservices" component={SampleServices}></Route>
+    <Route path="/Account" component={Account}></Route>
     <Route path="/connectwallet" component={connectwallet}/>
+    <Route path="/GetStarted" component={GetStarted}/>
+  
   </Switch>
   </div>
   </BrowserRouter>
