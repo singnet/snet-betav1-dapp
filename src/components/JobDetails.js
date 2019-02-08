@@ -108,9 +108,8 @@ export  class Jobdetails extends React.Component {
       Promise.all([reInitialize, serviceSpec]).then(() => {
         let mpeTokenInstance = this.props.network.getMPEInstance(this.props.chainId);
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
-          balance = AGI.inAGI(balance);
-          console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
-          if (typeof balance !== 'undefined' && balance === 0) {
+          console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_cogs']);
+          if (typeof balance !== 'undefined' && parseInt(balance) === 0) {
             this.onOpenEscrowBalanceAlert();
           } 
           else {
