@@ -15,7 +15,7 @@ import BlockchainHelper from "./BlockchainHelper.js"
 import {ProfileTabContainer} from './ReactStyles.js';
 import DAppModal from './DAppModal.js'
 
-export class Profile extends Component {
+export class Account extends Component {
   constructor(props) {
     super(props)
     this.state = {
