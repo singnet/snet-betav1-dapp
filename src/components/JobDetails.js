@@ -191,9 +191,7 @@ export  class Jobdetails extends React.Component {
     }
 
     changeocvalue(e) {
-        if (e.target.value > ocvalue) {
-            this.setState({ocvalue: e.target.value})
-        }
+      this.setState({ocvalue: e.target.value})
     }
 
     changeocexpiration(e) {
@@ -393,7 +391,7 @@ export  class Jobdetails extends React.Component {
       this.serviceState = data;
       this.setState({jobDetailsSliderOpen: true });
       this.setState({enableVoting: false})
-      this.setState({ocvalue:this.serviceState['price_in_agi']})      
+      this.setState({ocvalue:this.serviceState['price_in_agi']})
       this.setState({valueTab:0})
       this.setState({fundTabEnabled:false})
       this.setState({runjobstate:false})
@@ -497,7 +495,7 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>                                            
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)}
                                                  disabled={true}/>
                                             </div>
                                             </div>
