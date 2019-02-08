@@ -9,14 +9,15 @@ export default class OpenNMTRomanceTranslator extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/nlp-services/blob/master/docs/users_guide/opennmt-romance-translator.md",
             code_repo: "https://github.com/singnet/nlp-services/blob/master/opennmt-romance-translator",
             reference: "http://forum.opennmt.net/t/training-romance-multi-way-model/86",
 
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "RomanceTranslator",
+            methodName: "translate",
 
             source_lang: "",
             target_lang: "",
@@ -58,18 +59,26 @@ export default class OpenNMTRomanceTranslator extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
-        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
                 this.allServices.push(rr);
                 this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
+                this.methodsForAllServices[rr] = Object.keys(items[rr]["methods"]);
             }
-        })
+        });
+        this.getServiceMethods(this.allServices[0]);
+    }
+
+    getServiceMethods(strService) {
+        this.setState({
+            serviceName: strService
+        });
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
     }
 
     handleFormUpdate(event) {
@@ -92,9 +101,9 @@ export default class OpenNMTRomanceTranslator extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                sourceLang: this.state.source_lang,
-                targetLang: this.state.target_lang,
-                sentencesUrl: this.state.sentences_url
+                source_lang: this.state.source_lang,
+                target_lang: this.state.target_lang,
+                sentences_url: this.state.sentences_url
             });
     }
 
