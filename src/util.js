@@ -17,7 +17,7 @@ export const MESSAGES = {
   "WAIT_FOR_BC_CALL": "Waiting for blockchain call to complete",
   "WAIT_FOR_NEW_CHANNEL": "Waiting to get a new channel",
   "WAIT_FOR_RESPONSE": "Waiting for the response",
-  "ZERO_ESCROW_BALANCE": "The balance in your escrow account is 0. Please transfer money from your wallet to the escrow account to proceed."
+  "ZERO_ESCROW_BALANCE": "You do not have any balance in your escrow account. Please transfer tokens from your wallet to the escrow account to proceed."
 };
 
 export class AGI {

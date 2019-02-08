@@ -134,12 +134,14 @@ export  class Jobdetails extends React.Component {
     }
 
     handleJobInvocation(serviceName, methodName, requestObject) {
+      this.onShowModal(MESSAGES.WAIT_FOR_MM)
       var nonce = this.channelHelper.getNonce(0);
       var msg = this.composeMessage(this.props.network.getMPEAddress(this.props.chainId), this.channelHelper.getChannelId(), nonce, this.serviceState["price_in_cogs"]);
       this.setState({grpcResponse: undefined})
       this.setState({grpcErrorOccurred: false})
       window.ethjs.personal_sign(msg, this.props.userAddress)
         .then((signed) => {
+          this.onShowModal(MESSAGES.WAIT_FOR_RESPONSE)
           var stripped = signed.substring(2, signed.length)
           var byteSig = Buffer.from(stripped, 'hex');
           let buff = new Buffer(byteSig);
@@ -481,7 +483,7 @@ export  class Jobdetails extends React.Component {
                                 <i className="up"></i>
                                 <div className="servicedetailstab">
                                 <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
-                                    <Tab disabled={(!this.state.fundTabEnabled) || valueTab === 1} label={<span className="funds-title">Fund</span>}/>
+                                    <Tab disabled={(!this.state.fundTabEnabled) || valueTab !== 0} label={<span className="funds-title">Fund</span>}/>
                                     <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
                                     <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
                                 </Tabs>
