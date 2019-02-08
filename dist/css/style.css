@@ -9278,6 +9278,17 @@ body.modal-open .modal .close {
   padding:6px 14px;
 }
 
+.message-modal {
+  position: 'center';
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 13px;
+  height: 80px;
+  width: 450px;
+  padding: 10px;
+  margin: auto;
+}
+
 .btn-tag {
   color: #0066ff;
   background-color: #fff;
