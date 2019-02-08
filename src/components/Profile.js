@@ -7,7 +7,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AGI,ERROR_UTILS,DEFAULT_GAS_PRICE, DEFAULT_GAS_ESTIMATE, getMarketplaceURL, isSupportedNetwork } from '../util';
+import { AGI,ERROR_UTILS,DEFAULT_GAS_PRICE, DEFAULT_GAS_ESTIMATE, getMarketplaceURL, isSupportedNetwork, MESSAGES } from '../util';
 import { Requests } from '../requests'
 import Header from "./Header.js";
 import Tooltip from '@material-ui/core/Tooltip';
@@ -35,7 +35,7 @@ export class Profile extends Component {
       account: '',
       extamount: 0,
       extexp: 0,
-      openchaining: false,
+      showModal: false,
       chainId: undefined,
       contractMessage: '',
       channelMessage:'',
@@ -43,6 +43,7 @@ export class Profile extends Component {
       supportedNetwork: false
     }
 
+    this.chainMessage = "";
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
     this.handleAuthorize = this.handleAuthorize.bind(this)
@@ -53,8 +54,8 @@ export class Profile extends Component {
     this.handleClaimTimeout = this.handleClaimTimeout.bind(this)
     this.Expirationchange = this.Expirationchange.bind(this)
     this.extamountchange = this.extamountchange.bind(this)
-    this.onOpenchaining = this.onOpenchaining.bind(this)
-    this.onClosechaining = this.onClosechaining.bind(this)
+    this.onShowModal = this.onShowModal.bind(this)
+    this.onCloseModal = this.onCloseModal.bind(this)
     this.handleExpansion = this.handleExpansion.bind(this)
   }
 
@@ -172,12 +173,14 @@ export class Profile extends Component {
     }
   }
 
-  onClosechaining() {
-    this.setState({ openchaining: false })
+  onCloseModal() {
+    this.chainMessage = "";
+    this.setState({ showModal: false })
   }
 
-  onOpenchaining() {
-    this.setState({ openchaining: true })
+  onShowModal(message) {
+    this.chainMessage = message;
+    this.setState({ showModal: true })
   }
 
   Expirationchange(e) {
@@ -199,7 +202,7 @@ export class Profile extends Component {
   };
 
   nextJobStep() {
-    this.onClosechaining()
+    this.onCloseModal()
   }
 
   processError(error, errorLabel) {
@@ -220,13 +223,15 @@ export class Profile extends Component {
       gas: estimatedGas,
       gasPrice: gasPrice
     });
+
+    this.onShowModal(MESSAGES.WAIT_FOR_MM);
     parameters.push((error, txnHash) => {
       if(error) {
         this.processError(error, messageField)
       }
       else {
         console.log("Txn Hash for approved transaction is : " + txnHash);
-        this.onOpenchaining();
+        this.onShowModal(MESSAGES.WAIT_FOR_TRANSACTION);
         this.network.waitForTransaction(txnHash).then(receipt => {
             if(typeof callBack !== 'undefined') {
                 callBack(caller)
@@ -493,7 +498,7 @@ export class Profile extends Component {
                             </div>
                         </div>
                         <div>
-                            <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
+                            <DAppModal open={this.state.showModal} message={this.chainMessage} showProgress={true}/>
                         </div>
                         <div className="manage-account">
                         <h3>Channel Details</h3>

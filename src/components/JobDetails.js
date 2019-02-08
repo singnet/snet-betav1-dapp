@@ -5,7 +5,7 @@ import Modal from '@material-ui/core/Modal'
 import Slide from '@material-ui/core/Slide'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
-import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET } from '../util'
+import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET, MESSAGES } from '../util'
 import {TabContainer} from './ReactStyles.js';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -32,11 +32,12 @@ export  class Jobdetails extends React.Component {
         depositopenchannelerror:'',
         valueTab:0,
         enableVoting:false,
-        openchaining:false,
+        showModal:false,
         sliderWidth:'550px',
         showEscrowBalanceAlert:false,
       };
 
+      this.chainMessage = "";
       this.serviceState = {};
       this.channelHelper = new ChannelHelper()
       this.currentBlockNumber = 0
@@ -54,8 +55,8 @@ export  class Jobdetails extends React.Component {
       this.startjob = this.startjob.bind(this);
       this.onOpenEscrowBalanceAlert = this.onOpenEscrowBalanceAlert.bind(this)
       this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this)  
-      this.onOpenchaining = this.onOpenchaining.bind(this)
-      this.onClosechaining = this.onClosechaining.bind(this)  
+      this.onShowModal = this.onShowModal.bind(this)
+      this.onCloseModal = this.onCloseModal.bind(this)  
       this.watchBlocknumberTimer = undefined;
     }
 
@@ -74,7 +75,7 @@ export  class Jobdetails extends React.Component {
     }  
 
     nextJobStep() {
-      this.onClosechaining()
+      this.onCloseModal()
       this.setState({valueTab:(this.state.valueTab + 1)})
       console.log("Job step " + this.state.valueTab);
     }
@@ -182,12 +183,14 @@ export  class Jobdetails extends React.Component {
         });
     }
 
-    onClosechaining() {
-      this.setState({openchaining:false})
+    onCloseModal() {
+      this.chainMessage = "";
+      this.setState({showModal:false});
     }
   
-    onOpenchaining() {
-      this.setState({openchaining:true})
+    onShowModal(message) {
+      this.chainMessage = message;
+      this.setState({showModal:true})
     }
 
     changeocvalue(e) {
@@ -265,6 +268,7 @@ export  class Jobdetails extends React.Component {
             estimatedGas = DEFAULT_GAS_ESTIMATE
             //this.processChannelErrors(err,"Unable to invoke the channelExtendAndAddFunds method");
           }
+          this.onShowModal(MESSAGES.WAIT_FOR_MM);
           mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
             gas: estimatedGas,
             gasPrice: gasPrice
@@ -274,7 +278,7 @@ export  class Jobdetails extends React.Component {
             }
             else {
               console.log("Channel extended and added funds is TXN Has : " + txnHash);
-              this.onOpenchaining();
+              this.onShowModal(MESSAGES.WAIT_FOR_TRANSACTION);
               this.props.network.waitForTransaction(txnHash).then(receipt => {
                   this.channelHelper.setChannelId(rrchannel["channelId"]);
                   console.log('Re using channel ' + this.channelHelper.getChannelId());
@@ -304,6 +308,7 @@ export  class Jobdetails extends React.Component {
             estimatedGas = DEFAULT_GAS_ESTIMATE
           }
 
+          this.onShowModal(MESSAGES.WAIT_FOR_MM);
           mpeInstance.openChannel(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
             gas: estimatedGas, gasPrice: gasPrice
           }, (error, txnHash) => {
@@ -312,10 +317,11 @@ export  class Jobdetails extends React.Component {
             }
             else {
               console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
-              this.onOpenchaining()
+              this.onShowModal(MESSAGES.WAIT_FOR_TRANSACTION)
               this.props.network.waitForTransaction(txnHash).then(receipt => {
                   console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.props.userAddress);
                 }).then(() => {
+                  this.onShowModal(MESSAGES.WAIT_FOR_NEW_CHANNEL);
                   this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
                 })
                 .catch((error) => {
@@ -330,7 +336,7 @@ export  class Jobdetails extends React.Component {
     processChannelErrors(error, message) {
       console.log(message + " " + error);
       this.setState({depositopenchannelerror: error})
-      this.onClosechaining();
+      this.onCloseModal();
     }
 
     getChannelDetails(mpeInstance,startingBlock, recipientaddress) {
@@ -425,10 +431,10 @@ export  class Jobdetails extends React.Component {
         return(
             <React.Fragment>
             <div>
-                <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
+                <DAppModal open={this.state.showModal} message={this.chainMessage} showProgress={true}/>
             </div>              
             <div>
-              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from your wallet to the escrow account to proceed."} showProgress={false} link={"/Profile"} linkText="Deposit"/>
+              <DAppModal open={this.state.showEscrowBalanceAlert} message={MESSAGES.ZERO_ESCROW_BALANCE} showProgress={false} link={"/Profile"} linkText="Deposit"/>
             </div>              
             <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
             <PerfectScrollbar>

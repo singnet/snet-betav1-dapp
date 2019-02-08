@@ -38,7 +38,7 @@ export default class DAppModal extends React.Component {
                                     <Link to={this.props.link}>
                                         <input className='btn btn-primary' type='button' value={this.props.linkText} />
                                     </Link> :null}
-                                </div>                                    
+                                </div>
                                 </div>
                             </Typography>
                         </React.Fragment>
