@@ -49,16 +49,16 @@ export default class BaseService extends React.Component {
             items = serviceSpec.nested;
             objects = Object.keys(serviceSpec.nested);
         }
-
         this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
                 this.allServices.push(rr);
                 this.methodsForAllServices.push(rr);
-
                 var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
+                if (methods.length > 1) {
+                    methods.unshift("Select a method");
+                }
                 this.methodsForAllServices[rr] = methods;
             }
         })
