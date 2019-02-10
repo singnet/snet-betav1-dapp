@@ -94,11 +94,6 @@ export default class ExampleService extends React.Component {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
     onKeyPressvalidator(event) {
         const keyCode = event.keyCode || event.which;
         if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
