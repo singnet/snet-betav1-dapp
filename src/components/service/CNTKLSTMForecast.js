@@ -50,7 +50,11 @@ export default class CNTKLSTMForecast extends React.Component {
             }
         }
     }
-
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+    }
     parseServiceSpec(serviceSpec) {
         const packageName = Object.keys(serviceSpec.nested).find(key =>
             typeof serviceSpec.nested[key] === "object" &&

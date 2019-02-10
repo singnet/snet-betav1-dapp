@@ -16,7 +16,11 @@ export default class MosesService extends React.Component {
     this.parseProps(props);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-
+  componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+  }
   parseProps(nextProps) {
     this.isComplete = nextProps.isComplete;
     if (this.isComplete) {
