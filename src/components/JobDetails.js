@@ -567,7 +567,7 @@ export  class Jobdetails extends React.Component {
                     </div>
                     <Typography component={ 'div'}>
                         <div className="right-panel agentdetails-sec p-3 pb-5">
-                            <div className="col-xs-12 col-sm-12 col-md-12 name no-padding">
+                            <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
                                 <h3>{this.serviceState["display_name"]} </h3>
                                 <p> {this.state.tagsall.map(rowtags =>
                                     <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
@@ -575,7 +575,7 @@ export  class Jobdetails extends React.Component {
                                     <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
                                     {this.serviceState["description"]}
                                     </div>
-                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
+                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-url">
                                     <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
                                     </div>
                                 </div>
@@ -642,7 +642,7 @@ export  class Jobdetails extends React.Component {
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
-                                        <p className="fund-details">
+                                        <div className="fund-details">
                                         {this.state.fundTabEnabled ?
                                           (typeof this.channelHelper.getChannelId() === 'undefined') ?
                                           "We will open a channel now. You should add tokens based as the number of calls you want to make. This will ensure that we dont need to perform a blockchain operation to extend a channel on every call. The default values provided are for one call."
@@ -650,7 +650,7 @@ export  class Jobdetails extends React.Component {
                                           : 
                                           "The first step in invoking the API is to open a payment channel. We will now check if a channel exists with enough funds. If a channel is found we will extend it else create a new one. This step will involve interactions with MetaMask."
                                         }
-                                        </p>
+                                        </div>
                                         </div>
                                     </TabContainer>
                                     } {(valueTab === 2 || valueTab === 1) &&
@@ -666,9 +666,10 @@ export  class Jobdetails extends React.Component {
                                         <div className="row">
                                          <p></p>
                                          {(valueTab === 2) ?
-                                          <p className="fund-details">Your request has been completed. You can now vote for the agent below.
-                                          </p> :
-                                          <p className="fund-details">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
+                                          <div className="fund-details">Your request has been completed. You can now vote for the agent below.
+                                          </div> :
+                                          <div className="fund-details">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.
+                                          </div>
                                          }
                                           </div>
                                       </TabContainer>}
