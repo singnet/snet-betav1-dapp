@@ -40,11 +40,7 @@ export default class SampleServices {
     generateUniqueID(orgId,serviceId) {
         return orgId + "__$%^^%$__" + serviceId;
     }
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
+
     getComponent(orgId, serviceId) {
         let component = this.serviceOrgIDToComponent[this.generateUniqueID(orgId, serviceId)];
         if(typeof component === 'undefined') {
