@@ -77,6 +77,19 @@ export default class ChannelHelper {
     return this.recipient;
   }
 
+  setNonce(newNonce) {
+    let channels = this.getChannels();
+    for(let ii=0; ii < channels.length; ii++) {
+      var rrchannels = channels[ii];
+      if (rrchannels["channelId"] === this.channelId)
+      {
+        rrchannels["nonce"] = newNonce;
+        console.log("Setting nonce for channel " + this.channelId + " to " + rrchannels["nonce"]);
+        break;
+      }
+    }
+  }
+
   getNonce(defaultValue) {
     let nonce = defaultValue;
     let channels = this.getChannels();

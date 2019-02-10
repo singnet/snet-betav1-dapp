@@ -131,18 +131,21 @@ export  class Jobdetails extends React.Component {
       return new Promise(function(resolve, reject) {
         grpcRequest(serviceObject, methodName, requestObject)
         .then(response => {
-          let buffer = Buffer.from(response.currentNonce);
-          console.log("Nonce " + buffer.readUIntBE(0, response.currentNonce.length));
-
           if(typeof response.currentSignedAmount !== 'undefined') {
             console.log("Setting currentSignedAmount " + response.currentSignedAmount);
             let buffer = Buffer.from(response.currentSignedAmount);
             const currentSignedAmount = buffer.readUIntBE(0, response.currentSignedAmount.length);
             if(typeof currentSignedAmount !== 'undefined') {
               caller.channelHelper.setCurrentSignedAmount(currentSignedAmount);
+
+              const nonceBuffer = Buffer.from(response.currentNonce);
+              caller.channelHelper.setNonce(nonceBuffer.readUIntBE(0, response.currentNonce.length));
+              console.log("Nonce " + nonceBuffer.readUIntBE(0, response.currentNonce.length));
             }
+            resolve(true);
+          } else {
+            resolve(false);
           }
-          resolve(true);
         })
         .catch((err) => {
           console.log("GRPC call failed with error " + err);
