@@ -11388,10 +11388,19 @@ h1 {
       text-decoration: underline;
   } 
 
-.job-details-text {
+  .job-details-text {
+    font-size: 14px;
+    line-height: 18px;
+    padding: 0 10px;
+  }
+
+.fund-details {
   font-size: 14px;
-  line-height: 18px;
-  padding: 0 10px;
+  font-weight: bold;
+  line-height: 20px;
+  padding: 12px 10px;
+  background-color: #f2f6fc;
+  border: 1px solid #f2f6fc;
 }
 
 .job-details-error-text {

@@ -17,7 +17,8 @@ export const MESSAGES = {
   "WAIT_FOR_BC_CALL": "Waiting for blockchain call to complete",
   "WAIT_FOR_NEW_CHANNEL": "Waiting to get a new channel",
   "WAIT_FOR_RESPONSE": "Waiting for the response",
-  "ZERO_ESCROW_BALANCE": "You do not have any balance in your escrow account. Please transfer tokens from your wallet to the escrow account to proceed."
+  "ZERO_ESCROW_BALANCE": "You do not have any balance in your escrow account. Please transfer tokens from your wallet to the escrow account to proceed.",
+  "WAIT_FOR_CHANNEL_STATE": "Checking if the channel has balance for this call"
 };
 
 export class AGI {
@@ -148,4 +149,4 @@ export function isSupportedNetwork(chainId) {
   return true;
 }
 
-export const BLOCK_OFFSET = 1680 //# Approximately blocks generated in 30 minutes
+export const BLOCK_OFFSET = 80640 //# Approximately blocks generated in 30 minutes
