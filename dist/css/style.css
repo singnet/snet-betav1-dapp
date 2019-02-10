@@ -11550,7 +11550,6 @@ i {
 .sidebar {
 position: absolute;
   background: white;
-  border-radius: 3px;
   border: 5px;
   color: white;
   height: 100%;
@@ -11578,6 +11577,7 @@ position: absolute;
   padding: 15px 0;
   border-bottom: 1px solid #dee2e6;
   margin: 0;
+  background: #fff;
 }
 
 .vote-like {
@@ -12147,7 +12147,6 @@ position: absolute;
   .sidebar {
     position: absolute;
     background: white;
-    border-radius: 3px;
     border: 5px;
     color: white;
     height: 100%;
