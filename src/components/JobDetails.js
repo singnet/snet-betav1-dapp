@@ -170,6 +170,7 @@ export  class Jobdetails extends React.Component {
 
     handleChannel(balance, channelAvailable,thresholdBlockNumber) {
       console.log("Got channel " + channelAvailable);
+      this.onCloseModal();
       let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
       if(channelAvailable) {
         const channelAmount = parseInt(this.channelHelper.getCurrentSignedAmount()) + 
@@ -205,16 +206,18 @@ export  class Jobdetails extends React.Component {
             return;
           }
           
-          const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET;
-          let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, suggstedExpiration);
+          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
+          let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, threshold);
           if (foundChannel) {
+            this.onShowModal(MESSAGES.WAIT_FOR_MM);
             //We have a channel, lets check if this channel can make this call by getting the channel service state
             //from the daemon. The daemon will return the last amount which was signed by client
             var msg = this.composeSHA3Message(["uint256"],[this.channelHelper.getChannelId()]);
             window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
             .then((signed) => {
+              this.onShowModal(MESSAGES.WAIT_FOR_CHANNEL_STATE);
               this.fetchChannelState(signed).then(channelAvailable => 
-                this.handleChannel(balance, channelAvailable, suggstedExpiration));
+                this.handleChannel(balance, channelAvailable, threshold));
             }).catch(error => {
               this.processChannelErrors(error);
               this.setState({fundTabEnabled: false});
@@ -261,7 +264,7 @@ export  class Jobdetails extends React.Component {
             hasOwnDefinedProperty(this.serviceSpecJSON.nested[key], "nested")
           )
           var endpointgetter = this.channelHelper.getEndpoint();
-          console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + " endpoint " + endpointgetter + " request " + JSON.stringify(requestObject));
+          console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + " endpoint " + endpointgetter);
           if (!endpointgetter.startsWith("http")) {
             endpointgetter = "http://" + endpointgetter;
           }
@@ -341,7 +344,7 @@ export  class Jobdetails extends React.Component {
             this.channelExtend(mpeInstance, selectedChannel, amountInCogs);
           } 
           else {
-            console.log("No Channel found to going to deposit from MPE and open a channel");
+            console.log("No Channel found to going to deposit from MPE and open a channel");            
             this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
           }
         }
@@ -352,6 +355,15 @@ export  class Jobdetails extends React.Component {
   }
 
     channelExtend(mpeInstance, rrchannel, amountInCogs) {
+      const channelAmount = parseInt(this.channelHelper.getCurrentSignedAmount()) + 
+                            parseInt(this.serviceState["price_in_cogs"]);
+      const newBalance = parseInt(rrchannel['balance_in_cogs']) + amountInCogs;
+      console.log("Channel " + channelAmount + " New Balance " + newBalance);
+      if( newBalance < channelAmount) {
+        this.processChannelErrors("Add " + AGI.inAGI(channelAmount - newBalance) + " or more tokens to the channel to allow this call. The channel has " + AGI.inAGI(rrchannel['balance_in_cogs'] - this.channelHelper.getCurrentSignedAmount()) + " available tokens currently");
+        return;
+      }
+
       web3.eth.getGasPrice((err, gasPrice) => {
         if(err) {
           gasPrice = DEFAULT_GAS_PRICE;
@@ -389,6 +401,11 @@ export  class Jobdetails extends React.Component {
     }
 
     channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
+      if(amountInCogs < this.serviceState['price_in_cogs']) {
+        this.processChannelErrors("Amount added should be greater than " + this.serviceState['price_in_cogs']);
+        return;
+      }
+
       var startingBlock = this.currentBlockNumber;
       console.log("Reading events from " + startingBlock);
 
@@ -551,7 +568,7 @@ export  class Jobdetails extends React.Component {
                                 <h3>{this.serviceState["display_name"]} </h3>
                                 <p> {this.state.tagsall.map(rowtags =>
                                     <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
-                                <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
+                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
                                     <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
                                     {this.serviceState["description"]}
                                     </div>
@@ -622,8 +639,14 @@ export  class Jobdetails extends React.Component {
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
-                                        <p className="job-details-text">
-                                        The first step in invoking the API is to open a payment channel. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a new channel. This will prompt an interaction with Metamask to initiate a transaction.
+                                        <p className="fund-details">
+                                        {this.state.fundTabEnabled ?
+                                          (typeof this.channelHelper.getChannelId() === 'undefined') ?
+                                          "We will open a channel now. You should add tokens based as the number of calls you want to make. This will ensure that we dont need to perform a blockchain operation to extend a channel on every call. The default values provided are for one call."
+                                          : "We will extend the existing channel.You should add tokens based as the number of calls you want to make. This will ensure that we dont need to perform a blockchain operation to extend a channel on every call. The default values provided are for one call."
+                                          : 
+                                          "The first step in invoking the API is to open a payment channel. We will now check if a channel exists with enough funds. If a channel is found we will extend it else create a new one. This step will involve interactions with MetaMask."
+                                        }
                                         </p>
                                         </div>
                                     </TabContainer>
@@ -640,9 +663,9 @@ export  class Jobdetails extends React.Component {
                                         <div className="row">
                                          <p></p>
                                          {(valueTab === 2) ?
-                                          <p className="job-details-text">Your request has been completed. You can now vote for the agent below.
+                                          <p className="fund-details">Your request has been completed. You can now vote for the agent below.
                                           </p> :
-                                          <p className="job-details-text">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
+                                          <p className="fund-details">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
                                          }
                                           </div>
                                       </TabContainer>}

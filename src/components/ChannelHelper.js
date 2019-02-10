@@ -152,7 +152,7 @@ export default class ChannelHelper {
         for(let ii=0; ii < this.channels.length; ii++) {
           var rrchannels = this.channels[ii];
           if (parseInt(rrchannels["balance_in_cogs"]) >= parseInt(data["price_in_cogs"]) 
-              && parseInt(rrchannels["expiration"]) >= thresholdBlockNumber)
+              && parseInt(rrchannels["expiration"]) >= parseInt(thresholdBlockNumber))
           {
             console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
             console.log("Setting channel ID to " + rrchannels["channelId"]);
