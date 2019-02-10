@@ -12,6 +12,7 @@ import Zeta36ChessAlphaZero from './Zeta36ChessAlphaZero.js';
 import NamedEntityRecognitionService from "./NamedEntityRecognitionService.js";
 import SentimentAnalysisService from "./SentimentAnalysisService";
 import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
+import VisualQAOpencog from './VisualQAOpencog.js';
 import MosesService from "./MosesService";
 
 import DefaultService from './DefaultService.js';
@@ -29,6 +30,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "s2vt-video-captioning")] = S2VTVideoCaptioning;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "yolov3-object-detection")] = YOLOv3ObjectDetection;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "zeta36-chess-alpha-zero")] = Zeta36ChessAlphaZero;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "opencog-vqa")] = VisualQAOpencog;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition")] = NamedEntityRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
@@ -46,6 +48,7 @@ export default class SampleServices {
         if(typeof component === 'undefined') {
             component = DefaultService;
         }
+
 
         return component;
     }
