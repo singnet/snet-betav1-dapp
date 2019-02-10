@@ -11,9 +11,8 @@ import Typography from "@material-ui/core/Typography";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import BaseService from "./BaseService";
 
-export default class NamedEntityRecognitionService extends BaseService {
+export default class NamedEntityRecognitionService extends React.Component {
 
     constructor(props) {
         super(props);
@@ -59,8 +58,36 @@ export default class NamedEntityRecognitionService extends BaseService {
             }
         }
     }
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+    }
+    parseServiceSpec(serviceSpec) {
+        const packageName = Object.keys(serviceSpec.nested).find(key =>
+            typeof serviceSpec.nested[key] === "object" &&
+            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
 
+        var objects = undefined;
+        var items = undefined;
+        if (typeof packageName !== 'undefined') {
+            items = serviceSpec.lookup(packageName);
+            objects = Object.keys(items);
+        } else {
+            items = serviceSpec.nested;
+            objects = Object.keys(serviceSpec.nested);
+        }
 
+        this.methodsForAllServices = [];
+        objects.map(rr => {
+            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
+                this.allServices.push(rr);
+                this.methodsForAllServices.push(rr);
+                var methods = Object.keys(items[rr]["methods"]);
+                this.methodsForAllServices[rr] = methods;
+            }
+        });
+    }
 
     handleFormUpdate(event) {
         console.log(event.target);
