@@ -11388,11 +11388,12 @@ h1 {
       text-decoration: underline;
   } 
 
-.job-details-text {
-  font-size: 14px;
-  line-height: 18px;
-  padding: 0 10px;
-}
+  .job-details-text {
+    font-family: 'Muli', sans-serif !important;
+    font-size: 14px;
+    line-height: 20px;
+    padding: 5px 3px;
+  }
 
 .job-details-error-text {
   font-size: 12px;
@@ -11550,7 +11551,6 @@ i {
 .sidebar {
 position: absolute;
   background: white;
-  border-radius: 3px;
   border: 5px;
   color: white;
   height: 100%;
@@ -11578,6 +11578,7 @@ position: absolute;
   padding: 15px 0;
   border-bottom: 1px solid #dee2e6;
   margin: 0;
+  background: #fff;
 }
 
 .vote-like {
@@ -11598,6 +11599,22 @@ position: absolute;
   margin: 0;
   padding: 15px 0;
   border-bottom: 1px solid #dee2e6;
+}
+
+.fund-details {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 20px;
+  padding: 12px 10px;
+  background-color: #f2f6fc;
+  border: 1px solid #f2f6fc;
+}
+
+.job-details-url {
+  font-size: 14px;
+  margin: 0;
+  padding: 15px 0;
+  border-bottom: 2px solid #dee2e6;
 }
 
 .agenthealth{
@@ -12147,7 +12164,6 @@ position: absolute;
   .sidebar {
     position: absolute;
     background: white;
-    border-radius: 3px;
     border: 5px;
     color: white;
     height: 100%;

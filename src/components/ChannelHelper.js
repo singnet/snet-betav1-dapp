@@ -1,4 +1,4 @@
-import { AGI, base64ToHex, BLOCK_OFFSET } from '../util'
+import { base64ToHex } from '../util'
 import { Requests } from '../requests'
 
 export default class ChannelHelper {
@@ -6,8 +6,9 @@ export default class ChannelHelper {
     this.channels = undefined;
     this.groupId = undefined;
     this.endpoint = undefined;
-    this.channelId = undefined;    
+    this.channelId = undefined;
     this.recipient = undefined;
+    this.currentSignedAmount = 0;
   }
 
   reInitialize(channelInfoUrl) {
@@ -16,7 +17,16 @@ export default class ChannelHelper {
     this.endpoint = undefined;
     this.channelId = undefined;
     this.recipient = undefined;
+    this.currentSignedAmount = 0;
     return this.fetchChannels(channelInfoUrl);
+  }
+
+  setCurrentSignedAmount(amount) {
+    this.currentSignedAmount = amount;
+  }
+
+  getCurrentSignedAmount() {
+    return this.currentSignedAmount;
   }
 
   getChannelId() {
@@ -38,26 +48,51 @@ export default class ChannelHelper {
     return this.endpoint[0];
   }
 
+  getChannel(channelId) {
+    let channels = this.getChannels();
+    for(let ii=0; ii < channels.length; ii++) {
+      if (channels[ii]["channelId"] === channelId)
+      {
+        return channels[ii];
+      }
+    }
+    return undefined;
+  }
+
   getExpiryBlock() {
-    let channels = this.getChannels();    
+    let channels = this.getChannels();
+    let expiryBlock = 0;
     for(let ii=0; ii < channels.length; ii++) {
       var rrchannels = channels[ii];
       if (rrchannels["channelId"] === this.channelId)
       {
-        nonce = rrchannels["expiration"];
+        expiryBlock = rrchannels["expiration"];
         break;
       }
     }
-    return nonce;
+    return expiryBlock;
   }
 
   getRecipient() {
     return this.recipient;
   }
 
+  setNonce(newNonce) {
+    let channels = this.getChannels();
+    for(let ii=0; ii < channels.length; ii++) {
+      var rrchannels = channels[ii];
+      if (rrchannels["channelId"] === this.channelId)
+      {
+        rrchannels["nonce"] = newNonce;
+        console.log("Setting nonce for channel " + this.channelId + " to " + rrchannels["nonce"]);
+        break;
+      }
+    }
+  }
+
   getNonce(defaultValue) {
     let nonce = defaultValue;
-    let channels = this.getChannels();    
+    let channels = this.getChannels();
     for(let ii=0; ii < channels.length; ii++) {
       var rrchannels = channels[ii];
       if (rrchannels["channelId"] === this.channelId)
@@ -96,6 +131,7 @@ export default class ChannelHelper {
     this.endpoint = channels[0]["endpoint"]
     this.groupId = channels[0]["groupId"];
     this.recipient = channels[0]["recipient"];
+    console.log("Populated channels");
   }
 
   matchEvent(evt, result, senderAddress, groupidgetter, recipientaddress) {
@@ -120,7 +156,7 @@ export default class ChannelHelper {
     }
   }
 
-  findChannelWithBalance(data, currentBlockNumber) {
+  findExistingChannel(data, thresholdBlockNumber) {
     if (typeof this.channels !== 'undefined')
     {
       console.log('channel state information is ' +  this.groupId);
@@ -128,8 +164,8 @@ export default class ChannelHelper {
       {
         for(let ii=0; ii < this.channels.length; ii++) {
           var rrchannels = this.channels[ii];
-          if (parseInt(rrchannels["balance_in_cogs"]) >= parseInt(data["price_in_cogs"])) 
-              //&& parseInt(rrchannels["expiration"]) >= (currentBlockNumber + BLOCK_OFFSET))
+          if (parseInt(rrchannels["balance_in_cogs"]) >= parseInt(data["price_in_cogs"]) 
+              && parseInt(rrchannels["expiration"]) >= parseInt(thresholdBlockNumber))
           {
             console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));
             console.log("Setting channel ID to " + rrchannels["channelId"]);
@@ -137,6 +173,9 @@ export default class ChannelHelper {
             return true;
           }  
         }
+
+        this.channelId = this.channels[0]["channelId"]; 
+        return true; 
       }
     }
     console.log("Did not find a channel with adequate funds");
