@@ -493,6 +493,7 @@ export default class SNETImageUpload extends React.Component {
                             style={{
                                 width: "80%",
                                 primary: this.mainColor,
+                                textAlign: "left",
                             }}
                             variant="outlined"
                             type="text"
