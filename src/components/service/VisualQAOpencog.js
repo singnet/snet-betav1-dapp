@@ -1,29 +1,29 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util';
+import {hasOwnDefinedProperty} from '../../util'
 import Button from '@material-ui/core/Button';
+import SNETImageUpload from "./standardComponents/SNETImageUpload";
 
-export default class CNTKNextDayTrend extends React.Component {
+
+export default class VisualQAOpencog extends React.Component {
 
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
-        this.getServiceMethods = this.getServiceMethods.bind(this);
+	this.getImageData = this.getImageData.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/time-series-analysis/blob/master/docs/users_guide/finance/cntk-next-day-trend.md",
-            code_repo: "https://github.com/singnet/time-series-analysis/blob/master/finance/cntk-next-day-trend",
-            reference: "https://cntk.ai/pythondocs/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy.html",
+            users_guide: "https://github.com/singnet/semantic-vision/tree/master/services/vqa-service",
+            code_repo: "https://github.com/singnet/semantic-vision/tree/master/services/vqa-service",
+            reference: "https://github.com/singnet/semantic-vision",
 
-            serviceName: "NextDayTrend",
-            methodName: "trend",
+            serviceName: undefined,
+            methodName: undefined,
 
-            source: "",
-            contract: "",
-            start: "",
-            end: "",
-            target_date: "",
+            imageData: undefined,
+            question: "",
+	    use_pm: false,
 
             response: undefined
         };
@@ -45,11 +45,7 @@ export default class CNTKNextDayTrend extends React.Component {
             }
         }
     }
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
+
     parseServiceSpec(serviceSpec) {
         const packageName = Object.keys(serviceSpec.nested).find(key =>
             typeof serviceSpec.nested[key] === "object" &&
@@ -65,26 +61,18 @@ export default class CNTKNextDayTrend extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
+        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
                 this.allServices.push(rr);
                 this.methodsForAllServices.push(rr);
-                this.methodsForAllServices[rr] = Object.keys(items[rr]["methods"]);
-            }
-        });
-        this.getServiceMethods(this.allServices[0]);
-    }
 
-    getServiceMethods(strService) {
-        this.setState({
-            serviceName: strService
-        });
-        var data = this.methodsForAllServices[strService];
-        if (typeof data === 'undefined') {
-            data = [];
-        }
-        this.serviceMethods = data;
+                var methods = Object.keys(items[rr]["methods"]);
+                methods.unshift("Select a method");
+                this.methodsForAllServices[rr] = methods;
+            }
+        })
     }
 
     handleFormUpdate(event) {
@@ -104,14 +92,16 @@ export default class CNTKNextDayTrend extends React.Component {
         this.serviceMethods = data;
     }
 
-    submitAction() {
+    getImageData(imgData) {
+	this.state.imageData = imgData;
+    }
+
+    submitAction(){
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                source: this.state.source,
-                contract: this.state.contract,
-                start: this.state.start,
-                end: this.state.end,
-                target_date: this.state.target_date
+                image_data: this.state.imageData,
+                use_pm: this.state.use_pm,
+		question: this.state.question
             });
     }
 
@@ -140,56 +130,44 @@ export default class CNTKNextDayTrend extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Source</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="source" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.source} onChange={this.handleFormUpdate}></input>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Use pattern matcher or URE</div>
+                    <div className="col-md-3 col-lg-3">
+                        <select name="use_pm"
+                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                                onChange={this.handleFormUpdate}>
+                                <option value={true}>pattern matcher</option>
+                                <option value={false}>URE</option>
+                        </select>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Contract</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Image URL</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="contract" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.contract} onChange={this.handleFormUpdate}></input>
+	             <div>
+                           <SNETImageUpload imageDataFunc={this.getImageData} disableUrlTab={true} returnByteArray={true}/>
+                      </div>
+
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Start Date</div>
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Question</div>
                     <div className="col-md-3 col-lg-2">
-                        <input name="start" type="text"
+                        <input name="question" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.start} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>End Date</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="end" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.end} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Target Date</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="target_date" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.target_date} onChange={this.handleFormUpdate}></input>
+                               onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button target="_blank" href={this.state.users_guide}
+                        <Button href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button target="_blank" href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button target="_blank" href={this.state.reference}
+                        <Button href={this.state.reference}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>
@@ -204,10 +182,16 @@ export default class CNTKNextDayTrend extends React.Component {
 
     renderComplete() {
         let status = "Ok\n";
-        let trend = "\n";
-
+        let top_5 = "\n";
+        let delta_time = "\n";
+        let answer = "\n";
         if (typeof this.state.response === "object") {
-            trend = this.state.response.response;
+            delta_time = this.state.response.deltaTime + "s\n";
+	    if (this.state.response.ok) {
+	        answer = "answer " + this.state.response.answer;
+	    } else {
+		answer = "Request failed with " + this.state.response.error_message;
+	    }
         } else {
             status = this.state.response + "\n";
         }
@@ -215,8 +199,9 @@ export default class CNTKNextDayTrend extends React.Component {
             <div>
                 <p style={{fontSize: "13px"}}>Response from service is: </p>
                 <pre>
-                    Status: {status}
-                    Trend : {trend}
+                    Status : {status}
+                    Time   : {delta_time}
+                    {answer}
                 </pre>
             </div>
         );

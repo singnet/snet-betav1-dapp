@@ -205,6 +205,10 @@ class SampleServices extends React.Component {
           this.setState({agents: values[0].data})
         }   
       }
+      //Do this the first time the page gets loaded.
+        this.setState({
+            togglehealth: false
+        })
         this.handlehealthsort() }
     ).catch((err)=> console.log(err))
 
@@ -236,7 +240,6 @@ class SampleServices extends React.Component {
     let arraylimit = this.state.agents.length
 
     let agentsample = this.state.agents
-    console.log("Size of search results " + this.state.searchResults.length)
     if (this.state.searchTerm != '' || this.state.searchResults.length > 0) {
       agentsample = this.state.searchResults
       arraylimit = this.state.searchResults.length

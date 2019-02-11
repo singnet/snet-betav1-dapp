@@ -5,7 +5,7 @@ import Modal from '@material-ui/core/Modal'
 import Slide from '@material-ui/core/Slide'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
-import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET } from '../util'
+import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET, MESSAGES } from '../util'
 import {TabContainer} from './ReactStyles.js';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -15,7 +15,7 @@ import { Root } from 'protobufjs'
 import Vote from './Vote.js';
 import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
-
+import {serviceStateJSON} from '../service_state'
 
 export  class Jobdetails extends React.Component {
     constructor() {
@@ -32,15 +32,16 @@ export  class Jobdetails extends React.Component {
         depositopenchannelerror:'',
         valueTab:0,
         enableVoting:false,
-        openchaining:false,
+        showModal:false,
         sliderWidth:'550px',
         showEscrowBalanceAlert:false,
       };
 
+      this.chainMessage = "";
       this.serviceState = {};
-      this.channelHelper = new ChannelHelper()
-      this.currentBlockNumber = 0
-      this.serviceSpecJSON = undefined  
+      this.channelHelper = new ChannelHelper();
+      this.currentBlockNumber = 0;
+      this.serviceSpecJSON = undefined;
       this.serviceMappings = new ServiceMappings();
       this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
       this.handleChangeTabs = this.handleChangeTabs.bind(this);
@@ -50,17 +51,16 @@ export  class Jobdetails extends React.Component {
       this.changeocvalue = this.changeocvalue.bind(this);
       this.changeocexpiration = this.changeocexpiration.bind(this);
       this.openchannelhandler = this.openchannelhandler.bind(this);
-      this.handleJobInvocation = this.handleJobInvocation.bind(this);      
+      this.handleJobInvocation = this.handleJobInvocation.bind(this);
       this.startjob = this.startjob.bind(this);
       this.onOpenEscrowBalanceAlert = this.onOpenEscrowBalanceAlert.bind(this)
       this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this)  
-      this.onOpenchaining = this.onOpenchaining.bind(this)
-      this.onClosechaining = this.onClosechaining.bind(this)  
+      this.onShowModal = this.onShowModal.bind(this)
+      this.onCloseModal = this.onCloseModal.bind(this)  
       this.watchBlocknumberTimer = undefined;
     }
 
     watchBlocknumber() {
-      //Update blocknumber
       this.props.network.getCurrentBlockNumber((blockNumber) => {
         this.currentBlockNumber = blockNumber
       })
@@ -74,12 +74,12 @@ export  class Jobdetails extends React.Component {
     }  
 
     nextJobStep() {
-      this.onClosechaining()
+      this.onCloseModal()
       this.setState({valueTab:(this.state.valueTab + 1)})
-      console.log("Job step " + this.state.valueTab);
     }
 
     reInitializeJobState() {
+      this.setState({depositopenchannelerror: ""})
       this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)})
       this.setState({ocvalue:this.serviceState['price_in_agi']})
       const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
@@ -96,9 +96,106 @@ export  class Jobdetails extends React.Component {
       return fetch(encodeURI(_urlservicebuf))
         .then(serviceSpecResponse => serviceSpecResponse.json())
         .then(serviceSpec => new Promise(function(resolve) {
-          caller.serviceSpecJSON = Root.fromJSON(serviceSpec[0])
+          caller.serviceSpecJSON = Root.fromJSON(serviceSpec[0]);
           resolve();
         }));
+    }
+
+    composeSHA3Message(types,values) {
+      var ethereumjsabi = require('ethereumjs-abi');
+      var sha3Message = ethereumjsabi.soliditySHA3(types, values);
+      var msg = "0x" + sha3Message.toString("hex");
+      return msg;
+    }
+
+    fetchChannelState(signed) {
+      console.log("Found an existing channel " + JSON.stringify(this.serviceState));
+      
+      var caller = this;
+      var stripped = signed.substring(2, signed.length)
+      var byteSig = new Buffer(Buffer.from(stripped, 'hex'));
+      console.log(byteSig.toString('base64'))
+      const byteschannelID = Buffer.alloc(4);
+      byteschannelID.writeUInt32BE(this.channelHelper.getChannelId(), 0);
+
+      let requestObject   = ({"channelId":byteschannelID, "signature":byteSig})
+      const requestHeaders = {}
+
+      const packageName = 'escrow'
+      const serviceName = 'PaymentChannelStateService'
+      const methodName = 'GetChannelState'
+
+      const Service = Root.fromJSON(serviceStateJSON).lookup(serviceName);
+      const serviceObject = Service.create(rpcImpl(this.channelHelper.getEndpoint(), packageName, serviceName, methodName, requestHeaders), false, false)
+
+      return new Promise(function(resolve, reject) {
+        grpcRequest(serviceObject, methodName, requestObject)
+        .then(response => {
+          if(typeof response.currentSignedAmount !== 'undefined') {
+            console.log("Setting currentSignedAmount " + response.currentSignedAmount);
+            let buffer = Buffer.from(response.currentSignedAmount);
+            const currentSignedAmount = buffer.readUIntBE(0, response.currentSignedAmount.length);
+            if(typeof currentSignedAmount !== 'undefined') {
+              caller.channelHelper.setCurrentSignedAmount(currentSignedAmount);
+
+              const nonceBuffer = Buffer.from(response.currentNonce);
+              caller.channelHelper.setNonce(nonceBuffer.readUIntBE(0, response.currentNonce.length));
+              console.log("Nonce " + nonceBuffer.readUIntBE(0, response.currentNonce.length));
+            }
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        })
+        .catch((err) => {
+          console.log("GRPC call failed with error " + err);
+          resolve(false);
+        })
+      });
+    }
+
+    seedDefaultValues(enableFundTab, valueTabIndex) {
+      const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET;
+      this.setState({ocexpiration: suggstedExpiration});
+      this.setState({ocvalue: this.serviceState['price_in_agi']});
+      this.setState({fundTabEnabled: enableFundTab});
+      this.setState({valueTab: valueTabIndex});
+    }
+
+    handleNewChannel(balance) {
+      if (typeof balance !== 'undefined' && balance === 0) {
+        this.onOpenEscrowBalanceAlert();
+      } 
+      else {
+        this.seedDefaultValues(true,0);
+      }
+    }
+
+    handleChannel(balance, channelAvailable,thresholdBlockNumber) {
+      console.log("Got channel " + channelAvailable);
+      this.onCloseModal();
+      let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
+      if(channelAvailable) {
+        const channelAmount = parseInt(this.channelHelper.getCurrentSignedAmount()) + 
+                              parseInt(this.serviceState["price_in_cogs"]);
+        if (parseInt(selectedChannel["balance_in_cogs"]) >= channelAmount 
+          && parseInt(selectedChannel["expiration"]) >= thresholdBlockNumber) {
+            this.seedDefaultValues(true, 1);
+        }
+        else {
+          this.seedDefaultValues(true, 0);
+          const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET;
+          console.log(suggstedExpiration + " " + this.channelHelper.getExpiryBlock())
+          if(this.channelHelper.getExpiryBlock() > suggstedExpiration) {
+            this.setState({ocexpiration: this.channelHelper.getExpiryBlock()});
+          }
+        }
+      } 
+      else {
+        //We couldnt find a usable channel so create a new one
+        this.channelHelper.setChannelId(undefined);
+        this.handleNewChannel(balance);
+      }
     }
 
     startjob() {
@@ -107,48 +204,60 @@ export  class Jobdetails extends React.Component {
       Promise.all([reInitialize, serviceSpec]).then(() => {
         let mpeTokenInstance = this.props.network.getMPEInstance(this.props.chainId);
         mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
-          balance = AGI.inAGI(balance);
-          console.log("In start job Balance is " + balance + " job cost is " + this.serviceState['price_in_agi']);
-          if (typeof balance !== 'undefined' && balance === 0) {
-            this.onOpenEscrowBalanceAlert();
+          if(err) {
+            this.processChannelErrors("Unable to retrieve balance. Please retry with a higher gas")
+            return;
+          }
+          
+          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
+          let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, threshold);
+          if (foundChannel) {
+            this.onShowModal(MESSAGES.WAIT_FOR_MM);
+            //We have a channel, lets check if this channel can make this call by getting the channel service state
+            //from the daemon. The daemon will return the last amount which was signed by client
+            var msg = this.composeSHA3Message(["uint256"],[this.channelHelper.getChannelId()]);
+            window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
+            .then((signed) => {
+              this.onShowModal(MESSAGES.WAIT_FOR_CHANNEL_STATE);
+              this.fetchChannelState(signed).then(channelAvailable => 
+                this.handleChannel(balance, channelAvailable, threshold));
+            }).catch(error => {
+              this.processChannelErrors(error);
+              this.setState({fundTabEnabled: false});
+            });
           } 
           else {
-            //console.log("Checking channels " + JSON.stringify(this.channelHelper));
-            this.setState({ocexpiration: (this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)});
-            this.setState({ocvalue: this.serviceState['price_in_agi']});
-            this.setState({fundTabEnabled: true});
-            this.setState({valueTab: 0});
+            this.handleNewChannel(balance);
           }
         });
       });
     }
 
-    composeMessage(contract, channelID, nonce, price) {
-      var ethereumjsabi = require('ethereumjs-abi');
-      var sha3Message = ethereumjsabi.soliditySHA3(
-        ["address", "uint256", "uint256", "uint256"],
-        [contract, parseInt(channelID), parseInt(nonce), parseInt(price)]);
-      var msg = "0x" + sha3Message.toString("hex");
-      return msg;
-    }
-
     handleJobInvocation(serviceName, methodName, requestObject) {
+      this.onShowModal(MESSAGES.WAIT_FOR_MM)
       var nonce = this.channelHelper.getNonce(0);
-      var msg = this.composeMessage(this.props.network.getMPEAddress(this.props.chainId), this.channelHelper.getChannelId(), nonce, this.serviceState["price_in_cogs"]);
+      let channelPrice = parseInt(this.serviceState["price_in_cogs"]) + 
+                         parseInt(this.channelHelper.getCurrentSignedAmount());
+
+      var msg = this.composeSHA3Message(["address", "uint256", "uint256", "uint256"],
+      [this.props.network.getMPEAddress(this.props.chainId), parseInt(this.channelHelper.getChannelId()), parseInt(nonce), parseInt(channelPrice)]);
+
       this.setState({grpcResponse: undefined})
       this.setState({grpcErrorOccurred: false})
+      
       window.ethjs.personal_sign(msg, this.props.userAddress)
         .then((signed) => {
+          this.onShowModal(MESSAGES.WAIT_FOR_RESPONSE)
           var stripped = signed.substring(2, signed.length)
           var byteSig = Buffer.from(stripped, 'hex');
           let buff = new Buffer(byteSig);
           let base64data = buff.toString('base64')
-          console.log("Using signature " + base64data)
+
           const requestHeaders = {
             "snet-payment-type": "escrow",
             "snet-payment-channel-id": parseInt(this.channelHelper.getChannelId()),
             "snet-payment-channel-nonce": parseInt(nonce),
-            "snet-payment-channel-amount": parseInt(this.serviceState["price_in_cogs"]),
+            "snet-payment-channel-amount": channelPrice,
             "snet-payment-channel-signature-bin": base64data
           }
 
@@ -158,10 +267,11 @@ export  class Jobdetails extends React.Component {
             hasOwnDefinedProperty(this.serviceSpecJSON.nested[key], "nested")
           )
           var endpointgetter = this.channelHelper.getEndpoint();
-          console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + " endpoint " + endpointgetter + " request " + JSON.stringify(requestObject));
+          console.log("Invoking service with package " + packageName + " serviceName " + serviceName + " methodName " + methodName + " endpoint " + endpointgetter);
           if (!endpointgetter.startsWith("http")) {
             endpointgetter = "http://" + endpointgetter;
           }
+
           const Service = this.serviceSpecJSON.lookup(serviceName)
           const serviceObject = Service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
           grpcRequest(serviceObject, methodName, requestObject)
@@ -170,6 +280,7 @@ export  class Jobdetails extends React.Component {
               this.setState({grpcResponse: response})
               this.setState({enableVoting: true})
               this.nextJobStep();
+              this.setState({fundTabEnabled: false});
             })
             .catch((err) => {
               console.log("GRPC call failed with error " + JSON.stringify(err));
@@ -177,17 +288,21 @@ export  class Jobdetails extends React.Component {
               this.setState({grpcErrorOccurred: true})
               this.setState({enableVoting: true})
               this.nextJobStep();
+              this.setState({fundTabEnabled: false});
             })
-          return window.ethjs.personal_ecRecover(msg, signed);
+
+            return window.ethjs.personal_ecRecover(msg, signed);
         });
     }
 
-    onClosechaining() {
-      this.setState({openchaining:false})
+    onCloseModal() {
+      this.chainMessage = "";
+      this.setState({showModal:false});
     }
   
-    onOpenchaining() {
-      this.setState({openchaining:true})
+    onShowModal(message) {
+      this.chainMessage = message;
+      this.setState({showModal:true})
     }
 
     changeocvalue(e) {
@@ -198,7 +313,6 @@ export  class Jobdetails extends React.Component {
       this.setState({depositopenchannelerror: ""})
       this.setState({ocexpiration: e.target.value})
     }
-
 
     openchannelhandler() {
       if (typeof web3 === 'undefined') {
@@ -211,42 +325,32 @@ export  class Jobdetails extends React.Component {
         let mpeInstance = this.props.network.getMPEInstance(this.props.chainId);
         var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
 
-        console.log('channel object ' + this.channelHelper.getEndpoint());
         if (typeof this.channelHelper.getChannels() === 'undefined') {
           this.onOpenEscrowBalanceAlert()
         } else {
-        if(this.state.ocexpiration <= this.currentBlockNumber) {
-          //In case somebody left their slideout open for a really long time.
-          this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+ BLOCK_OFFSET;
-        }
-        
-        console.log("MPE has balance but have to check if we need to open a channel or extend one.");
-        console.log("group id is " + this.channelHelper.getGroupId())
-        console.log("recipient address is " + recipientaddress)
-        console.log('groupdidgetter hex is ' + groupIDBytes)
-        console.log('Amount is ' + amountInCogs);
-        console.log(this.state.ocexpiration);
-        console.log(this.props.userAddress);
-
-        var groupIDBytes = atob(this.channelHelper.getGroupId());
-        var recipientaddress = this.channelHelper.getRecipient();
-        console.log("Opening a new channel");
-        this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
-
-        /*
-        if (this.channelHelper.getChannels().length > 0) {
-          var rrchannel = this.channelHelper.getChannels()[0];
-          console.log("Found an existing channel, will try to extend it " + JSON.stringify(rrchannel));
-          if(this.state.ocexpiration < rrchannel["expiration"]) {
-            this.processChannelErrors("The payment channel being used has the expiry block set to "+ rrchannel["expiration"] +" which cannot be reduced. Provide a value equal to or greater than " + rrchannel["expiration"]);
+          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
+          if(this.state.ocexpiration < threshold) {
+            this.processChannelErrors("Block number provided should be greater than " + threshold + " for the service to accept the request");
             return;
           }
-          this.channelExtend(mpeInstance, rrchannel, amountInCogs);
-        } else {
-          console.log("No Channel found to going to deposit from MPE and open a channel");
-          this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
-        }*/
-      }
+        
+          let groupIDBytes = atob(this.channelHelper.getGroupId());
+          let recipientaddress = this.channelHelper.getRecipient();
+
+          if (typeof this.channelHelper.getChannelId() !== 'undefined') {
+            let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
+            console.log("Found an existing channel, will try to extend it " + JSON.stringify(selectedChannel));
+            if(this.state.ocexpiration < selectedChannel["expiration"]) {
+              this.processChannelErrors("The payment channel being used has the expiry block set to "+ selectedChannel["expiration"] +" which cannot be reduced. Provide a value equal to or greater than " + selectedChannel["expiration"]);
+              return;
+            }
+            this.channelExtend(mpeInstance, selectedChannel, amountInCogs);
+          } 
+          else {
+            console.log("No Channel found to going to deposit from MPE and open a channel");            
+            this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+          }
+        }
     }
     catch(e) {
       this.processChannelErrors(e.message);
@@ -254,6 +358,15 @@ export  class Jobdetails extends React.Component {
   }
 
     channelExtend(mpeInstance, rrchannel, amountInCogs) {
+      const channelAmount = parseInt(this.channelHelper.getCurrentSignedAmount()) + 
+                            parseInt(this.serviceState["price_in_cogs"]);
+      const newBalance = parseInt(rrchannel['balance_in_cogs']) + amountInCogs;
+      console.log("Channel " + channelAmount + " New Balance " + newBalance);
+      if( newBalance < channelAmount) {
+        this.processChannelErrors("Add " + AGI.inAGI(channelAmount - newBalance) + " or more tokens to the channel to allow this call. The channel has " + AGI.inAGI(rrchannel['balance_in_cogs'] - this.channelHelper.getCurrentSignedAmount()) + " available tokens currently");
+        return;
+      }
+
       web3.eth.getGasPrice((err, gasPrice) => {
         if(err) {
           gasPrice = DEFAULT_GAS_PRICE;
@@ -261,10 +374,11 @@ export  class Jobdetails extends React.Component {
 
         mpeInstance.channelExtendAndAddFunds.estimateGas(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, (err, estimatedGas) =>
         {
+          console.log("Estimation for channel extend " + estimatedGas)
           if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE
-            //this.processChannelErrors(err,"Unable to invoke the channelExtendAndAddFunds method");
           }
+          this.onShowModal(MESSAGES.WAIT_FOR_MM);
           mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
             gas: estimatedGas,
             gasPrice: gasPrice
@@ -274,7 +388,7 @@ export  class Jobdetails extends React.Component {
             }
             else {
               console.log("Channel extended and added funds is TXN Has : " + txnHash);
-              this.onOpenchaining();
+              this.onShowModal(MESSAGES.WAIT_FOR_TRANSACTION);
               this.props.network.waitForTransaction(txnHash).then(receipt => {
                   this.channelHelper.setChannelId(rrchannel["channelId"]);
                   console.log('Re using channel ' + this.channelHelper.getChannelId());
@@ -290,6 +404,11 @@ export  class Jobdetails extends React.Component {
     }
 
     channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
+      if(amountInCogs < this.serviceState['price_in_cogs']) {
+        this.processChannelErrors("Amount added should be greater than " + this.serviceState['price_in_cogs']);
+        return;
+      }
+
       var startingBlock = this.currentBlockNumber;
       console.log("Reading events from " + startingBlock);
 
@@ -297,13 +416,15 @@ export  class Jobdetails extends React.Component {
         if(err) {
           gasPrice = DEFAULT_GAS_PRICE;
         }
-        console.log("Channel Open amount " + amountInCogs + " expiration " + this.state.ocexpiration)
+
         mpeInstance.openChannel.estimateGas(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) =>
         {
+          console.log("Estimation for channel open " + estimatedGas)
           if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE
           }
 
+          this.onShowModal(MESSAGES.WAIT_FOR_MM);
           mpeInstance.openChannel(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
             gas: estimatedGas, gasPrice: gasPrice
           }, (error, txnHash) => {
@@ -312,10 +433,11 @@ export  class Jobdetails extends React.Component {
             }
             else {
               console.log("depositAndOpenChannel opened is TXN Has : " + txnHash);
-              this.onOpenchaining()
+              this.onShowModal(MESSAGES.WAIT_FOR_TRANSACTION)
               this.props.network.waitForTransaction(txnHash).then(receipt => {
                   console.log('Opened channel and deposited ' + AGI.toDecimal(this.state.ocvalue) + ' from: ' + this.props.userAddress);
                 }).then(() => {
+                  this.onShowModal(MESSAGES.WAIT_FOR_NEW_CHANNEL);
                   this.getChannelDetails(mpeInstance,startingBlock, recipientaddress);
                 })
                 .catch((error) => {
@@ -330,21 +452,24 @@ export  class Jobdetails extends React.Component {
     processChannelErrors(error, message) {
       console.log(message + " " + error);
       this.setState({depositopenchannelerror: error})
-      this.onClosechaining();
+      this.onCloseModal();
     }
 
     getChannelDetails(mpeInstance,startingBlock, recipientaddress) {
-      console.log("Scanning events from " + startingBlock);
+      console.log("Reading events from " + startingBlock + " for " + this.props.userAddress);
       var evt = mpeInstance.ChannelOpen({
         sender: this.props.userAddress
       }, {
         fromBlock: startingBlock,
         toBlock: 'latest'
       });
+
+      console.log("Starting to listen")
       evt.watch((error, result) => {
         if (error) {
           this.processChannelErrors(error,"Reading event for channel open failed with error");
         } else {
+          console.log("Starting matching of events");
           this.channelHelper.matchEvent(evt, result, this.props.userAddress, this.channelHelper.getGroupId(), recipientaddress);
           if(typeof this.channelHelper.getChannelId() !== 'undefined') {
             this.nextJobStep();
@@ -387,13 +512,11 @@ export  class Jobdetails extends React.Component {
 
     onOpenJobDetails(data) {
       (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
-      //this.setState({serviceState:data})
       this.serviceState = data;
       this.setState({jobDetailsSliderOpen: true });
+      this.seedDefaultValues(false,0);
+            
       this.setState({enableVoting: false})
-      this.setState({ocvalue:this.serviceState['price_in_agi']})
-      this.setState({valueTab:0})
-      this.setState({fundTabEnabled:false})
       this.setState({runjobstate:false})
       this.setState({depositopenchannelerror:''})
       if (typeof web3 === 'undefined' || typeof this.props.userAddress === 'undefined') {
@@ -418,7 +541,7 @@ export  class Jobdetails extends React.Component {
   onCloseEscrowBalanceAlert() {
     this.setState({showEscrowBalanceAlert: false})
     this.onCloseJobDetailsSlider()
-    this.props.history.push("/Profile")
+    this.props.history.push("/Account")
   }
   
     render()
@@ -428,10 +551,10 @@ export  class Jobdetails extends React.Component {
         return(
             <React.Fragment>
             <div>
-                <DAppModal open={this.state.openchaining} message={"Your transaction is being mined."} showProgress={true}/>
+                <DAppModal open={this.state.showModal} message={this.chainMessage} showProgress={true}/>
             </div>              
             <div>
-              <DAppModal open={this.state.showEscrowBalanceAlert} message={"The balance in your escrow account is 0. Please transfer money from your wallet to the escrow account to proceed."} showProgress={false} link={"/Profile"} linkText="Deposit"/>
+              <DAppModal open={this.state.showEscrowBalanceAlert} message={MESSAGES.ZERO_ESCROW_BALANCE} showProgress={false} link={"/Account"} linkText="Deposit"/>
             </div>              
             <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
             <PerfectScrollbar>
@@ -444,15 +567,15 @@ export  class Jobdetails extends React.Component {
                     </div>
                     <Typography component={ 'div'}>
                         <div className="right-panel agentdetails-sec p-3 pb-5">
-                            <div className="col-xs-12 col-sm-12 col-md-12 name no-padding">
+                            <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
                                 <h3>{this.serviceState["display_name"]} </h3>
                                 <p> {this.state.tagsall.map(rowtags =>
                                     <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
-                                <div className="col-xs-12 col-sm-12 col-md-12 address no-padding">
+                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
                                     <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
                                     {this.serviceState["description"]}
                                     </div>
-                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
+                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-url">
                                     <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
                                     </div>
                                 </div>
@@ -478,7 +601,7 @@ export  class Jobdetails extends React.Component {
                                 <i className="up"></i>
                                 <div className="servicedetailstab">
                                 <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
-                                    <Tab disabled={(!this.state.fundTabEnabled) || valueTab === 1} label={<span className="funds-title">Fund</span>}/>
+                                    <Tab disabled={(!this.state.fundTabEnabled) || valueTab !== 0} label={<span className="funds-title">Fund</span>}/>
                                     <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
                                     <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
                                 </Tabs>
@@ -495,8 +618,8 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>                                            
                                             </div>
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)}
-                                                 disabled={true}/>
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
+                                                 disabled={!this.state.fundTabEnabled}/>
                                             </div>
                                             </div>
                                             </div>
@@ -508,7 +631,7 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>       
                                             </div>                                     
                                             <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={true}/>
+                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={!this.state.fundTabEnabled}/>
                                             </div>
                                             </div>
                                             <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
@@ -519,40 +642,40 @@ export  class Jobdetails extends React.Component {
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
-                                        <p className="job-details-text">
-                                        The first step in invoking the API is to open a payment channel. We need to add funds to the channel from the escrow and set the expiry block number. In this step we will open a new channel. This will prompt an interaction with Metamask to initiate a transaction.
-                                        </p>
+                                        <div className="fund-details">
+                                        {this.state.fundTabEnabled ?
+                                          (typeof this.channelHelper.getChannelId() === 'undefined') ?
+                                          "We will open a channel now. You should add tokens based as the number of calls you want to make. This will ensure that we dont need to perform a blockchain operation to extend a channel on every call. The default values provided are for one call."
+                                          : "We will extend the existing channel.You should add tokens based as the number of calls you want to make. This will ensure that we dont need to perform a blockchain operation to extend a channel on every call. The default values provided are for one call."
+                                          : 
+                                          "The first step in invoking the API is to open a payment channel. We will now check if a channel exists with enough funds. If a channel is found we will extend it else create a new one. This step will involve interactions with MetaMask."
+                                        }
+                                        </div>
                                         </div>
                                     </TabContainer>
-                                    } {(valueTab === 1) &&
-                                    <TabContainer>
-                                      <React.Fragment>
-                                        <CallComponent isComplete={false} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation}/>
-                                      </React.Fragment>
-                                      <div className="row">
-                                        <p className="job-details-text">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.</p>
-                                        </div>
-                                    </TabContainer>
-                                    } {(valueTab === 2) &&
-                                    <TabContainer>
-                                      { (this.state.grpcErrorOccurred)?
-                                        <div>
-                                           <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
-                                        </div>:
-                                        <React.Fragment>
-                                          <CallComponent isComplete={true} response={this.state.grpcResponse}/>
-                                        </React.Fragment>
-                                      }
-                                      <div className="row">
-                                       <p></p>
-                                        <p className="job-details-text">Your request has been completed. You can now vote for the agent below.</p>
-                                        </div>
-                                    </TabContainer>}
+                                    } {(valueTab === 2 || valueTab === 1) &&
+                                      <TabContainer>
+                                        { (valueTab === 2 && this.state.grpcErrorOccurred)?
+                                          <div>
+                                             <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
+                                          </div>:
+                                          <React.Fragment>
+                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse}/>
+                                          </React.Fragment>
+                                        }
+                                        <div className="row">
+                                         <p></p>
+                                         {(valueTab === 2) ?
+                                          <div className="fund-details">Your request has been completed. You can now vote for the agent below.
+                                          </div> :
+                                          <div className="fund-details">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.
+                                          </div>
+                                         }
+                                          </div>
+                                      </TabContainer>}
                                 </div>
                             </div>
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
-                            
-
                         </div>
                     </Typography>
                 </div>

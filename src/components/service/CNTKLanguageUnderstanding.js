@@ -9,13 +9,14 @@ export default class CNTKLanguageUnderstanding extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/nlp-services/blob/master/docs/users_guide/cntk-language-understanding.md",
             code_repo: "https://github.com/singnet/nlp-services/blob/master/cntk-language-understanding",
             reference: "https://cntk.ai/pythondocs/CNTK_202_Language_Understanding.html",
 
-            serviceName: undefined,
+            serviceName: "LanguageUnderstanding",
             methodName: undefined,
 
             train_ctf_url: "",
@@ -48,7 +49,11 @@ export default class CNTKLanguageUnderstanding extends React.Component {
             }
         }
     }
-
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+    }
     parseServiceSpec(serviceSpec) {
         const packageName = Object.keys(serviceSpec.nested).find(key =>
             typeof serviceSpec.nested[key] === "object" &&
@@ -64,7 +69,6 @@ export default class CNTKLanguageUnderstanding extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
-        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
@@ -75,7 +79,19 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                 methods.unshift("Select a method");
                 this.methodsForAllServices[rr] = methods;
             }
-        })
+        });
+        this.getServiceMethods(this.allServices[0]);
+    }
+
+    getServiceMethods(strService) {
+        this.setState({
+            serviceName: strService
+        });
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
     }
 
     handleFormUpdate(event) {
@@ -98,15 +114,15 @@ export default class CNTKLanguageUnderstanding extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                trainCtfUrl: this.state.train_ctf_url,
-                testCtfUrl: this.state.test_ctf_url,
-                queryWlUrl: this.state.query_wl_url,
-                slotsWlUrl: this.state.slots_wl_url,
-                intentWlUrl: this.state.intent_wl_url,
-                vocabSize: this.state.vocab_size,
-                numLabels: this.state.num_labels,
-                numIntents: this.state.num_intents,
-                sentencesUrl: this.state.sentences_url
+                train_ctf_url: this.state.train_ctf_url,
+                test_ctf_url: this.state.test_ctf_url,
+                query_wl_url: this.state.query_wl_url,
+                slots_wl_url: this.state.slots_wl_url,
+                intent_wl_url: this.state.intent_wl_url,
+                vocab_size: this.state.vocab_size,
+                num_labels: this.state.num_labels,
+                num_intents: this.state.num_intents,
+                sentences_url: this.state.sentences_url
             });
     }
 
@@ -246,8 +262,8 @@ export default class CNTKLanguageUnderstanding extends React.Component {
         let output_url = "\n";
 
         if (typeof this.state.response === "object") {
-            model_url = this.state.response.modelUrl + "\n";
-            output_url = this.state.response.outputUrl;
+            model_url = this.state.response.model_url + "\n";
+            output_url = this.state.response.output_url;
         } else {
             status = this.state.response + "\n";
         }

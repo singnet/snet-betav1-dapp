@@ -17,6 +17,8 @@ import BinarySemanticSimilarity from './BinarySemanticSimilarity.js';
 import NamedEntityRecognitionService from "./NamedEntityRecognitionService.js";
 import SentimentAnalysisService from "./SentimentAnalysisService";
 import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
+import VisualQAOpencog from './VisualQAOpencog.js';
+import MosesService from "./MosesService";
 
 import DefaultService from './DefaultService.js';
 
@@ -38,9 +40,11 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-long-seq")] = LongQuestionAsnswering;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-short-seq")] = ShortQuestionAnswering;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-similarity-binary")] = BinarySemanticSimilarity;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "opencog-vqa")] = VisualQAOpencog;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition")] = NamedEntityRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "moses-service")] = MosesService;
     }
 
     generateUniqueID(orgId,serviceId) {
@@ -52,6 +56,7 @@ export default class SampleServices {
         if(typeof component === 'undefined') {
             component = DefaultService;
         }
+
 
         return component;
     }
