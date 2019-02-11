@@ -456,7 +456,7 @@ export default class SNETImageUpload extends React.Component {
     searchTextUpdate(event) {
         this.setState({
             searchText: event.target.value,
-        });
+        }, this.props.instantUrlSearch ? this.handleSearchSubmit.bind(this) : function(){return 0});
     };
 
     handleSearchSubmit() {
@@ -910,6 +910,7 @@ SNETImageUpload.propTypes = {
     maxImageSize: PropTypes.number, // 10 mb
     displayProportionalImage: PropTypes.bool,
     allowURL: PropTypes.bool,
+    instantUrlSearch: PropTypes.bool,
     imageGallery: PropTypes.arrayOf(PropTypes.string),
     galleryCols: PropTypes.number,
     infoTip: PropTypes.string,
@@ -928,6 +929,7 @@ SNETImageUpload.defaultProps = {
     maxImageSize: 10000000, // 10 mb
     displayProportionalImage: true, // if true, keeps uploaded image proportions. Else stretches it
     allowURL: false, // sends image URL instead of image data for both URL and Gallery modes. Might still send base64 if the user uploads an image
+    instantUrlSearch: false,
     imageGallery: [],
     galleryCols: 3,
     infoTip: "",
