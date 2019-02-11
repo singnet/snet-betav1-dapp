@@ -33,7 +33,11 @@ export default class VisualQAOpencog extends React.Component {
         this.methodsForAllServices = [];
         this.parseProps(props);
     }
-
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+    }
     parseProps(nextProps) {
         this.isComplete = nextProps.isComplete;
         if (!this.isComplete) {
