@@ -33,11 +33,11 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "s2vt-video-captioning")] = S2VTVideoCaptioning;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "yolov3-object-detection")] = YOLOv3ObjectDetection;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "zeta36-chess-alpha-zero")] = Zeta36ChessAlphaZero;
-        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShalyapin", "speech-recognition")] = AutomaticSpeechRecognition;
-        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShalyapin", "speech-synthesis")] = NeuralSpeechSynthesis;
-        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShalyapin", "question-answering-long-seq")] = LongQuestionAsnswering;
-        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShalyapin", "question-answering-short-seq")] = ShortQuestionAnswering;
-        this.serviceOrgIDToComponent[this.generateUniqueID("SergeyShalyapin", "semantic-similarity-binary")] = BinarySemanticSimilarity;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "speech-recognition")] = AutomaticSpeechRecognition;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "speech-synthesis")] = NeuralSpeechSynthesis;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-long-seq")] = LongQuestionAsnswering;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-short-seq")] = ShortQuestionAnswering;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-similarity-binary")] = BinarySemanticSimilarity;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition")] = NamedEntityRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
