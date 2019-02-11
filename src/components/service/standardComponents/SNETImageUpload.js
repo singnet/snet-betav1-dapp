@@ -72,17 +72,22 @@ export default class SNETImageUpload extends React.Component {
         this.handleDropzoneUpload = this.handleDropzoneUpload.bind(this);
 
         this.state = {
-            value: this.props.disableUploadTab?
-                (this.props.disableUploadTab + this.props.disableUrlTab)
-                :
-                0, // Current tab value
+            // Component's flow of execution
             mainState: "initial", // initial, loading, uploaded
+            value: this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
+                    (this.props.disableUploadTab + this.props.disableUrlTab)
+                    :
+                    0,
             searchText: null,
-            selectedImage: null,
-            filename: null,
-            displayError: false,
             errorMessage: null,
+            displayError: false,
             displayImageName: false,
+            // Selected image data (sent via callback function)
+            imageData: null,    // encoded image data. NOT ALWAYS THE SAME DATA SENT VIA CALLBACK
+            mimeType: null,     // "jpeg", "png", etc
+            encoding: null,     // "byteArray", "base64", "url"
+            filename: null,     // image filename
+            // Image data readers
             base64Reader: undefined,
             byteReader: undefined,
         };
@@ -140,16 +145,17 @@ export default class SNETImageUpload extends React.Component {
     *  ----------------*/
 
     sendData(data) {
-        this.props.imageDataFunc(data);
+        this.props.imageDataFunc(data, this.state.mimeType, this.state.encoding, this.state.filename);
     }
 
     readerOnLoadEnd(data) {
         this.setState({
                 mainState: "uploaded", // initial, loading, uploaded
                 searchText: null,
-                selectedImage: data,
+                imageData: data,
+                encoding: "base64",
             }, function () {
-                this.sendData(this.state.selectedImage)
+                this.sendData(this.state.imageData.split(",")[1])
             }.bind(this)
         );
     }
@@ -161,18 +167,11 @@ export default class SNETImageUpload extends React.Component {
             this.setState({
                 mainState: "uploaded", // initial, loading, uploaded
                 searchText: null,
-                selectedImage: reader.result,
-                filename: file.name,
+                imageData: reader.result,
                 displayError: false,
                 errorMessage: null,
-            }, this.props.imageDataFunc(new Uint8Array(this.state.byteReader.result)))
+            }, this.sendData(new Uint8Array(this.state.byteReader.result)))
         }.bind(this);
-        //
-        //
-        // reader.onloadend = function(){
-        //     this.setState({filename: file.name, base64Reader: reader});
-        //     this.readerOnLoadEnd(this.state.base64Reader.result)
-        // }.bind(this);
     }
 
     handleImageUpload(files) {
@@ -186,7 +185,9 @@ export default class SNETImageUpload extends React.Component {
             this.setState({
                 mainState: "initial",
                 searchText: null,
-                selectedImage: null,
+                imageData: null,
+                mimeType: null,
+                encoding: null,
                 filename: null,
                 errorMessage: this.fileSizeError,
                 displayError: true,
@@ -201,7 +202,9 @@ export default class SNETImageUpload extends React.Component {
                 this.setState({
                     mainState: "initial",
                     searchText: null,
-                    selectedImage: null,
+                    imageData: null,
+                    mimeType:null,
+                    encoding:null,
                     filename: null,
                     errorMessage: this.fileTypeError + "Got: " + fileType + ".",
                     displayError: true,
@@ -213,7 +216,9 @@ export default class SNETImageUpload extends React.Component {
                 this.setState({
                     mainState: "initial",
                     searchText: null,
-                    selectedImage: null,
+                    imageData: null,
+                    mimeType: null,
+                    encoding: null,
                     filename: null,
                     errorMessage: this.fileTypeError + "Got: " + fileType + ".",
                     displayError: true,
@@ -222,15 +227,24 @@ export default class SNETImageUpload extends React.Component {
             }
         }
 
+        // Is always used
         let reader = new FileReader();
         reader.onloadend = function () {
-            this.setState({filename: file.name, base64Reader: reader});
+            this.setState({
+                filename: file.name,
+                mimeType: file.type,
+                base64Reader: reader});
             this.readerOnLoadEnd(this.state.base64Reader.result)
         }.bind(this);
 
         let byteReader = new FileReader();
         byteReader.onloadend = function () {
-            this.setState({byteReader: byteReader});
+            this.setState({
+                byteReader: byteReader,
+                mimeType: file.type,
+                encoding: "byteArray",
+                filename: file.name,
+            });
             this.byteReaderOnLoadEnd(file)
         }.bind(this);
 
@@ -337,30 +351,40 @@ export default class SNETImageUpload extends React.Component {
     sendImageURL(url) {
         const filename = url.substring(url.lastIndexOf("/") + 1);
         this.setState({
-            selectedImage: url,
             mainState: "uploaded",
+
+            imageData: url,
+            mimeType: null,
+            encoding: "url",
             filename: filename,
+
             searchText: null,
         }, function () {
-            this.sendData(this.state.selectedImage)
+            this.sendData(this.state.imageData)
         }.bind(this));
     }
 
-    urlCallback(data, filename) {
+    urlCallback(data, outputFormat, filename) {
         this.setState({
-            selectedImage: data,
             mainState: "uploaded",
+
+            imageData: data,
+            mimeType: outputFormat,
+            encoding: "base64",
             filename: filename,
+
             searchText: null,
         }, function () {
-            this.sendData(this.state.selectedImage)
+            this.sendData(this.state.imageData.split(",")[1])
         }.bind(this));
     };
 
     urlByteReaderOnLoadEnd(dataURL, filename) {
         this.setState({
-            selectedImage: dataURL,
             mainState: "uploaded",
+            imageData: dataURL,
+            mimeType: this.props.outputFormat,
+            encoding: "byteArray",
             filename: filename,
             searchText: null,
             displayError: false,
@@ -375,7 +399,7 @@ export default class SNETImageUpload extends React.Component {
         const img = new Image();
         let dataURL;
 
-
+        // Only triggered if returnByteArray === true
         let byteReader = new FileReader();
         byteReader.onloadend = function () {
             this.setState({byteReader: byteReader});
@@ -387,7 +411,9 @@ export default class SNETImageUpload extends React.Component {
             this.setState({
                 mainState: "initial",
                 searchText: null,
-                selectedImage: null,
+                imageData: null,
+                mimeType: null,
+                encoding: null,
                 filename: null,
                 errorMessage: this.urlErrorMessage,
                 displayError: true,
@@ -395,6 +421,7 @@ export default class SNETImageUpload extends React.Component {
         }.bind(this);
 
         if (this.props.returnByteArray) {
+            img.outputFormat = this.props.outputFormat;
             img.onload = function () {
                 const canvas = document.createElement("canvas"),
                     context = canvas.getContext('2d');
@@ -405,7 +432,7 @@ export default class SNETImageUpload extends React.Component {
                 dataURL = canvas.toDataURL(outputFormat);
                 canvas.toBlob(function (blob) {
                     byteReader.readAsArrayBuffer(blob);
-                })
+                }, this.outputFormat)
             };
         } else {
             img.onload = function () {
@@ -416,7 +443,7 @@ export default class SNETImageUpload extends React.Component {
                 canvas.width = this.naturalWidth;
                 context.drawImage(this, 0, 0);
                 dataURL = canvas.toDataURL(outputFormat);
-                callback(dataURL, filename);
+                callback(dataURL, outputFormat, filename);
             };
         }
         img.src = src;
@@ -502,7 +529,7 @@ export default class SNETImageUpload extends React.Component {
         const url = image.url;
         // Directly sends data URL if allowed. Else, tries to convert image to base64
         this.props.allowURL ?
-            this.sendImageURL(url) : this.toDataUrl(url, this.urlCallback)
+            this.sendImageURL(url) : this.toDataUrl(url, this.urlCallback, this.props.outputFormat)
     };
 
     renderGalleryTab() {
@@ -587,12 +614,14 @@ export default class SNETImageUpload extends React.Component {
         this.setState({
             mainState: "initial", // initial, search, gallery, loading, uploaded, error
             searchText: null,
-            selectedImage: null,
+            imageData: null,
+            mimeType: null,
+            encoding: null,
             filename: null,
             displayError: false,
             errorMessage: null,
             displayImageName: false,
-        }, () => this.props.imageDataFunc(this.state.selectedImage));
+        }, () => this.sendData(this.state.imageData));
     };
 
     renderUploadedState() {
@@ -612,11 +641,11 @@ export default class SNETImageUpload extends React.Component {
                 >
                     <img
                         alt="Service input"
-                        src={this.state.selectedImage}
+                        src={this.state.imageData}
                         onError={() => this.setState({
                             mainState: "initial",
                             searchText: null,
-                            selectedImage: null,
+                            imageData: null,
                             filename: null,
                             errorMessage: this.urlErrorMessage,
                             displayError: true,
@@ -655,7 +684,7 @@ export default class SNETImageUpload extends React.Component {
     *  -----------------*/
 
     handleTabChange(event, value) {
-        if(this.state.selectedImage === null){ // If no image has been selected, simply changes tab
+        if(this.state.imageData === null){ // If no image has been selected, simply changes tab
             this.setState({
                 value: value,
             });
@@ -663,9 +692,11 @@ export default class SNETImageUpload extends React.Component {
             this.setState({ // If an image had been uploaded, resets it and sends "null" to parent component
                 value: value,
                 mainState: "initial",
-                selectedImage: null,
+                imageData: null,
+                mimeType: null,
+                encoding: null,
                 filename: null,
-            }, () => this.props.imageDataFunc(this.state.selectedImage));
+            }, () => this.sendData(this.state.imageData));
         }
     };
 
