@@ -48,7 +48,7 @@ export default class Header extends React.Component {
                   }
                 <div className="col-xs-3 col-sm-3 col-md-3 col-lg-4 navigation">
                     <ul>
-                        <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-72ea55e4d8a5" target="_blank">Get Started</Link></li>
+                        <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
                         <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
                         <li><Link to="/Account">Account</Link></li>
                         <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
