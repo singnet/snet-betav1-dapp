@@ -26,8 +26,7 @@ export  class Jobdetails extends React.Component {
         jobDetailsSliderOpen:false,
         ocvalue:0,
         ocexpiration:0,
-        grpcResponse:undefined,
-        grpcErrorOccurred:false,
+        grpcError:undefined,
         fundTabEnabled:false,
         depositopenchannelerror:'',
         valueTab:0,
@@ -233,7 +232,7 @@ export  class Jobdetails extends React.Component {
       });
     }
 
-    handleJobInvocation(serviceName, methodName, requestObject) {
+    handleJobInvocation(serviceName, methodName, requestObject, responseCallback) {
       this.onShowModal(MESSAGES.WAIT_FOR_MM)
       var nonce = this.channelHelper.getNonce(0);
       let channelPrice = parseInt(this.serviceState["price_in_cogs"]) + 
@@ -242,8 +241,7 @@ export  class Jobdetails extends React.Component {
       var msg = this.composeSHA3Message(["address", "uint256", "uint256", "uint256"],
       [this.props.network.getMPEAddress(this.props.chainId), parseInt(this.channelHelper.getChannelId()), parseInt(nonce), parseInt(channelPrice)]);
 
-      this.setState({grpcResponse: undefined})
-      this.setState({grpcErrorOccurred: false})
+      this.setState({grpcError: undefined})
       
       window.ethjs.personal_sign(msg, this.props.userAddress)
         .then((signed) => {
@@ -277,15 +275,14 @@ export  class Jobdetails extends React.Component {
           grpcRequest(serviceObject, methodName, requestObject)
             .then(response => {
               console.log("Got a GRPC response " + JSON.stringify(response))
-              this.setState({grpcResponse: response})
+              responseCallback(response);
               this.setState({enableVoting: true})
               this.nextJobStep();
               this.setState({fundTabEnabled: false});
             })
             .catch((err) => {
               console.log("GRPC call failed with error " + JSON.stringify(err));
-              this.setState({grpcResponse: JSON.stringify(err)});
-              this.setState({grpcErrorOccurred: true})
+              this.setState({grpcError: JSON.stringify(err)})
               this.setState({enableVoting: true})
               this.nextJobStep();
               this.setState({fundTabEnabled: false});
@@ -655,12 +652,12 @@ export  class Jobdetails extends React.Component {
                                     </TabContainer>
                                     } {(valueTab === 2 || valueTab === 1) &&
                                       <TabContainer>
-                                        { (valueTab === 2 && this.state.grpcErrorOccurred)?
+                                        { (valueTab === 2 && this.state.grpcError !== undefined)?
                                           <div>
-                                             <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
+                                             <p className="job-details-error-text">Error: {this.state.grpcError}</p>
                                           </div>:
                                           <React.Fragment>
-                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse}/>
+                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation}/>
                                           </React.Fragment>
                                         }
                                         <div className="row">

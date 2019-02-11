@@ -8,6 +8,7 @@ export default class DefaultService extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.handleResponse = this.handleResponse.bind(this);
 
         this.state = {
             serviceName: undefined,
@@ -24,17 +25,7 @@ export default class DefaultService extends React.Component {
 
     parseProps(nextProps) {
         this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
-                    this.state.response = nextProps.response;
-                } else {
-                    this.state.response = JSON.stringify(nextProps.response);
-                }
-            }
-        }
+        this.parseServiceSpec(nextProps.serviceSpec);
     }
     componentWillReceiveProps(nextProps) {
         if(this.isComplete !== nextProps.isComplete) {
@@ -90,11 +81,17 @@ export default class DefaultService extends React.Component {
         }
     }
 
+    handleResponse(response)
+    {
+        this.setState({response: JSON.stringify(response)});
+    }
+
     submitAction() {
         this.props.callApiCallback(
             this.state.serviceName,
             this.state.methodName,
-            JSON.parse(this.state.paramString)
+            JSON.parse(this.state.paramString),
+            this.handleResponse
         );
     }
 
