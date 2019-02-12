@@ -6,7 +6,7 @@ import {hasOwnDefinedProperty} from '../../util'
 const outsideWrapper = { 
     width: '256px',
     height: '256px',
-    margin: '20px 60px', 
+    margin: '0px 0px', 
     border: '0px',
 };
 const insideWrapper = { 
@@ -156,7 +156,7 @@ export default class FaceDetectService extends React.Component {
             setTimeout ( () => this.renderBoundingBox(result), 200 );
             return;
         }
-        let desiredWidth = 300.0; // TODO: find appropriate reference width from components
+        let desiredWidth = 500.0; // TODO: find appropriate reference width from components
         let scaleFactor = desiredWidth / img.naturalWidth;
         outsideWrap.style.width = img.naturalWidth * scaleFactor + "px";
         outsideWrap.style.height = img.naturalHeight * scaleFactor + "px";
