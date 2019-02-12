@@ -11,7 +11,8 @@ export const NETWORKS = {
       etherscan: 'https://ropsten.etherscan.io',
       infura: 'https://ropsten.infura.io',
       marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/ropsten/',
-      protobufjs:'https://protojs.singularitynet.io/ropsten/'
+      protobufjs:'https://protojs.singularitynet.io/ropsten/',
+      default:true
     }, 
     4: {
       name: "Rinkeby Test Network",
@@ -25,8 +26,7 @@ export const NETWORKS = {
       etherscan: 'https://kovan.etherscan.io',
       infura: 'https:/kovan.infura.io',
       marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/kovan/',
-      protobufjs:'https://protojs.singularitynet.io/kovan/',
-      default:true
+      protobufjs:'https://protojs.singularitynet.io/kovan/'
     },
   };
 
