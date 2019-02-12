@@ -122,6 +122,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                 alphabet: this.state.alphabet,
                 slidingwindowsize: this.state.slidingwindowsize,
                 paasize: this.state.paasize,
+                detectionthreshold: this.state.detectionthreshold,
                 debugflag: this.state.debugflag
             });
     }
@@ -191,6 +192,12 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                         margin="normal"
                     />
                     <br/>
+                    <input
+                        type='tel'
+                        value={this.state.paasize}
+                        onChange={this.handleChange}
+                        pattern="^-?[0-9]\d*\.?\d*$"
+                    />
                     <TextField
                         id="standard-multiline-static"
                         label="Piecewise Aggregate Approximation Size"
