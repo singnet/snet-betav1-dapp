@@ -19,12 +19,13 @@ export default class OpenNMTRomanceTranslator extends React.Component {
             serviceName: "RomanceTranslator",
             methodName: "translate",
 
-            source_lang: "",
-            target_lang: "",
+            source_lang: "es",
+            target_lang: "it",
             sentences_url: "",
 
             response: undefined
         };
+        this.langOptions = ["es", "fr", "it", "pt", "ro"];
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -115,55 +116,40 @@ export default class OpenNMTRomanceTranslator extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Source Language: </div>
                     <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
+                        <select name="source_lang"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                                value={this.state.source_lang}
                                 onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
+                            {this.langOptions.map((row, index) =>
+                                <option value={row} key={index}>{row}</option>)}
                         </select>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Source Language
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="source_lang" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.source_lang} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Target Language
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="target_lang" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.target_lang} onChange={this.handleFormUpdate}></input>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Target Language: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <select name="target_lang"
+                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                                value={this.state.target_lang}
+                                onChange={this.handleFormUpdate}>
+                            {this.langOptions.map((row, index) =>
+                                <option value={row} key={index}>{row}</option>)}
+                        </select>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Sentences (URL)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Sentences (URL): </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="sentences_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               placeholder={"URL of the sentences file"}
                                value={this.state.sentences_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
                         <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>

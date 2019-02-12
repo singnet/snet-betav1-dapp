@@ -1,6 +1,7 @@
 import React from 'react';
 import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
 
 export default class CNTKLSTMForecast extends React.Component {
 
@@ -27,11 +28,12 @@ export default class CNTKLSTMForecast extends React.Component {
             source: "",
             contract: "",
 
-            start_date: "",
-            end_date: "",
+            start_date: "2010-01-01",
+            end_date: "2019-02-11",
 
             response: undefined
         };
+        this.sourceTypes = ["csv", "financial"];
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -127,97 +129,88 @@ export default class CNTKLSTMForecast extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Source Type: </div>
                     <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
+                        <select name="source_type"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                 onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
+                            {this.sourceTypes.map((row, index) =>
                                 <option key={index}>{row}</option>)}
                         </select>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>SAX Window
-                        Length
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Source: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="source" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               placeholder={"URL (csv) or yahoo (financial)"}
+                               value={this.state.source} onChange={this.handleFormUpdate}></input>
                     </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="window_len" type="text"
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Contract: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="contract" type="text"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               placeholder={"eg: SPY (financial)"}
+                               value={this.state.contract} onChange={this.handleFormUpdate}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>SAX Window Length: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="window_len" type="number" min="0"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.window_len} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>SAX Word Length
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="word_len" type="text"
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>SAX Word Length: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="word_len" type="number" min="0"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.word_len} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>SAX Alphabet
-                        Size
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="alphabet_size" type="text"
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>SAX Alphabet Size: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="alphabet_size" type="number" min="0"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.alphabet_size} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Source Type</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="source_type" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.source_type} onChange={this.handleFormUpdate}></input>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Start Date: </div>
+                    <div className="col-md-3 col-lg-3" style={{width: "280px"}}>
+                        <TextField
+                            id="start_date"
+                            type="date"
+                            style={{ width: "100%" }}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            value={this.state.start_date}
+                        />
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Source</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="source" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.source} onChange={this.handleFormUpdate}></input>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>End Date: </div>
+                    <div className="col-md-3 col-lg-3" style={{width: "280px"}}>
+                        <TextField
+                            id="end_date"
+                            type="date"
+                            style={{ width: "100%" }}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            value={this.state.end_date}
+                        />
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Contract</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="contract" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.contract} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Start Date</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="start_date" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.start_date} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>End Date</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="end_date" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.end_date} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
                         <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
