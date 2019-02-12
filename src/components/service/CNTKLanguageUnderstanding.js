@@ -17,7 +17,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
             reference: "https://cntk.ai/pythondocs/CNTK_202_Language_Understanding.html",
 
             serviceName: "LanguageUnderstanding",
-            methodName: undefined,
+            methodName: "Select a method",
 
             train_ctf_url: "",
             test_ctf_url: "",
@@ -92,6 +92,23 @@ export default class CNTKLanguageUnderstanding extends React.Component {
             data = [];
         }
         this.serviceMethods = data;
+    }
+
+    isValidURL(str, file_ext) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            str.includes(file_ext)
+        );
+    }
+
+    canBeInvoked() {
+        return (
+            this.isValidURL(this.state.train_ctf_url, ".ctf") &&
+            this.isValidURL(this.state.test_ctf_url, ".ctf") &&
+            this.isValidURL(this.state.query_wl_url, ".wl") &&
+            this.isValidURL(this.state.sentences_url, ".txt") &&
+            this.state.methodName !== "Select a method"
+        );
     }
 
     handleFormUpdate(event) {
@@ -183,7 +200,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Vocabulary Size: </div>
                     <div className="col-md-3 col-lg-3">
-                        <input name="vocab_size" type="number" min="0"
+                        <input name="vocab_size" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.vocab_size} onChange={this.handleFormUpdate}></input>
                     </div>
@@ -191,7 +208,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number of Labels: </div>
                     <div className="col-md-3 col-lg-3">
-                        <input name="num_labels" type="number" min="0"
+                        <input name="num_labels" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.num_labels} onChange={this.handleFormUpdate}></input>
                     </div>
@@ -199,7 +216,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number of Intents: </div>
                     <div className="col-md-3 col-lg-3">
-                        <input name="num_intents" type="number" min="0"
+                        <input name="num_intents" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.num_intents} onChange={this.handleFormUpdate}></input>
                     </div>
@@ -228,7 +245,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

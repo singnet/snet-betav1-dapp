@@ -85,6 +85,19 @@ export default class S2VTVideoCaptioning extends React.Component {
         this.serviceMethods = data;
     }
 
+    isValidVideoURL(str) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            (str.endsWith(".avi") || str.endsWith(".mp4"))
+        );
+    }
+    canBeInvoked() {
+        return (
+            this.isValidVideoURL(this.state.url) &&
+            this.state.start_time_sec <= this.state.stop_time_sec
+        );
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -106,8 +119,8 @@ export default class S2VTVideoCaptioning extends React.Component {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
                 url: this.state.url,
-                start_time_sec: this.state.start_time_sec,
-                stop_time_sec: this.state.stop_time_sec
+                start_time_sec: this.state.start_time_sec.toString(),
+                stop_time_sec: this.state.stop_time_sec.toString()
             });
     }
 
@@ -154,7 +167,7 @@ export default class S2VTVideoCaptioning extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

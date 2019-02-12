@@ -86,6 +86,17 @@ export default class OpenNMTRomanceTranslator extends React.Component {
         this.serviceMethods = data;
     }
 
+    isValidURL(str, file_ext) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            str.includes(file_ext)
+        );
+    }
+
+    canBeInvoked() {
+        return (this.isValidURL(this.state.sentences_url, ".txt"));
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -164,7 +175,7 @@ export default class OpenNMTRomanceTranslator extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
