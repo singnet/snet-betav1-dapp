@@ -564,18 +564,20 @@ export  class Jobdetails extends React.Component {
                       <i className="fas fa-window-maximize mini-maxi-close" onClick={this.onMaximizeJobDetailsSlider}></i>
                       <i className="fas fa-window-close mini-maxi-close" onClick={this.onCloseJobDetailsSlider}></i>
                     </div>
-                    <Typography component={ 'div'}>
+                    <Typography component={ 'div'} style={{fontFamily: "Muli"}}>
                         <div className="right-panel agentdetails-sec p-3 pb-5">
                             <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
                                 <h3>{this.serviceState["display_name"]} </h3>
-                                <p> {this.state.tagsall.map(rowtags =>
-                                    <button type="button" className="btn btn-secondary mrb-10 ">{rowtags}</button>)}</p>
+                                <div className="job-details-tag-align">
+                                    {this.state.tagsall.map((rowtags,rindex) =>
+                                        <label key={rindex} className='job-details-tag mr-15'>{rowtags}</label>)}
+                                </div>
                                 <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
-                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-text">
-                                    {this.serviceState["description"]}
+                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-description">
+                                     {this.serviceState["description"]}
                                     </div>
-                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-details-url">
-                                    <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
+                                    <div className="job-details-url">
+                                      <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
                                     </div>
                                 </div>
 
@@ -589,14 +591,16 @@ export  class Jobdetails extends React.Component {
                                 </div>
                             </div>
                                 <div className="col-xs-12 col-sm-12 col-md-12 text-center border-top1">                              
-                                    {(this.state.runjobstate === true) ?
+                                    {(this.state.runjobstate) ?
                                     <button type="button" className="btn-primary" onClick={()=> this.startjob()}>Start Job</button>
                                     :
-                                        <div><button type="button" className="btn-primary-disabled" disabled>Start Job</button> <p className="job-details-error-text">Service is currently unavailable</p>
+                                        <div className="job-details-unavailable">
+                                            Service is currently unavailable. Please try later.
                                         </div>
                                     }
                                 </div>
                             </div>
+                            {(this.state.runjobstate) ?
                             <div className="col-xs-12 col-sm-12 col-md-12 funds no-padding">
                                 <i className="up"></i>
                                 <div className="servicedetailstab">
@@ -675,6 +679,7 @@ export  class Jobdetails extends React.Component {
                                       </TabContainer>}
                                 </div>
                             </div>
+                                : null }
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
                         </div>
                     </Typography>
