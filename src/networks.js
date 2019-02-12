@@ -26,7 +26,7 @@ export const NETWORKS = {
     etherscan: "https://kovan.etherscan.io",
     infura: "https:/kovan.infura.io",
     marketplace:
-      "https://260r82zgt7.execute-api.us-east-1.amazonaws.com/kovan/",
+      "https://1qr45jt71g.execute-api.us-east-1.amazonaws.com/kovan/",
     protobufjs: "https://protojs.singularitynet.io/kovan/",
     default: true
   }

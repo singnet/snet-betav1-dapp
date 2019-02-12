@@ -1,14 +1,53 @@
-import { MAXIMUM_GRAPH_SIZE } from "./annotation/visualizer.config";
+import { MAXIMUM_GRAPH_SIZE } from "./annotation-service/visualizer.config";
 import React from "react";
-import { showNotification } from "./annotation/utils";
-import GeneSelectionForm from "./annotation/GeneSelection";
-import AnnotationSelection from "./annotation/AnnotationSelection";
-import AnnotationResultVisualizer from "./annotation/AnnotationResultVisualizer";
-import AnnotationResultDownload from "./annotation/AnnotationResultDownload";
+import GeneSelectionForm from "./annotation-service/GeneSelection";
+import AnnotationSelection from "./annotation-service/AnnotationSelection";
+import AnnotationResultVisualizer from "./annotation-service/AnnotationResultVisualizer";
+import AnnotationResultDownload from "./annotation-service/AnnotationResultDownload";
 import { Button, Grid } from "@material-ui/core";
 import { Check } from "@material-ui/icons";
-import GOFilter from "./annotation/GOFilter";
-import GenePathwayFilter from "./annotation/GenePathwayFilter";
+import GOFilter from "./annotation-service/GOFilter";
+import GenePathwayFilter from "./annotation-service/GenePathwayFilter";
+import { Snackbar, SnackbarContent, CircularProgress } from "@material-ui/core";
+import { withStyles } from "@material-ui/core/styles";
+import red from "@material-ui/core/colors/red";
+
+const ErrorSnackbarContent = withStyles({
+  root: { background: red[600] },
+  message: { color: "#fff" }
+})(SnackbarContent);
+
+export const showNotification = ({ message, busy }, callBack) => {
+  return (
+    <Snackbar
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right"
+      }}
+      style={{ margin: "15px" }}
+      open
+      autoHideDuration={busy ? null : 5000}
+      onClose={callBack}
+    >
+      {busy ? (
+        <SnackbarContent
+          message={
+            <span style={{ display: "flex", alignItems: "center" }}>
+              <CircularProgress
+                size={24}
+                color="secondary"
+                style={{ marginRight: "15px" }}
+              />
+              {message}
+            </span>
+          }
+        />
+      ) : (
+        <ErrorSnackbarContent message={<span>{message}</span>} />
+      )}
+    </Snackbar>
+  );
+};
 
 const availableAnnotations = [
   {

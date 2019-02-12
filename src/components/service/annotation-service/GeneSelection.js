@@ -13,7 +13,6 @@ import {
 import { CloudUpload, Check, Close, KeyboardReturn } from "@material-ui/icons";
 import Dropzone from "react-dropzone";
 import classNames from "classnames";
-import { checkDuplicate } from "./utils";
 import fileSize from "filesize";
 
 const InputMethods = {
@@ -40,6 +39,15 @@ export default class GeneSelectionForm extends React.Component {
       }
     };
     this.handleGeneAdded = this.handleGeneAdded.bind(this);
+  }
+
+  checkDuplicate(value, array) {
+    return array.includes(value)
+      ? {
+          error: true,
+          helperText: `"${value}" already exists.`
+        }
+      : null;
   }
 
   isValid() {
@@ -101,7 +109,7 @@ export default class GeneSelectionForm extends React.Component {
                 {},
                 this.state.validationErrors
               );
-              validationErrors.gene = checkDuplicate(
+              validationErrors.gene = this.checkDuplicate(
                 e.target.value.trim(),
                 this.props.genes
               );

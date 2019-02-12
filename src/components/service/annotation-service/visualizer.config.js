@@ -92,11 +92,6 @@ export const CYTOSCAPE_STYLE = [
       "curve-style": "haystack",
       "line-color": "#ccc",
       width: 4
-      // "overlay-padding": 3,
-      // label: "data(name)",
-      // "text-rotation": "autorotate",
-      // "text-outline-width": 1,
-      // "text-outline-color": "#fff"
     }
   },
   {

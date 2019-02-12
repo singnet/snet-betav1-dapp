@@ -22,7 +22,6 @@ import {
   ExpandMore,
   ChangeHistory
 } from "@material-ui/icons";
-import { showNotification } from "./utils";
 
 const AnnotationColorsLight = [
   "#c2ddf0",
@@ -217,11 +216,6 @@ export default class AnnotationResultVisualizer extends React.Component {
           minHeight: "85vh"
         }}
       >
-        <div style={{ position: "absolute" }}>
-          {this.props.notification &&
-            showNotification(this.props.notification, () => {})}
-        </div>
-
         <Grid container>
           <Grid
             item
