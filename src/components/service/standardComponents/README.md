@@ -48,7 +48,7 @@ If the user types an invalid image URL or if the chosen image server blocks the 
 | maxImageSize | number | 10000000 | Maximum image file size for Upload tab in bytes. Default: 10mb. |
 | displayProportionalImage | bool | `true` | Whether to keep uploaded image proportions when displaying it or to ajust to it to tab's height and width. |
 | imageGallery | list | - | Optional list of image URLs that will be rendered in a Gallery tab. This should be used if the service provider would like to suggest images for the user. If this argument is empty, the Gallery tab will not be rendered. |
-| instantUrlSearch | bool | `false` | If `true`, any string pasted or typed on the "URL" tab's TextField will instantly be treated as the complete image URL (i.e.: actual search happens "onChange" instead of when clicking the search button). |
+| instantUrlFetch | bool | `false` | If `true`, any string pasted or typed on the "URL" tab's TextField will instantly be treated as the complete image URL (i.e.: actual fetch happens "onChange" instead of when clicking the button). |
 | allowURL | bool | `false` | Allows sending image URLs for "URL" and "Gallery" tabs. Mainly used to avoid CORS error. |
 | galleryCols | number | 3 | Number of image columns to be displayed in gallery mode. |
 | infoTip | string | "" | An optional string to provide a tip or explanation for the service user. If not empty, will render an "Info" icon in the top bar that will display a tooltip when hovered upon. |
