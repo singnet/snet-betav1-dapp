@@ -11724,8 +11724,7 @@ position: absolute;
 
 .channel-header {
     font-size: 15px;
-    font-weight: 500;
-   
+    font-weight: 500;   
     margin: 0 0 20px 0;
 }
 .channel-details {
@@ -12237,25 +12236,25 @@ position: absolute;
 
 .bars span:last-of-type { margin-bottom: 0; }
 
-.menues ul { 
+.header-menu ul { 
   padding: 0;
   margin-top: 5px; 
 }
 
-.menues ul li{ list-style: none; }
+.header-menu ul li{ list-style: none; }
 
-.menues li.get-started { 
+.header-menu li.get-started { 
   padding-left: 0 !important;
   margin: 0;
   float: none;
 }
 
-.menues li a {
+.header-menu li a {
   padding-left: 12px; 
   color: #fff; 
 }
 
-.menues li a:hover {
+.header-menu li a:hover {
   text-decoration: underline;
 }
 
@@ -12264,6 +12263,8 @@ position: absolute;
 @media(max-width: 991px) {
   .hamburger-menu { display: block; }
   .navigation { display: none; }
+
+  .agent-detail { height: auto; }
 }
 
 @media(max-width: 564px){
@@ -12280,6 +12281,18 @@ position: absolute;
 @media(max-width: 535px){
   .desktop-header .network-name { visibility: hidden; }
   .mobile-header .network-name { visibility: visible; }
+}
+
+@media(max-width:767px){
+  .channel-header { text-align: center; }
+
+  .channel-header div {
+    border-bottom: 1px solid #E4E4E4;
+    padding-bottom: 10px;  
+    margin: 10px 0;
+  }
+
+  .manage-account { padding-left: 10px; }
 }
 
 /*# sourceMappingURL=style.css.map */

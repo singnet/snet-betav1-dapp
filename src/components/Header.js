@@ -23,6 +23,13 @@ export default class Header extends React.Component {
   }
 
   render() {
+    const menuList = <ul>
+                      <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
+                      <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
+                      <li><Link to="/Account">Account</Link></li>
+                      <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
+                      <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
+                    </ul>
     return (
       <React.Fragment>
             <div className="inner">
@@ -58,13 +65,7 @@ export default class Header extends React.Component {
                     <div className="col-xs-3 col-sm-4 col-md-3 col-lg-2 network-name"/>
                   }
                 <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 navigation">
-                  <ul>
-                    <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
-                    <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
-                    <li><Link to="/Account">Account</Link></li>
-                    <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
-                    <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
-                  </ul>
+                 { menuList }
                 </div>
                 <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 hamburger-menu">
                   <button className="bars" onClick={this.showMenu}>
@@ -74,14 +75,8 @@ export default class Header extends React.Component {
                   </button>
                   {
                     this.state.showMenu ? 
-                      <div className="menues">
-                        <ul>
-                          <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
-                          <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
-                          <li><Link to="/Account">Account</Link></li>
-                          <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
-                          <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
-                        </ul>     
+                      <div className="header-menu">
+                        {menuList}
                       </div>
                     : 
                       null  

@@ -59,17 +59,21 @@
 }
 
 .channel-info {
-    height: 385px;
-    overflow: auto;
-    border-radius: 5px;
-    border-top: 3px solid #0066ff;
-    padding: 15px;
-    box-shadow: 1px 1px 10px #e0dbdb;
+    /*height: 385px;*/
+    /*overflow: auto;*/
+    /*border-radius: 5px;*/
+    /*border-top: 3px solid #0066ff;*/
+    /*padding: 15px;
+    /*box-shadow: 1px 1px 10px #e0dbdb;*/
 }
 
 .channel-header {
+	padding: 15px 0;
+	border-radius: 5px;
 	font-size: 15px;
 	font-weight: bold;
+	border-top: 3px solid #0066ff;
+    box-shadow: 1px 1px 10px #e0dbdb;
 	
 }
 
