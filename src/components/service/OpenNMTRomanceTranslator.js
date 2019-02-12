@@ -87,7 +87,10 @@ export default class OpenNMTRomanceTranslator extends React.Component {
     }
 
     canBeInvoked() {
-        return (this.state.sentences_url !== "");
+        return (
+            this.state.source_lang !== this.state.target_lang &&
+            this.state.sentences_url !== ""
+        );
     }
 
     handleFormUpdate(event) {
