@@ -22,8 +22,8 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
         this.handleChange = this.handleChange.bind(this);
 
         this.state = {
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "EfficientRuleDensityBasedAnomalyDetection",
+            methodName: "detectAnomalies",
 
             timeseries: undefined,
             alphabet: undefined,
@@ -135,42 +135,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
             <React.Fragment>
                 <Grid item xs={12}>
                     <br/>
-                    <br/>
-                    <FormControl style={{minWidth: '100%'}}>
-                        <Select
-                            value={this.state.serviceName}
-                            onChange={this.handleServiceName}
-                            displayEmpty
-                            name="serviceName"
-                            style={{fontSize: 15}}
-                        >
-                            <MenuItem style={{fontSize: 15}} value={undefined}>
-                                <em>Select a Service</em>
-                            </MenuItem>
-                            {this.allServices.map((item) =>
-                                <MenuItem style={{fontSize: 15}} value={item} key={item}>{item}</MenuItem>
-                            )};
-                        </Select>
-                    </FormControl>
-                    <br/>
-                    <br/>
-                    <FormControl style={{minWidth: '100%'}}>
-                        <Select
-                            value={this.state.methodName}
-                            onChange={this.handleFormUpdate}
-                            displayEmpty
-                            name="methodName"
-                            style={{fontSize: 15}}
-                        >
-
-                            <MenuItem style={{fontSize: 15}} value={undefined}>
-                                <em>Select a Method</em>
-                            </MenuItem>
-                            {this.serviceMethods.map((item) =>
-                                <MenuItem style={{fontSize: 15}} value={item}>{item}</MenuItem>
-                            )};
-                        </Select>
-                    </FormControl>
+                    <h3>Time Series Anomaly Discovery based on Grammar Compression</h3>
                     <br/>
                     <TextField
                         id="standard-multiline-static"
