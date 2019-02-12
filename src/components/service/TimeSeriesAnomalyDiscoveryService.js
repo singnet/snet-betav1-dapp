@@ -29,6 +29,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
             alphabet: undefined,
             slidingwindowsize: undefined,
             paasize: undefined,
+            detectionthreshold: undefined,
             debugflag: "0",
 
             response: undefined,
@@ -173,7 +174,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                     <br/>
                     <TextField
                         id="standard-multiline-static"
-                        label="Time Series"
+                        label="Time Series CSV file URL"
                         style={{width: "100%"}}
                         InputProps={{
                             style: {fontSize: 15}
@@ -183,24 +184,6 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                         }}
                         value={this.state.timeseries}
                         name="timeseries"
-                        onChange={this.handleChange}
-                        rows="6"
-                        defaultValue=""
-                        margin="normal"
-                    />
-                    <br/>
-                    <TextField
-                        id="standard-multiline-static"
-                        label="Alphabet"
-                        style={{width: "100%"}}
-                        InputProps={{
-                            style: {fontSize: 15}
-                        }}
-                        InputLabelProps={{
-                            style: {fontSize: 15}
-                        }}
-                        value={this.state.alphabet}
-                        name="alphabet"
                         onChange={this.handleChange}
                         rows="6"
                         defaultValue=""
@@ -227,6 +210,24 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                     <br/>
                     <TextField
                         id="standard-multiline-static"
+                        label="Alphabet Size"
+                        style={{width: "100%"}}
+                        InputProps={{
+                            style: {fontSize: 15}
+                        }}
+                        InputLabelProps={{
+                            style: {fontSize: 15}
+                        }}
+                        value={this.state.alphabet}
+                        name="alphabet"
+                        onChange={this.handleChange}
+                        rows="6"
+                        defaultValue=""
+                        margin="normal"
+                    />
+                    <br/>
+                    <TextField
+                        id="standard-multiline-static"
                         label="Piecewise Aggregate Approximation Size"
                         style={{width: "100%"}}
                         InputProps={{
@@ -237,6 +238,24 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                         }}
                         value={this.state.paasize}
                         name="paasize"
+                        onChange={this.handleChange}
+                        rows="6"
+                        defaultValue=""
+                        margin="normal"
+                    />
+                    <br/>
+                    <TextField
+                        id="standard-multiline-static"
+                        label="Detection Threshold"
+                        style={{width: "100%"}}
+                        InputProps={{
+                            style: {fontSize: 15}
+                        }}
+                        InputLabelProps={{
+                            style: {fontSize: 15}
+                        }}
+                        value={this.state.detectionthreshold}
+                        name="detectionthreshold"
                         onChange={this.handleChange}
                         rows="6"
                         defaultValue=""
@@ -264,15 +283,15 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                     A brief explanation about the parameters:
                     </h3>
                     <ul>
-                        <li><b>Time Series:</b>The time series in which anomalies will be detected.</li>
-                        <li><b>Alphabet:</b> Alphabet used to discretizise the paa apporximation.</li>
+                        <li><b>Time Series CSV file URL:</b>An URL containing a time series csv file.</li>
+                        <li><b>Alphabet size:</b> Alphabet size.</li>
                         <li><b>Sliding Window Size:</b> Sliding window used to create the time series symbols to build the free context grammar through the Sequitur algorithm.</li>
                         <li><b>Piecewise Aggregate Approximation:</b> Number of sub-samples that will be generated for each sliding window position.</li>
+                        <li><b>Detection threshold:</b> Density curve detection threshold.</li>
                     </ul>
                     <br/>
                     <p>
-                    With the bellow presented example input parameters, the algorithms should be able to detect each simulated spike in the time series.
-                    A spike is represented by the number 1000 while a normal sample is represented by the number 1.
+                    With the presented example input parameters, using real ECG data, the algorithms should be able to detect and output an anomaly interval.
                     </p>
                     <br/>
                     <ExpansionPanel>
@@ -284,13 +303,15 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                                 whiteSpace: "pre-wrap",
                                 overflowX: "scroll"
                             }}>
-                                Time Series: 1 1 1 1 1 1000 1 1 1 1 1 1000 1 1 1 1 1 1000 1 1 1 1 1 1000 1 1 1 1 1 100
+                                Time Series: https://raw.githubusercontent.com/GrammarViz2/grammarviz2_src/master/data/ecg0606_1.csv
                                 <br/>
-                                Alphabet: a b c d e f g h i j
+                                Sliding Window size: 100
                                 <br/>
-                                Sliding Window Size: 4
+                                Alphabet Size: 3
                                 <br/>
                                 Piecewise Aggregate Approximation Size: 2
+                                <br/>
+                                Detection Threshold: 1
                             </pre>
                         </ExpansionPanelDetails>
                     </ExpansionPanel>
@@ -306,7 +327,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                                 <br/>
                                 Detected anomalies at indexes (Starting from 0): 
                                 <br/>
-                                4 5 10 11 16 17 22 23
+                                17 459 460 461 462 463 464 465 466 
                             </pre>
                         </ExpansionPanelDetails>
                     </ExpansionPanel>
