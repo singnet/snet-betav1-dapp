@@ -208,6 +208,9 @@ export  class Jobdetails extends React.Component {
             this.processChannelErrors("Unable to retrieve balance. Please retry with a higher gas")
             return;
           }
+          if(typeof balance !== 'undefined') {
+                balance = parseInt(balance)
+          }
           
           const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
           let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, threshold);
