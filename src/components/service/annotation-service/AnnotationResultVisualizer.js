@@ -78,7 +78,6 @@ export default class AnnotationResultVisualizer extends React.Component {
     this.cy.add(
       this.props.graph.nodes.filter(n => n.data.group === "main" && n.data.id)
     );
-    console.log("Selected annotations: ", this.props.annotations);
     this.toggleAnnotationVisibility(this.props.annotations[0], true);
     this.cy.style(CYTOSCAPE_STYLE.concat(this.assignColorToAnnotations()));
     this.registerEventListeners();
@@ -210,13 +209,16 @@ export default class AnnotationResultVisualizer extends React.Component {
   }
 
   render() {
+    console.log("Container", this.refs.container.current);
+    console.log("Container Width", this.refs.container.current.width);
+
     return (
       <div
         style={{
           minHeight: "85vh"
         }}
       >
-        <Grid container>
+        <Grid container ref="container">
           <Grid
             item
             cs={1}
@@ -289,7 +291,8 @@ export default class AnnotationResultVisualizer extends React.Component {
           <Grid item xs={12}>
             <div
               style={{
-                minHeight: "100vh"
+                minHeight: "100vh",
+                width: "100%"
               }}
               ref={this.cy_wrapper}
             />
