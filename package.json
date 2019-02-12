@@ -50,6 +50,7 @@
   "devDependencies": {
     "@material-ui/core": "^3.5.1",
     "@material-ui/icons": "^3.0.1",
+    "@material-ui/lab": "^3.0.0-alpha.30",
     "aws-sdk": "^2.279.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
