@@ -402,7 +402,6 @@ export  class Jobdetails extends React.Component {
           });
       });
     }
-
     channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
       if(amountInCogs < this.serviceState['price_in_cogs']) {
         this.processChannelErrors("Amount added should be greater than " + this.serviceState['price_in_cogs']);
@@ -649,7 +648,7 @@ export  class Jobdetails extends React.Component {
                                            "The default values provided are for one call. To open a chanel, please add tokens based on the number of calls you wish to make. This will optimize any blockchain operations to extend a channel if needed. "
                                           :"The default values provided are for one call. Any existing channels will be reused. Please add tokens based on the number of calls you wish to make. This will optimize any blockchain operations to extend a channel if needed."
                                           : 
-                                          "The first step in invoking the API is to open a payment channel. The System will extend and reuse any existing channel and add more funds if required. If no channels are found a new one will be created. This step involves interactions with MetaMask."
+                                          "The first step in invoking the API is to open a payment channel. The System attempt to resuse any existing channel. If no channels are found a new one will be created. This step involves interactions with MetaMask."
                                         }
                                         </div>
                                         </div>
