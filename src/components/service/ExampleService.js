@@ -8,10 +8,11 @@ export default class ExampleService extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "Calculator",
+            methodName: "add",
             response: undefined,
             a: 0,
             b: 0
@@ -60,7 +61,6 @@ export default class ExampleService extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
-        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
@@ -71,7 +71,19 @@ export default class ExampleService extends React.Component {
                 methods.unshift("Select a method");
                 this.methodsForAllServices[rr] = methods;
             }
-        })
+        });
+        this.getServiceMethods(this.allServices[0]);
+    }
+
+    getServiceMethods(strService) {
+        this.setState({
+            serviceName: strService
+        });
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
     }
 
     handleFormUpdate(event) {
@@ -117,18 +129,7 @@ export default class ExampleService extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select id="select1"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Method Name: </div>
                     <div className="col-md-3 col-lg-3">
                         <select name="methodName"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
@@ -139,17 +140,19 @@ export default class ExampleService extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Number 1</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="a" type="text"
-                               style={{height: "30px", width: "80px", fontSize: "13px", marginBottom: "5px"}}
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number 1: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="a" type="number"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.a} onChange={this.handleFormUpdate}
                                onKeyPress={(e) => this.onKeyPressvalidator(e)}></input>
                     </div>
-                    <div className="col-md-3 col-lg-1" style={{fontSize: "13px", marginLeft: "40px"}}>Number 2</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="b" type="text"
-                               style={{height: "30px", width: "80px", fontSize: "13px", marginBottom: "5px"}}
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number 1: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="b" type="number"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.b} onChange={this.handleFormUpdate}
                                onKeyPress={(e) => this.onKeyPressvalidator(e)}></input>
                     </div>
