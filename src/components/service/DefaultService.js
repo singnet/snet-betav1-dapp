@@ -13,7 +13,8 @@ export default class DefaultService extends React.Component {
             serviceName: undefined,
             methodName: undefined,
             response: undefined,
-            paramString: "{}"
+            paramString: "{}",
+            validationError:''
         };
         this.isComplete = false;
         this.serviceMethods = [];
@@ -41,6 +42,7 @@ export default class DefaultService extends React.Component {
             this.parseProps(nextProps);
         }
     }
+
     parseServiceSpec(serviceSpec) {
         const packageName = Object.keys(serviceSpec.nested).find(key =>
             typeof serviceSpec.nested[key] === "object" &&
@@ -56,6 +58,7 @@ export default class DefaultService extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
+        this.allServices = [];
         this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
@@ -74,6 +77,7 @@ export default class DefaultService extends React.Component {
         this.setState({
             [event.target.name]: event.target.value
         });
+        this.setState({validationError:""});
     }
 
     handleServiceName(event) {
@@ -90,11 +94,34 @@ export default class DefaultService extends React.Component {
         }
     }
 
+    parseJSON (jsonString){
+        try {
+            let obj = JSON.parse(jsonString);
+            if (obj && typeof obj === "object") {
+                return obj;
+            }
+        }
+        catch (e) 
+        { 
+
+        }
+    
+        return false;
+    }
+
     submitAction() {
+        this.setState({validationError:""});
+
+        const obj = parseJSON(this.state.paramString);
+        if(!obj) {
+            this.setState({validationError:"JSON provided is invalid. Please review the guide and provide valid data"});
+            return;
+        }
+
         this.props.callApiCallback(
             this.state.serviceName,
             this.state.methodName,
-            JSON.parse(this.state.paramString)
+            obj
         );
     }
 
@@ -131,11 +158,13 @@ export default class DefaultService extends React.Component {
                                value={this.state.paramString} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
+
                 <div className="row">
-                    <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
-                    </div>
+                <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
+                    <button type="button" className="btn btn-primary width-mobile-100" onClick={this.submitAction}>Invoke</button>
                 </div>
+                </div>
+                <p className="job-details-error-text">{this.state.validationError!==''?this.state.validationError:''}</p>
             </React.Fragment>
         )
     }
