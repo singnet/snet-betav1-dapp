@@ -146,7 +146,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
                     </div>
                 </div>
                 <div className="row" align="center">
-                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} allowURL={true} />
+                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} instantUrlFetch={true} allowURL={true} />
                 </div>
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
