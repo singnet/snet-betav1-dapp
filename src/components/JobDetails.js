@@ -402,7 +402,6 @@ export  class Jobdetails extends React.Component {
           });
       });
     }
-
     channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
       if(amountInCogs < this.serviceState['price_in_cogs']) {
         this.processChannelErrors("Amount added should be greater than " + this.serviceState['price_in_cogs']);
@@ -593,7 +592,8 @@ export  class Jobdetails extends React.Component {
                                     {(this.state.runjobstate === true) ?
                                     <button type="button" className="btn-primary" onClick={()=> this.startjob()}>Start Job</button>
                                     :
-                                    <button type="button" className="btn-primary-disabled" disabled>Start Job</button>
+                                        <div><button type="button" className="btn-primary-disabled" disabled>Start Job</button> <p className="job-details-error-text">Service is currently unavailable</p>
+                                        </div>
                                     }
                                 </div>
                             </div>
@@ -645,10 +645,10 @@ export  class Jobdetails extends React.Component {
                                         <div className="fund-details">
                                         {this.state.fundTabEnabled ?
                                           (typeof this.channelHelper.getChannelId() === 'undefined') ?
-                                          "We will open a channel now. You should add tokens based as the number of calls you want to make. This will ensure that we dont need to perform a blockchain operation to extend a channel on every call. The default values provided are for one call."
-                                          : "We will extend the existing channel.You should add tokens based as the number of calls you want to make. This will ensure that we dont need to perform a blockchain operation to extend a channel on every call. The default values provided are for one call."
+                                           "The default values provided are for one call. To open a chanel, please add tokens based on the number of calls you wish to make. This will optimize any blockchain operations to extend a channel if needed. "
+                                          :"The default values provided are for one call. Any existing channels will be reused. Please add tokens based on the number of calls you wish to make. This will optimize any blockchain operations to extend a channel if needed."
                                           : 
-                                          "The first step in invoking the API is to open a payment channel. We will now check if a channel exists with enough funds. If a channel is found we will extend it else create a new one. This step will involve interactions with MetaMask."
+                                          "The first step in invoking the API is to open a payment channel. The System attempt to resuse any existing channel. If no channels are found a new one will be created. This step involves interactions with MetaMask."
                                         }
                                         </div>
                                         </div>
