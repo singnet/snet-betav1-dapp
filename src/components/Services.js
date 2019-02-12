@@ -304,10 +304,10 @@ class SampleServices extends React.Component {
                   <h4 className="align-self-center text-uppercase "></h4>
               </div>
                 <div className="container-fluid p-4  ">
-                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 service-agents-container">
                         <span className="service-agents">Service Agents</span>
                     </div>
-                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 search-bar">
                     <input className="search" placeholder={this.state.searchTerm === '' ? 'Search by Agent or Tags' : this.state.searchTerm} name="srch-term" id="srch-term" type="label" onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handleSearchKeyUp(e)} />
                     <button className="btn-search"><i className="fa fa-search search-icon" aria-hidden="true"></i></button> 
                     </div>

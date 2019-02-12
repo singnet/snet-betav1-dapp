@@ -9,7 +9,17 @@ import GetStarted from './GetStarted'
 export default class Header extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      showMenu: false
+    }
+    this.showMenu = this.showMenu.bind(this);    
     library.add(fab, faCheckSquare, faCoffee);
+  }
+
+  showMenu(){
+    this.setState({
+      showMenu: !this.state.showMenu
+    })
   }
 
   render() {
@@ -32,7 +42,8 @@ export default class Header extends React.Component {
                     </svg>
                 </div>            
               <div className="header">
-                  <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 logo">
+                <div className="desktop-header">
+                  <div className="col-xs-5 col-sm-4 col-md-3 col-lg-5 logo">
                       {(typeof web3 !== 'undefined')?
                       <Link to="/SampleServices">
                       <h1><span className="icon-logo"></span></h1></Link>:
@@ -40,23 +51,54 @@ export default class Header extends React.Component {
                       <h1><span className="icon-logo"></span></h1></Link>}
                   </div>
                   {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
-                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name">
+                    <div className="col-xs-3 col-sm-4 col-md-3 col-lg-2 network-name">
                         {NETWORKS[this.props.chainId].name}
                     </div>
                     :
-                    <div className="col-xs-6 col-sm-4 col-md-6 col-lg-4 network-name"/>
+                    <div className="col-xs-3 col-sm-4 col-md-3 col-lg-2 network-name"/>
                   }
-                <div className="col-xs-3 col-sm-3 col-md-3 col-lg-4 navigation">
-                    <ul>
-                        <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
-                        <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
-                        <li><Link to="/Account">Account</Link></li>
-                        <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
-                        <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
-                    </ul>
-                </div> 
+                <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 navigation">
+                  <ul>
+                    <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
+                    <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
+                    <li><Link to="/Account">Account</Link></li>
+                    <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
+                    <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
+                  </ul>
+                </div>
+                <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 hamburger-menu">
+                  <button className="bars" onClick={this.showMenu}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </button>
+                  {
+                    this.state.showMenu ? 
+                      <div className="menues">
+                        <ul>
+                          <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
+                          <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
+                          <li><Link to="/Account">Account</Link></li>
+                          <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
+                          <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
+                        </ul>     
+                      </div>
+                    : 
+                      null  
+                  }                  
+                </div>
+                <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 mobile-header">
+                  {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
+                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 network-name">
+                        {NETWORKS[this.props.chainId].name}
+                    </div>
+                    :
+                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 network-name"/>
+                  }
+                </div>
+                </div>                  
               </div>
-          </div>
+            </div>
           </div>
           {this.props.children}
       </React.Fragment>

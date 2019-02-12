@@ -11904,6 +11904,8 @@ position: absolute;
 }
 
 @media only screen and (max-width: 768px) {
+  .no-mobile-padding { margin-top: 10px; }
+
   .logo img {
     width:80%;
   }
@@ -12211,4 +12213,84 @@ position: absolute;
   width: 50%
 }
 }
+
+/* Hamburger stying */
+.hamburger-menu { 
+  display: none;
+  text-align: right; 
+}
+
+.bars{
+  padding: 5px 10px;
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+
+.bars span {
+  width: 15px;
+  height: 3px;
+  margin-bottom: 3px;
+  display: block;
+  background-color: #fff;
+}
+
+.bars span:last-of-type { margin-bottom: 0; }
+
+.menues ul { 
+  padding: 0;
+  margin-top: 5px; 
+}
+
+.menues ul li{ list-style: none; }
+
+.menues li.get-started { 
+  padding-left: 0 !important;
+  margin: 0;
+  float: none;
+}
+
+.menues li a {
+  padding-left: 12px; 
+  color: #fff; 
+}
+
+.menues li a:hover {
+  text-decoration: underline;
+}
+
+.mobile-header .network-name { visibility: hidden; }
+
+@media(max-width: 991px) {
+  .hamburger-menu { display: block; }
+  .navigation { display: none; }
+}
+
+@media(max-width: 564px){
+  .service-agents-container,
+  .search-bar {
+    width: 50%;
+  }
+
+  .service-agents { font-size: 16px; }
+  .search-bar input { width: 100%; }
+
+}
+
+@media(max-width: 535px){
+  .desktop-header .network-name { visibility: hidden; }
+  .mobile-header .network-name { visibility: visible; }
+}
+
 /*# sourceMappingURL=style.css.map */
+
+
+
+
+
+
+
+
+
+
+
