@@ -45,7 +45,9 @@
     "react-swipeable-views": "^0.13.1",
     "prop-types": "^15.6.2",
     "filesize": "^4.0.0",
-    "react-dropzone": "^8.0.4"
+    "react-dropzone": "^8.0.4",
+    "cytoscape": "^3.3.3",
+    "cytoscape-cola": "^2.3.0"
   },
   "devDependencies": {
     "@material-ui/core": "^3.5.1",
