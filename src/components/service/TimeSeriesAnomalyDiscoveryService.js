@@ -42,10 +42,10 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
             input_dialog: false,
 
             timeseries: undefined,
-            alphabet: undefined,
-            slidingwindowsize: undefined,
-            paasize: undefined,
-            detectionthreshold: undefined,
+            alphabet: 3,
+            slidingwindowsize: 100,
+            paasize: 2,
+            detectionthreshold: 1,
             debugflag: "0",
 
             response: undefined,
@@ -138,11 +138,15 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
     }
 
     submitAction() {
-        if (
-            this.UrlExists(this.state.timeseries) &&
-            this.state.paasize < this.state.slidingwindowsize &&
-            slidingwindowsize >= 10 &&
-            alphabet >= 3) {
+        if(this.state.slidingwindowsize < 10 || 
+            this.state.paasize < 2 ||
+            this.state.alphabet < 3 ||
+            this.state.paasize > this.state.slidingwindowsize){
+            this.setState({ input_dialog: true });
+            return;
+        }
+
+        if (this.UrlExists(this.state.timeseries)) {
             this.props.callApiCallback(
                 this.state.serviceName,
                 this.state.methodName, {
@@ -153,6 +157,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                     detectionthreshold: this.state.detectionthreshold,
                     debugflag: this.state.debugflag
                 });
+                
         } else {
             this.setState({ input_dialog: true });
         }
@@ -167,11 +172,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
     };
 
     handleChangeNumber(event) {
-        if (event.target.value > 0) {
-            this.setState({ [event.target.name]: event.target.value });
-        } else {
-            this.setState({ [event.target.name]: 0 });
-        }
+        this.setState({ [event.target.name]: event.target.value });
     };
 
     renderForm() {
@@ -403,13 +404,14 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                         </DialogTitle>
                         <DialogContent>
                             <DialogContentText id="alert-dialog-slide-description" style={{ fontSize:15 }}>
-                                1 - The PAA size must me lower than the sliding windowsize.
+                                Please insert a valid URL and parameters.
                                 <br />
-                                2 - The sliding window must be greater than 10 and alphabet greater than 3.
+                                    <li><b>Alphabet size:</b> Must be grater or equals 3.</li>
+                                    <li><b>Sliding Window Size:</b> Must be greater or equals 10.</li>
+                                    <li><b>Piecewise Aggregate Approximation:</b> Must be greater or equals 2 and less than window size.</li>
+                                    <li><b>Detection threshold:</b> Has no restrictions.</li>
                                 <br />
-                                3 - The CVS file must have only numbers, one column, and no header.
-                                <br />
-                                See example parameters...
+                                See example parameters below...
                             </DialogContentText>
                         </DialogContent>
                     </Dialog>
