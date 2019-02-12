@@ -9,7 +9,9 @@ ___
 
 ## Image Upload Component
 
-This repository contains the official [Material UI](https://material-ui.com/) based image upload component for SingularityNET services.
+> Maintainer: Ramon Durães | http://github.com/ramongduraes | ramon@singularitynet.io
+
+This is the documentation for the official [Material UI](https://material-ui.com/) based image upload component for SingularityNET services.
 
 ### General Functionality
 
@@ -35,9 +37,9 @@ If the user types an invalid image URL or if the chosen image server blocks the 
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
+| **imageDataFunc** | function, required |  - | Callback function! For specifications, read the [returns](#returns) section.|
 | width | string | "400px" | Component width to be set in number of pixels or percentage width of parent div (e.g.: "500px", "60%"). Minimum: "400px". |
 | tabHeight | number (no units) | 300 | Component's tab height (does not include top bar) to be set as a number (e.g.: 300). Minimum: 160. |
-| **imageDataFunc** | function, required |  - | A function that receives the uploaded image. |
 | imageName | string | "Input Image" | Image name that will be displayed on top of the component.|
 | disableUploadTab | bool | false | If `true`, does not render *Upload* tab. |
 | disableUrlTab | bool | false | If `true`, does not render *Url* tab. |
@@ -46,10 +48,22 @@ If the user types an invalid image URL or if the chosen image server blocks the 
 | maxImageSize | number | 10000000 | Maximum image file size for Upload tab in bytes. Default: 10mb. |
 | displayProportionalImage | bool | `true` | Whether to keep uploaded image proportions when displaying it or to ajust to it to tab's height and width. |
 | imageGallery | list | - | Optional list of image URLs that will be rendered in a Gallery tab. This should be used if the service provider would like to suggest images for the user. If this argument is empty, the Gallery tab will not be rendered. |
+| instantUrlFetch | bool | `false` | If `true`, any string pasted or typed on the "URL" tab's TextField will instantly be treated as the complete image URL (i.e.: actual fetch happens "onChange" instead of when clicking the button). |
 | allowURL | bool | `false` | Allows sending image URLs for "URL" and "Gallery" tabs. Mainly used to avoid CORS error. |
 | galleryCols | number | 3 | Number of image columns to be displayed in gallery mode. |
 | infoTip | string | "" | An optional string to provide a tip or explanation for the service user. If not empty, will render an "Info" icon in the top bar that will display a tooltip when hovered upon. |
 | mainColor | object | blue | A material ui color object that will be the main color of the component.|
+
+### Returns
+
+The component will return all the image data via its callback function `imageDataFunc`. It takes 4 arguments:
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| imageData | string (base64), Uint8Array or string(url) | The actual image data. Might be a `base64`, a `byteArray`-encoded image or an image `url`, depending on the parameters `returnByteArray` and `allowURL`. The base64 header (e.g.:"data:image/jpeg;base64,") is not included! |
+| mimeType | string | The MIME type of the image. Will return the input MIME type for image uploads, the output MIME type (defined by `outputFormat`; default: "image/png") for images from the "URL" and "Gallery" tabs or `null` for image URLs (when `allowURL={true}`). E.g.: "image/jpeg".|
+| encoding | string | The encoding for the image data: "base64", "byteArray" or "url", depending on the parameters `returnByteArray` and `allowURL`. |
+| filename | string | Image file name. Note that the image extension in this field, when present, shouldn't be trusted due to internal image conversions (to `outputFormat`). Also note that the filename extracted from used-inputted base64 image urls (in the URL tab) will usually not make sense, but that does not affect the functioning of the component.|
 
 ### Example Usage
 
@@ -60,8 +74,11 @@ import SNETImageUpload from "./standardComponents/SNETImageUpload";
 
 export default class App extends Component {
     
-    getData(imageData){
-        console.log(imageData)
+    getData(imageData, mimeType, encoding, filename){
+        console.log(imageData);
+        console.log(mimeType);
+        console.log(encoding);
+        console.log(filename);
     }
     
     render() {
@@ -77,6 +94,18 @@ export default class App extends Component {
 For a service that takes only image URLs, for example, the service provider could set the parameters `disableUploadTab={true}` and `allowURL={true}`. That way the users could upload their images and see them rendered on the screen but the service would only receive its URL.
 
 Taking only user uploaded, byte-array encoded image files would mean setting `disableUrlTab={true}` and `returnByteArray={true}`.
+
+The "Gallery" tab will be rendered when the parameter `imageGallery` is a list of image URLs, e.g.:
+```javascript
+const imageGallery = [
+    "http://cdn01.cdn.justjared.com/wp-content/uploads/headlines/2018/02/skyscraper-trailer-social.jpg",
+    "https://static2.yan.vn/EYanNews/201807/the-tallest-building-in-vietnam-and-southeast-asia-is-almost-finished-e0926100.jpg",
+    "https://raw.githubusercontent.com/dxyang/StyleTransfer/master/style_imgs/mosaic.jpg",
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+    "https://raw.githubusercontent.com/ShafeenTejani/fast-style-transfer/master/examples/dora-maar-picasso.jpg",
+];
+```
+Make sure your suggested images are not blocked by CORS policy, otherwise their miniature will be shown but clicking on them will result in an error (unless `allowURL` is set to `true`).
 
 ### Known Issues
 
