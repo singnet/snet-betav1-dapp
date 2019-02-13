@@ -11725,7 +11725,7 @@ position: absolute;
 .channel-header {
     font-size: 15px;
     font-weight: 500;   
-    margin: 0 0 20px 0;
+    margin: 0 0 15px 0;
 }
 .channel-details {
   padding:15px;
@@ -11904,28 +11904,26 @@ position: absolute;
 
 @media only screen and (max-width: 768px) {
   .no-mobile-padding { margin-top: 10px; }
+  .logo img { width:80%; }
 
-  .logo img {
-    width:80%;
-  }
   .blue-boxes-head {
     margin: 20px 0 0 0;
     padding: 15px;
-}
+  }
 
   .thumbsup-icon {
     text-align: center;
     padding: 0 10px 0 0;
     font-size: 13px;
     float: left;
- 
-}
-.thumbsdown-icon {
+  }
+
+  .thumbsdown-icon {
     text-align: center;
     padding: 0 4px 0 0;
     font-size: 13px;
     float: left;
-}
+  }
 
   .card-deck .card-body {
     box-shadow: 0 0 13px #e8e8e8;
@@ -11934,12 +11932,9 @@ position: absolute;
     padding: 2rem;
     margin-bottom: 20px;
   }
-  .card-deck .card {
-    border: none;
-  }
-  .head-txt-sec {
-    padding: 0;
-  }
+
+  .card-deck .card { border: none; }
+  .head-txt-sec { padding: 0; }
 
   .agent-boxes-label {
     font-weight: bold;
@@ -11947,7 +11942,7 @@ position: absolute;
     padding: 0;
     margin:10px 0 0 0;
     text-align: center;
-}
+  }
 
   .agent-name-align {
     height: 45px;
@@ -11959,60 +11954,60 @@ position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-.agent-name-align label {
-  font-weight: normal;
-}
+  }
 
-.org-name-align {
-  height: 70px;
-  color: #303030;
-  text-align: center;
-  padding: 0;
-  margin: 0;
-  border-bottom:1px solid #E4E4E4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .agent-name-align label { font-weight: normal; }
 
-.tag-align {
-  height: 70px;
-  color: #303030;
-  text-align: center;
-  padding:0;
-  margin:0;
-  border-bottom:1px solid #E4E4E4;
-  display: table;
-  justify-content: center;
-  align-items: center;
-}
-.price-align {
-  height: 70px;
-  color: #303030;
-  text-align: center;
-  margin: 0;
-  border-bottom:1px solid #E4E4E4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0;
-}
-.price-align label {
-  font-weight: normal;
-}
+  .org-name-align {
+    height: 70px;
+    color: #303030;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    border-bottom:1px solid #E4E4E4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.health-align {
-  height: 70px;
-  color: #303030;
-  text-align: center;
-  padding: 0;
-  margin: 0;
-  border-bottom:1px solid #E4E4E4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .tag-align {
+    width: 100%;
+    height: 70px;
+    color: #303030;
+    text-align: center;
+    padding: 14px 0;
+    margin:0;
+    border-bottom:1px solid #E4E4E4;
+    display: table;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .price-align {
+    height: 70px;
+    color: #303030;
+    text-align: center;
+    margin: 0;
+    border-bottom:1px solid #E4E4E4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+  }
+
+  .price-align label { font-weight: normal; }
+
+  .health-align { 
+    height: 70px;
+    color: #303030;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    border-bottom:1px solid #E4E4E4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
 .action-align {
   height: 70px;
@@ -12047,41 +12042,34 @@ position: absolute;
 }
 }
 @media only screen and (max-width: 667px) {
-  .no-mobile-padding {
-    padding: 0px;
-  }
-  .mobile-mtb-7 {
-    margin:7px 0;
-  }
-  .width-mobile-100 {
-      width: 100%;
-  }
-  
-  .logo img {
-    width:100%;
-  }
-    .thumbsup-icon {
+  .no-mobile-padding { padding: 0px; }
+  .mobile-mtb-7 { margin:7px 0; }
+  .width-mobile-100 { width: 100%; }
+  .logo img { width:100%; }
+
+  .thumbsup-icon {
     text-align: center;
     padding: 0 10px 0 0;
     font-size: 13px;
     float: left;
-}
+  }
+
   .thumbsdown-icon {
     text-align: center;
     padding: 0 10px 0 0;
     font-size: 13px;
     float: left;
-}
+  }
 
-.get-started {
-  background-color: #fff;
-  padding: 3px 10px !important;
-  float: right;
-  border-radius: 4px;
-  margin: 0 11px 0 0;
-  font-size: 14px;
-  color: #4086ff !important;
-} 
+  .get-started {
+    background-color: #fff;
+    padding: 3px 10px !important;
+    float: right;
+    border-radius: 4px;
+    margin: 0 11px 0 0;
+    font-size: 14px;
+    color: #4086ff !important;
+  } 
 
   .search {
     border: 1px solid #e4e4e4;
@@ -12108,47 +12096,50 @@ position: absolute;
     background-color: #e3f0ff;
     padding: 2rem;
     margin-bottom: 20px;
-}
+  }
+
   .card-deck .card {
     border: none;
     padding: 0;
   }
-  .head-txt-sec {
-    padding: 0;
-  }
+
+  .head-txt-sec { padding: 0; }
+
   .agent-boxes-label {
     font-weight: bold;
     display: block;
   }
+
   .agent-name-align {
     margin: 0 0 15px 0;
     padding:10px 0;
     border-bottom: 1px solid #ddd;
   }
-  .agent-name-align label {
-    font-weight: normal;
-  }
+
+  .agent-name-align label { font-weight: normal; }
+
   .org-name-align {
     margin: 0 0 10px 0;
     padding:14px 0;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
   .tag-align {
+    width: 100%;
     margin: 0 0 10px 0;
     padding:14px 0;
-    text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
   .price-align {
     margin: 0 0 10px 0;
     padding:14px 0;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
-  .price-align label {
-    font-weight: normal;
-  }
+
+  .price-align label { font-weight: normal; }
 
   .health-align {
     margin: 0 0 10px 0;
@@ -12156,19 +12147,22 @@ position: absolute;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
   .action-align {
     margin: 0 0 10px 0;
     padding:14px 0;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
   .sidebar {
+    width: 100% !important;
     position: absolute;
     background: white;
     border: 5px;
     color: white;
     height: 100%;
-    width: 320px;
+    /*width: 320px;*/
     padding: 0px 10px;
     box-shadow: grey 0px 3px 5px 2px;
     right: 0px;
@@ -12177,40 +12171,30 @@ position: absolute;
     transition: transform 225ms cubic-bezier(0, 0, 0.2, 1) 0ms;
     overflow-y: scroll;
     overflow-x: hidden;
-}
-
-  .head-txt-sec {
-    display: none;
   }
-  .media {
-    margin-top: 25px;
-}
-.sidenav {
-  width: 33rem;
-}
-.step-guide-boxes {
-  margin: 0 0 50px 0;
-}
 
-.video {
-  margin: 0px;
-  padding: 0px;
-  text-align: center;
-  width: 100%;
-}
-.video img {
-  width:100%;
-}
-.connect-wallet-title {
-    margin: 40px 0 30px 0;
-}
-.overview-connect {
-  margin: 0 auto;
-  padding: 35px 0;
-  text-align: center;
-  border-top: 1px solid #8dbbf0;
-  width: 50%
-}
+  .head-txt-sec { display: none; }
+  .media { margin-top: 25px; }
+  .sidenav { width: 33rem; }
+  .step-guide-boxes { margin: 0 0 50px 0; }
+
+  .video {
+    margin: 0px;
+    padding: 0px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .video img { width:100%; }
+  .connect-wallet-title { margin: 40px 0 30px 0; }
+
+  .overview-connect {
+    margin: 0 auto;
+    padding: 35px 0;
+    text-align: center;
+    border-top: 1px solid #8dbbf0;
+    width: 50%
+  }
 }
 
 /* Hamburger stying */
@@ -12280,7 +12264,11 @@ position: absolute;
 
 @media(max-width: 535px){
   .desktop-header .network-name { visibility: hidden; }
-  .mobile-header .network-name { visibility: visible; }
+
+  .mobile-header .network-name { 
+    width: 100%;
+    visibility: visible; 
+  }
 }
 
 @media(max-width:767px){

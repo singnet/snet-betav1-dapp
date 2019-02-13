@@ -22,6 +22,7 @@ export default class Header extends React.Component {
     })
   }
 
+
   render() {
     const menuList = <ul>
                       <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
@@ -30,6 +31,13 @@ export default class Header extends React.Component {
                       <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
                       <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
                     </ul>
+
+    const networkName = (typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
+                    <div className="col-xs-3 col-sm-4 col-md-3 col-lg-2 network-name">
+                        {NETWORKS[this.props.chainId].name}
+                    </div>
+                    :
+                    <div className="col-xs-3 col-sm-4 col-md-3 col-lg-2 network-name"/>
     return (
       <React.Fragment>
             <div className="inner">
@@ -57,13 +65,7 @@ export default class Header extends React.Component {
                       <Link to="/">
                       <h1><span className="icon-logo"></span></h1></Link>}
                   </div>
-                  {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
-                    <div className="col-xs-3 col-sm-4 col-md-3 col-lg-2 network-name">
-                        {NETWORKS[this.props.chainId].name}
-                    </div>
-                    :
-                    <div className="col-xs-3 col-sm-4 col-md-3 col-lg-2 network-name"/>
-                  }
+                  { networkName }
                 <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 navigation">
                  { menuList }
                 </div>
@@ -83,13 +85,7 @@ export default class Header extends React.Component {
                   }                  
                 </div>
                 <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 mobile-header">
-                  {(typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
-                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 network-name">
-                        {NETWORKS[this.props.chainId].name}
-                    </div>
-                    :
-                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 network-name"/>
-                  }
+                  { networkName }
                 </div>
                 </div>                  
               </div>

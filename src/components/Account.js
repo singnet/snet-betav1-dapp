@@ -509,10 +509,10 @@ export class Account extends Component {
                                 <div className="col-xs-12 col-sm-2 col-md-2 col-lg-2">
                                     <span>Channel ID</span>
                                 </div>
-                                <div className="col-xs-12 col-sm-3 col-md-3 col-lg-3">
+                                <div className="col-xs-12 col-sm-2 col-md-2 col-lg-2">
                                     <span>Organization</span>
                                 </div>
-                                <div className="col-xs-12 col-sm-2 col-md-2 col-lg-2">
+                                <div className="col-xs-12 col-sm-3 col-md-3 col-lg-3">
                                     <span>Service</span>
                                 </div>                                                                
                                 <div className="col-xs-12 col-sm-2 col-md-2 col-lg-2">
@@ -526,13 +526,15 @@ export class Account extends Component {
                             {this.state.userprofile.map((row, index) =>
                             <ExpansionPanel onChange={this.handleExpansion} key={index} style={{ borderRadius: "5px", backgroundColor: "#E3F0FF", marginBottom: "15px" }}>
                                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} style={{ padding: "0px" }}>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["channel_id"]}</span></div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["org_id"]}</span></div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["display_name"]}</span></div>                    
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
+                                <div className="col-xs-12 col-sm-2 col-md-2 col-lg-2"> 
+                                  <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["channel_id"]}</span>
+                                </div>
+                                <div className="col-xs-12 col-sm-2 col-md-2 col-lg-2"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["org_id"]}</span></div>
+                                <div className="col-xs-12 col-sm-3 col-md-3 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["display_name"]}</span></div>                    
+                                <div className="col-xs-12 col-sm-2 col-md-2 col-lg-2">
                                     <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{AGI.inAGI(row["balance_in_cogs"])} AGI</span></Typography>
                                 </div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
+                                <div className="col-xs-12 col-sm-2 col-md-2 col-lg-2">
                                     <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["expiration"]}</span></Typography>
                                 </div>
                                 </ExpansionPanelSummary>

@@ -247,40 +247,40 @@ class SampleServices extends React.Component {
 
     const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
       <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 media" key={index} id={rown[ "service_id"]} name={rown[ "display_name"].toUpperCase()}>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
               <label className="m-0">
                   <div className="m-0">
                       {rown["display_name"]}</div>
               </label>
           </div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Organization</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 org-name-align">
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Organization</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 org-name-align">
               <div className="m-0" >{rown["org_id"]}</div>
           </div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Price</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 price-align">
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Price</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 price-align">
               <label className="m-0">
                   <div className="m-0" >{(rown["price_in_agi"])} AGI</div>
               </label>
           </div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 tag-align">
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 tag-align">
               {(rown.hasOwnProperty('tags'))? rown["tags"].map((rowtag,rindex) =>
               <label key={rindex} className='btn-tag mr-15'>{rowtag}</label>):null}
           </div>
-          <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Status</div>
-          <div className="col-sm-12 col-md-1 col-lg-1 health-align">
+          <div className="col-sm-1 col-md-1 col-lg-1 agent-boxes-label">Status</div>
+          <div className="col-sm-1 col-md-1 col-lg-1 health-align">
 
               {(rown["is_available"] ===1)?
                   <span className="agent-health green"></span>:
                   <span className="agent-health red"></span>}
           </div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Action</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 action-align">
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Action</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 action-align">
               <button className="btn btn-primary" onClick={(e)=>this.onOpenJobDetailsSlider(rown)} id={rown["service_id"]}>Details</button>
           </div>
-          <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
+          <div className="col-sm-1 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
                   <div className="thumbsup-img ">
                   <span className={rown["up_vote_count"] > 0 ? "icon-count-like-enabled" : "icon-count-like"}></span></div>
