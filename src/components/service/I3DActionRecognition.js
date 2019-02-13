@@ -19,7 +19,7 @@ export default class I3DActionRecognition extends React.Component {
             serviceName: "VideoActionRecognition",
             methodName: "video_action_recon",
 
-            model: "",
+            model: "400",
             url: "",
 
             response: undefined
@@ -85,6 +85,17 @@ export default class I3DActionRecognition extends React.Component {
         this.serviceMethods = data;
     }
 
+    isValidVideoURL(str) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            (str.endsWith(".avi") || str.endsWith(".mp4"))
+        );
+    }
+
+    canBeInvoked() {
+        return (this.isValidVideoURL(this.state.url));
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -120,7 +131,7 @@ export default class I3DActionRecognition extends React.Component {
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                 onChange={this.handleFormUpdate}>
                             {this.modelOptions.map((row, index) =>
-                                <option key={index}>{row}</option>)}
+                                <option value={row} key={index}>{row}</option>)}
                         </select>
                     </div>
                 </div>
@@ -148,7 +159,7 @@ export default class I3DActionRecognition extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

@@ -92,22 +92,16 @@ export default class YOLOv3ObjectDetection extends React.Component {
     }
 
     getImageURL(data) {
-        if (data) {
-            // URL Image
-            if (data.startsWith("http")) {
-                this.setState({
-                    img_path: data
-                });
-            }
-            // Base64 Image
-            else {
-                this.setState({
-                    img_path: data.split(",")[1]
-                });
-            }
-            console.log(data);
-        }
+        this.setState({ img_path: data });
     }
+
+    canBeInvoked() {
+        return (this.state.img_path);
+    }
+
+    handleSliderChange(event, value) {
+        this.setState({ confidence: value });
+    };
 
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
@@ -125,10 +119,6 @@ export default class YOLOv3ObjectDetection extends React.Component {
         }
         this.serviceMethods = data;
     }
-
-    handleSliderChange(event, value) {
-        this.setState({ confidence: value });
-    };
 
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
@@ -156,7 +146,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
                     </div>
                 </div>
                 <div className="row" align="center">
-                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} allowURL={true} />
+                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} instantUrlFetch={true} allowURL={true} />
                 </div>
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
@@ -174,7 +164,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

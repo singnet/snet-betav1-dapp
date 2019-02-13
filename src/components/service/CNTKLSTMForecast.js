@@ -20,11 +20,11 @@ export default class CNTKLSTMForecast extends React.Component {
             serviceName: "Forecast",
             methodName: "forecast",
 
-            window_len: "",
-            word_len: "",
-            alphabet_size: "",
+            window_len: 1,
+            word_len: 1,
+            alphabet_size: 1,
 
-            source_type: "",
+            source_type: "csv",
             source: "",
             contract: "",
 
@@ -94,6 +94,27 @@ export default class CNTKLSTMForecast extends React.Component {
         this.serviceMethods = data;
     }
 
+    isValidCSVURL(str) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            str.endsWith(".csv")
+        );
+    }
+
+    canBeInvoked() {
+        if (this.state.source_type === "csv") {
+            if (this.isValidCSVURL(this.state.source)){
+                return this.state.start_date < this.state.end_date;
+            }
+            return false;
+        }
+        return (
+            this.state.source &&
+            this.state.contract &&
+            this.state.start_date < this.state.end_date
+        );
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -160,7 +181,7 @@ export default class CNTKLSTMForecast extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>SAX Window Length: </div>
                     <div className="col-md-3 col-lg-3">
-                        <input name="window_len" type="number" min="0"
+                        <input name="window_len" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.window_len} onChange={this.handleFormUpdate}></input>
                     </div>
@@ -168,7 +189,7 @@ export default class CNTKLSTMForecast extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>SAX Word Length: </div>
                     <div className="col-md-3 col-lg-3">
-                        <input name="word_len" type="number" min="0"
+                        <input name="word_len" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.word_len} onChange={this.handleFormUpdate}></input>
                     </div>
@@ -176,7 +197,7 @@ export default class CNTKLSTMForecast extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>SAX Alphabet Size: </div>
                     <div className="col-md-3 col-lg-3">
-                        <input name="alphabet_size" type="number" min="0"
+                        <input name="alphabet_size" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.alphabet_size} onChange={this.handleFormUpdate}></input>
                     </div>
@@ -185,6 +206,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Start Date: </div>
                     <div className="col-md-3 col-lg-3" style={{width: "280px"}}>
                         <TextField
+                            name="start_date"
                             id="start_date"
                             type="date"
                             style={{ width: "100%" }}
@@ -192,6 +214,7 @@ export default class CNTKLSTMForecast extends React.Component {
                                 shrink: true,
                             }}
                             value={this.state.start_date}
+                            onChange={this.handleFormUpdate}
                         />
                     </div>
                 </div>
@@ -199,6 +222,7 @@ export default class CNTKLSTMForecast extends React.Component {
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>End Date: </div>
                     <div className="col-md-3 col-lg-3" style={{width: "280px"}}>
                         <TextField
+                            name="end_date"
                             id="end_date"
                             type="date"
                             style={{ width: "100%" }}
@@ -206,6 +230,7 @@ export default class CNTKLSTMForecast extends React.Component {
                                 shrink: true,
                             }}
                             value={this.state.end_date}
+                            onChange={this.handleFormUpdate}
                         />
                     </div>
                 </div>
@@ -225,7 +250,7 @@ export default class CNTKLSTMForecast extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

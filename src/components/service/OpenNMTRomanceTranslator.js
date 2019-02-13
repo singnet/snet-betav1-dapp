@@ -86,6 +86,13 @@ export default class OpenNMTRomanceTranslator extends React.Component {
         this.serviceMethods = data;
     }
 
+    canBeInvoked() {
+        return (
+            this.state.source_lang !== this.state.target_lang &&
+            this.state.sentences_url !== ""
+        );
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -116,7 +123,7 @@ export default class OpenNMTRomanceTranslator extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Source Language: </div>
+                    <div className="col-md-4 col-lg-4" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Source Language: </div>
                     <div className="col-md-3 col-lg-3">
                         <select name="source_lang"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
@@ -128,7 +135,7 @@ export default class OpenNMTRomanceTranslator extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Target Language: </div>
+                    <div className="col-md-4 col-lg-4" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Target Language: </div>
                     <div className="col-md-3 col-lg-3">
                         <select name="target_lang"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
@@ -140,16 +147,16 @@ export default class OpenNMTRomanceTranslator extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Sentences (URL): </div>
+                    <div className="col-md-4 col-lg-4" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Sentences: </div>
                     <div className="col-md-3 col-lg-3">
                         <input name="sentences_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               placeholder={"URL of the sentences file"}
+                               placeholder={"or URL with text file"}
                                value={this.state.sentences_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
+                    <div className="col-md-4 col-lg-4" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
                         <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
@@ -164,7 +171,7 @@ export default class OpenNMTRomanceTranslator extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
