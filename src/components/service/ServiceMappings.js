@@ -20,6 +20,7 @@ import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryServi
 import VisualQAOpencog from './VisualQAOpencog.js';
 import MosesService from "./MosesService";
 import FaceDetectService from "./FaceDetectService";
+import FaceLandmarksService from "./FaceLandmarksService"
 
 import DefaultService from './DefaultService.js';
 
@@ -47,6 +48,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "moses-service")] = MosesService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-detect")] = FaceDetectService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-landmarks")] = FaceLandmarksService;
     }
 
     generateUniqueID(orgId,serviceId) {
