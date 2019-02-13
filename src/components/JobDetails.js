@@ -559,16 +559,16 @@ export  class Jobdetails extends React.Component {
               <DAppModal open={this.state.showEscrowBalanceAlert} message={MESSAGES.ZERO_ESCROW_BALANCE} showProgress={false} link={"/Account"} linkText="Deposit"/>
             </div>              
             <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
-            <PerfectScrollbar>
               <Slide style={{width : this.state.sliderWidth}} direction="left" in={this.state.jobDetailsSliderOpen} mountOnEnter unmountOnExit>
                 <div className="sidebar">
-                    <div style={{fontSize: "30px",textAlign: "right"}}>
+                  <PerfectScrollbar>
+                    <div style={{paddingRight:"11px", fontSize: "30px",textAlign: "right"}}>
                       <i className="fas fa-window-minimize mini-maxi-close" onClick={this.onMinimizeJobDetailsSlider}></i>
                       <i className="fas fa-window-maximize mini-maxi-close" onClick={this.onMaximizeJobDetailsSlider}></i>
                       <i className="fas fa-window-close mini-maxi-close" onClick={this.onCloseJobDetailsSlider}></i>
                     </div>
                     <Typography component={ 'div'} style={{fontFamily: "Muli"}}>
-                        <div className="right-panel agentdetails-sec p-3 pb-5">
+                        <div className="right-panel agentdetails-sec p-3 pb-5" style={{paddingRight:"11px"}}>
                             <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
                                 <h3>{this.serviceState["display_name"]} </h3>
                                 <div className="job-details-tag-align">
@@ -686,9 +686,9 @@ export  class Jobdetails extends React.Component {
                             <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
                         </div>
                     </Typography>
+                  </PerfectScrollbar>
                 </div>
               </Slide>
-             </PerfectScrollbar>
             </Modal>
         </React.Fragment>
         )
