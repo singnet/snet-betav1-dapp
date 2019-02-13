@@ -1,5 +1,6 @@
 import React from 'react';
 import {hasOwnDefinedProperty} from '../../util'
+import Button from '@material-ui/core/Button';
 
 export default class AutomaticSpeechRecognition extends React.Component {
 
@@ -10,6 +11,7 @@ export default class AutomaticSpeechRecognition extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
+            users_guide: "https://github.com/iktina/speech-recognition-service",
             serviceName: "ASR",
             methodName: "s2t",
             response: undefined,
@@ -21,6 +23,12 @@ export default class AutomaticSpeechRecognition extends React.Component {
         this.allServices = [];
         this.methodsForAllServices = [];
         this.parseProps(props);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
     }
 
     parseProps(nextProps) {
@@ -160,12 +168,20 @@ export default class AutomaticSpeechRecognition extends React.Component {
                     </audio>
                     </div>
                 </div>
-                
+
                 <div className="row">
-                    <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
+                    <div className="col-md-6 col-lg-6" style={{textAlign: "right", marginTop: "5px", width: "245px"}}>
                         <button id="invoke-button" type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
                     </div>
                 </div>
+
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px", marginTop: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-2">
+                        <Button target="_blank" href={this.state.users_guide} style={{fontSize: "13px", marginTop: "5px"}}>Guide</Button>
+                    </div>
+                </div>
+
             </React.Fragment>
         )
     }
@@ -179,6 +195,7 @@ export default class AutomaticSpeechRecognition extends React.Component {
     }
 
     render() {
+        console.log(this.isComplete);
         if (this.isComplete)
             return (
                 <div>
