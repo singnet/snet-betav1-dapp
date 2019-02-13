@@ -7,13 +7,12 @@ export default class AutomaticSpeechRecognition extends React.Component {
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.users_guide =  "https://github.com/iktina/speech-recognition-service";
+        this.serviceName =  "ASR";
+        this.methodName =  "s2t";
 
         this.state = {
-            users_guide: "https://github.com/iktina/speech-recognition-service",
-            serviceName: "ASR",
-            methodName: "s2t",
             response: undefined,
             data: new ArrayBuffer()
         };
@@ -122,20 +121,6 @@ export default class AutomaticSpeechRecognition extends React.Component {
 
     }
 
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
-        });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
-        }
-    }
-
     onKeyPressvalidator(event) {
         // TODO validation
     }
@@ -145,8 +130,8 @@ export default class AutomaticSpeechRecognition extends React.Component {
         btn.disabled = true;
         btn.innerHTML = "Wait...";
 
-        this.props.callApiCallback(this.state.serviceName,
-            this.state.methodName, {
+        this.props.callApiCallback(this.serviceName,
+            this.methodName, {
                 data: this.state.data
             });
     }
@@ -178,7 +163,7 @@ export default class AutomaticSpeechRecognition extends React.Component {
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px", marginTop: "10px"}}>About</div>
                     <div className="col-md-3 col-lg-2">
-                        <Button target="_blank" href={this.state.users_guide} style={{fontSize: "13px", marginTop: "5px"}}>Guide</Button>
+                        <Button target="_blank" href={this.users_guide} style={{fontSize: "13px", marginTop: "5px"}}>Guide</Button>
                     </div>
                 </div>
 
@@ -195,7 +180,6 @@ export default class AutomaticSpeechRecognition extends React.Component {
     }
 
     render() {
-        console.log(this.isComplete);
         if (this.isComplete)
             return (
                 <div>
