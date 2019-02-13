@@ -408,10 +408,21 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                                 <br />
                                     <li><b>Alphabet size:</b> Must be grater or equals 3.</li>
                                     <li><b>Sliding Window Size:</b> Must be greater or equals 10.</li>
-                                    <li><b>Piecewise Aggregate Approximation:</b> Must be greater or equals 2 and less than window size.</li>
+                                    <li><b>Paa size:</b> Must be greater or equals 2 and less than window size.</li>
                                     <li><b>Detection threshold:</b> Has no restrictions.</li>
                                 <br />
                                 See example parameters below...
+                                <br />
+                                <br />
+                                <strong>Time Series:</strong> https://raw.githubusercontent.com/GrammarViz2/grammarviz2_src/master/data/ecg0606_1.csv
+                                <br />
+                                <strong>Sliding Window size:</strong> 100
+                                <br />
+                                <strong>Alphabet Size:</strong> 3
+                                <br />
+                                <strong>Piecewise Aggregate Approximation Size:</strong> 2
+                                <br />
+                                <strong>Detection Threshold:</strong> 1
                             </DialogContentText>
                         </DialogContent>
                     </Dialog>
