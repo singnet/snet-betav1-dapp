@@ -1,11 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { MuiThemeProvider } from "@material-ui/core/styles"
+import {MuiThemeProvider} from "@material-ui/core/styles"
 import Pagination from "material-ui-flat-pagination"
-import Typography from '@material-ui/core/Typography'
-import { withRouter } from 'react-router-dom'
-import { AGI, getMarketplaceURL, isSupportedNetwork } from '../util'
-import { Requests } from '../requests'
+import {withRouter} from 'react-router-dom'
+import {AGI, getMarketplaceURL, isSupportedNetwork} from '../util'
+import {Requests} from '../requests'
 import BlockchainHelper from "./BlockchainHelper.js"
 import {Jobdetails} from './JobDetails.js';
 import {theme} from './ReactStyles.js';
@@ -35,12 +34,24 @@ class SampleServices extends React.Component {
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
     this.handlehealthsort = this.handlehealthsort.bind(this)
     this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
+    this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
   }
 
+    watchWallet() {
+        this.network.getAccount((account) => {
+            if (account !== this.state.account) {
+                this.onCloseJobDetailsSlider()
+                this.setState({account: account});
+            }
+        });
+    }
+
   watchNetwork() {
     this.network.getChainID((chainId) => {
+
       if (chainId !== this.state.chainId) {
+          this.onCloseJobDetailsSlider()
         this.setState({ chainId: chainId });
         this.loadDetails(chainId);
       }
@@ -126,13 +137,13 @@ class SampleServices extends React.Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        console.log("Initializing the watchNetwork timer");
         this.watchNetwork();
+        this.watchWallet()
+        this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
       } 
       else {
         this.setState({chainId: this.network.getDefaultNetwork()});
-        console.log("Defaulting to " + this.state.chainId);
         this.loadDetails(this.network.getDefaultNetwork());
       }
     }).catch(err => {
@@ -141,14 +152,16 @@ class SampleServices extends React.Component {
   }
 
   componentWillUnmount() {
-    if (this.watchNetworkTimer) {
-      console.log("Clearing the watchNetwork timer")
-      clearInterval(this.watchNetworkTimer);
-    }
+      if (this.watchWalletTimer) {
+          clearInterval(this.watchWalletTimer);
+      }
+
+      if (this.watchNetworkTimer) {
+          clearInterval(this.watchNetworkTimer);
+      }
   }
 
   componentDidMount() {
-    console.log("componentDidMount")
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }

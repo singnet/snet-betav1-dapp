@@ -15,6 +15,7 @@ export default class BlockchainHelper {
         this.eth = undefined;
         this.web3 = undefined;
         this.chainId = undefined;
+        this.defaultAccount = undefined;
     }
 
     async initialize() {
@@ -61,10 +62,14 @@ export default class BlockchainHelper {
 
         this.eth.accounts().then(accounts => {
             if (accounts.length === 0) {
+                this.defaultAccount = undefined
                 callBack(undefined);
             } else {
-                web3.eth.defaultAccount = accounts[0]; //TODO - NETWORK CHANGE
-                callBack(accounts[0]);
+                if (typeof accounts[0] !== 'undefined' && this.defaultAccount !== accounts[0]) {
+                    this.defaultAccount = accounts[0];
+                    web3.eth.defaultAccount = accounts[0]; //TODO - NETWORK CHANGE
+                    callBack(accounts[0]);
+                }
             }
         }).catch(err => { 
             console.log(err)
@@ -123,7 +128,7 @@ export default class BlockchainHelper {
         }
 
         this.eth.net_version().then(chainId => {
-            if (this.chainId !== chainId && typeof chainId !== undefined) {
+            if (typeof chainId !== "undefined" && this.chainId !== chainId) {
                 if (typeof NETWORKS[chainId] !== "undefined" && typeof NETWORKS[chainId].name !== "undefined") {
                     this.chainId = chainId;
                 } else {
