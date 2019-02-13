@@ -12,7 +12,7 @@ export default class ExampleService extends React.Component {
 
         this.state = {
             serviceName: "Calculator",
-            methodName: "add",
+            methodName: "Select a method",
             response: undefined,
             a: 0,
             b: 0
@@ -86,6 +86,10 @@ export default class ExampleService extends React.Component {
         this.serviceMethods = data;
     }
 
+    canBeInvoked() {
+        return (this.state.methodName !== "Select a method");
+    }
+
     handleFormUpdate(event) {
         this.setState({
             [event.target.name]: event.target.value
@@ -149,7 +153,7 @@ export default class ExampleService extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number 1: </div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number 2: </div>
                     <div className="col-md-3 col-lg-3">
                         <input name="b" type="number"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
@@ -159,7 +163,7 @@ export default class ExampleService extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

@@ -85,6 +85,16 @@ export default class Zeta36ChessAlphaZero extends React.Component {
         this.serviceMethods = data;
     }
 
+    canBeInvoked() {
+        return (
+            (this.state.move.length === 4 || this.state.move.length === 5) &&
+            ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].includes(this.state.move[0]) &&
+            ['1', '2', '3', '4', '5', '6', '7', '8'].includes(this.state.move[1]) &&
+            ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].includes(this.state.move[2]) &&
+            ['1', '2', '3', '4', '5', '6', '7', '8'].includes(this.state.move[3])
+        );
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -120,7 +130,7 @@ export default class Zeta36ChessAlphaZero extends React.Component {
                         <input name="uid" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                placeholder={"eg: Your Name"}
-                               value={this.state.uid}onChange={this.handleFormUpdate}></input>
+                               value={this.state.uid} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -129,7 +139,7 @@ export default class Zeta36ChessAlphaZero extends React.Component {
                         <input name="move" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                placeholder={"eg: c2c4"}
-                               value={this.state.move}onChange={this.handleFormUpdate}></input>
+                               value={this.state.move} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -138,7 +148,7 @@ export default class Zeta36ChessAlphaZero extends React.Component {
                         <input name="cmd" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                placeholder={"eg: empty or restart (the game)"}
-                               value={this.state.cmd}onChange={this.handleFormUpdate}></input>
+                               value={this.state.cmd} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
@@ -157,7 +167,7 @@ export default class Zeta36ChessAlphaZero extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
