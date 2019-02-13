@@ -248,6 +248,8 @@ export default class FaceAlignService extends React.Component {
           return(
             <div className="row">
               <div className="col-md-6 col-lg-6"><p>Aligned faces:</p></div>
+            </div>
+            <div className="row">
               {alignedFaceImgList}
             </div>
           );
