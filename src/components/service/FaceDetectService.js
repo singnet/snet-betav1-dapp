@@ -132,13 +132,13 @@ export default class FaceDetectService extends React.Component {
             });
     }
 
-    getData(imageData){
+    getData(imageData, mimetype, format, fn) {
         this.setState({imageData: imageData});
         var reader  = new FileReader();
         
         reader.addEventListener("load", () => {
             var dataurl = reader.result;
-            this.setState({imgsrc: "data:image/jpg;base64," + dataurl.substr(dataurl.indexOf(',')+1)});
+            this.setState({imgsrc: "data:" + mimetype + ";base64," + dataurl.substr(dataurl.indexOf(',')+1)});
         }, false);
 
         reader.readAsDataURL(new Blob([imageData]));
@@ -207,13 +207,12 @@ export default class FaceDetectService extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Number 1</div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-6 col-lg-6">
                         <SNETImageUpload imageDataFunc={this.getData} returnByteArray={true}/>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
+                    <div className="col-md-6 col-lg-6" style={{marginTop:"5px", textAlign: "right"}}>
                         <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
                     </div>
                 </div>
