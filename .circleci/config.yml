@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.9-node
+    working_directory: ~/singnet/snet-dapp
+    environment:
+      TRIGGER_BUILD_BRANCH: master
+    steps:
+      - checkout
+      - run:
+          name: Run install script
+          command: npm install
+      - run:
+          name: Run build script
+          command: npm run build
+

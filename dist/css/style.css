@@ -9277,6 +9277,57 @@ body.modal-open .modal .close {
   border-radius: 6px;
   padding:6px 14px;
 }
+
+.message-modal {
+  position: 'center';
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 13px;
+  height: 80px;
+  width: 450px;
+  padding: 10px;
+  margin: auto;
+}
+
+.job-details-unavailable {
+  font-size: 16px;
+  background-color: #efced1;
+  border: 1px solid #efced1;
+  padding: 15px 10px;
+  color: black;
+}
+
+.job-details-tag-align {
+  color: #303030;
+  text-align: center;
+  margin: 10px 0px 10px 0px;
+  display: table;
+  justify-content: center;
+  align-items: center;
+}
+
+.job-details-tag {
+  color: #0066ff;
+  background-color: #fff;
+  border: 1px solid #0066ff;
+  border-radius: 50px;
+  padding: 7px 7px;
+  font-size: 14px;
+  font-weight: normal;
+  margin: 2px;
+}
+
+.btn-tag {
+  color: #0066ff;
+  background-color: #fff;
+  border: 1px solid #0066ff;
+  border-radius: 50px;
+  padding: 2px 5px;
+  font-size: 14px;
+  font-weight: normal;
+  margin: 2px;
+}
+
 .btn-secondary {
     color: #0066ff;
     background-color: #fff;
@@ -9355,7 +9406,6 @@ body.modal-open .modal .close {
   font-size: 16px;
   color:#333;
   display: inline-block;
-  text-transform: uppercase;
 }
 
 .mtb-10 {
@@ -11053,6 +11103,9 @@ nav .nav-tabs .nav-link:hover {
   justify-content: left;
   align-items: center;
 }
+.agent-name-align label {
+  font-weight: normal;
+}
 .org-name-align {
   height: 60px;
   color: #303030;
@@ -11069,7 +11122,7 @@ nav .nav-tabs .nav-link:hover {
   text-align: center;
   padding:0;
   margin:0;
-  display: flex;
+  display: table;
   justify-content: center;
   align-items: center;
 }
@@ -11082,6 +11135,10 @@ nav .nav-tabs .nav-link:hover {
   justify-content: left;
   align-items: center;
 }
+.price-align label {
+  font-weight: normal;
+}
+
 .health-align {
   height: 60px;
   color: #303030;
@@ -11128,12 +11185,14 @@ nav .nav-tabs .nav-link:hover {
   } 
 
   .get-started {
-    background-color:#fff;
-    padding: 6px 10px;
-    float: left;
+    background-color: #fff;
+    padding: 3px 10px !important;
+    float: right;
     border-radius: 4px;
     margin: 0 11px 0 0;
-    } 
+    font-size: 14px;
+    color: #4086ff !important;
+  }
 
 .search-panel {
   position: relative;
@@ -11280,6 +11339,14 @@ h1 {
   float: right;
   } 
 
+  .error-msg {
+    background-color: #efced1;
+    border: 1px solid #efced1;
+    padding: 5px;
+    font-size: 12px;
+    color: black;
+  } 
+
 .network-name {
   padding: 5px;
   vertical-align: text-bottom;
@@ -11288,11 +11355,73 @@ h1 {
   font-size: 18px;
 }
 
-.job-details-text {
-  font-size: 14px;
-  line-height: 18px;
-  padding: 0 10px;
+.steps-circle {
+  background-color: #4f88f7;
+  color: #fff;
+  border-radius: 76px;
+  width: 120px;
+  height: 120px;
+  padding: 45px 30px;
+  font-size: 19px;
+  margin: 20px 0 0 0;
+  float: left;
+  z-index: 1;
+  position: relative;
 }
+  
+  .position-relative {
+    position:relative;
+  } 
+
+  .steps-details {
+    background-color: #efefef;
+    padding: 20px 20px 20px 97px;
+    float: left;
+    margin: 20px 0 0 0;
+    position: absolute;
+    left: 60px;
+    z-index: 0;
+    height: 120px;
+    width: 100%;
+  }
+
+.navigation {
+  padding: 5px 0 0 0;
+  vertical-align: text-bottom;
+  text-align: right;
+  color: #fff;
+}
+
+.navigation li {
+  list-style-type: none;
+  display: inline-block;
+  padding: 0 15px 0 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+ .navigation ul {
+  margin:0px;
+  padding:0px;
+  }
+
+  .get-started a {
+    color: #4086ff !important;
+  }
+  .navigation li a {
+      color: #fff;
+  }
+  .navigation li a:hover {
+      color: #fff;
+      text-decoration: underline;
+  } 
+
+  .job-details-text {
+    font-family: 'Muli', sans-serif !important;
+    font-size: 14px;
+    line-height: 20px;
+    padding: 5px 3px;
+  }
 
 .job-details-error-text {
   font-size: 12px;
@@ -11302,11 +11431,29 @@ h1 {
 }
 
 .search {
-  border: none;
-  padding: 7px 10px;
+  border: 1px solid #e4e4e4;
+  padding: 6px 10px;
   border-radius: 5px;
-  background-color: #3e3ae3;
-  width:250px;
+  background-color: #fff;
+  width: 250px;
+  float: right;
+  font-size: 13px;
+}
+
+.service-agents {
+  font-size: 17px;
+  font-weight: bold;
+  border-bottom: 2px solid #4086ff;
+  padding: 0 0 7px 0;
+}
+
+.btn-search {
+  width: 30px;
+  height: 32px;
+  position: absolute;
+  background: transparent;
+  right: 23px;
+  border: 0;
 }
 
 .serviceinputs {
@@ -11415,7 +11562,6 @@ h4 { display: inline-block; }
 
 
 i {
-  border: solid #0066ff;
   border-width: 0 2px 2px 0;
   display: inline-block;
   padding: 6px;
@@ -11433,7 +11579,6 @@ i {
 .sidebar {
 position: absolute;
   background: white;
-  border-radius: 3px;
   border: 5px;
   color: white;
   height: 100%;
@@ -11461,6 +11606,7 @@ position: absolute;
   padding: 15px 0;
   border-bottom: 1px solid #dee2e6;
   margin: 0;
+  background: #fff;
 }
 
 .vote-like {
@@ -11483,6 +11629,30 @@ position: absolute;
   border-bottom: 1px solid #dee2e6;
 }
 
+.fund-details {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 20px;
+  padding: 12px 10px;
+  background-color: #f2f6fc;
+  border: 1px solid #f2f6fc;
+}
+
+.job-description{
+  font-size: 14px;
+  margin: 0;
+  padding: 15px 0;
+  line-height: 18px;
+}
+
+.job-details-url {
+  font-size: 14px;
+  margin: 0;
+  padding: 15px 0;
+  border-bottom: 2px solid #dee2e6;
+  line-height: 18px;
+}
+
 .agenthealth{
   margin:5px;
   padding-bottom:10px;
@@ -11498,7 +11668,6 @@ position: absolute;
 
   .agent-boxes-label {
     font-weight: bold;
-    text-transform: uppercase;
     display: none;
   }
 .profile-content {
@@ -11591,9 +11760,8 @@ position: absolute;
 
 .channel-header {
     font-size: 15px;
-    font-weight: 500;
-   
-    margin: 0 0 20px 0;
+    font-weight: 500;   
+    margin: 0 0 15px 0;
 }
 .channel-details {
   padding:15px;
@@ -11771,27 +11939,27 @@ position: absolute;
 }
 
 @media only screen and (max-width: 768px) {
-  .logo img {
-    width:80%;
-  }
+  .no-mobile-padding { margin-top: 10px; }
+  .logo img { width:80%; }
+
   .blue-boxes-head {
     margin: 20px 0 0 0;
     padding: 15px;
-}
+  }
 
   .thumbsup-icon {
     text-align: center;
     padding: 0 10px 0 0;
     font-size: 13px;
     float: left;
- 
-}
-.thumbsdown-icon {
+  }
+
+  .thumbsdown-icon {
     text-align: center;
     padding: 0 4px 0 0;
     font-size: 13px;
     float: left;
-}
+  }
 
   .card-deck .card-body {
     box-shadow: 0 0 13px #e8e8e8;
@@ -11800,20 +11968,17 @@ position: absolute;
     padding: 2rem;
     margin-bottom: 20px;
   }
-  .card-deck .card {
-    border: none;
-  }
-  .head-txt-sec {
-    padding: 0;
-  }
+
+  .card-deck .card { border: none; }
+  .head-txt-sec { padding: 0; }
+
   .agent-boxes-label {
     font-weight: bold;
-    text-transform: uppercase;
     display: block;
     padding: 0;
     margin:10px 0 0 0;
     text-align: center;
-}
+  }
 
   .agent-name-align {
     height: 45px;
@@ -11825,54 +11990,60 @@ position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
-}
+  }
 
-.org-name-align {
-  height: 70px;
-  color: #303030;
-  text-align: center;
-  padding: 0;
-  margin: 0;
-  border-bottom:1px solid #E4E4E4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .agent-name-align label { font-weight: normal; }
 
-.tag-align {
-  height: 70px;
-  color: #303030;
-  text-align: center;
-  padding:0;
-  margin:0;
-  border-bottom:1px solid #E4E4E4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.price-align {
-  height: 70px;
-  color: #303030;
-  text-align: center;
-  margin: 0;
-  border-bottom:1px solid #E4E4E4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0;
-}
+  .org-name-align {
+    height: 70px;
+    color: #303030;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    border-bottom:1px solid #E4E4E4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.health-align {
-  height: 70px;
-  color: #303030;
-  text-align: center;
-  padding: 0;
-  margin: 0;
-  border-bottom:1px solid #E4E4E4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .tag-align {
+    width: 100%;
+    height: 70px;
+    color: #303030;
+    text-align: center;
+    padding: 14px 0;
+    margin:0;
+    border-bottom:1px solid #E4E4E4;
+    display: table;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .price-align {
+    height: 70px;
+    color: #303030;
+    text-align: center;
+    margin: 0;
+    border-bottom:1px solid #E4E4E4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+  }
+
+  .price-align label { font-weight: normal; }
+
+  .health-align { 
+    height: 70px;
+    color: #303030;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    border-bottom:1px solid #E4E4E4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
 .action-align {
   height: 70px;
@@ -11907,47 +12078,52 @@ position: absolute;
 }
 }
 @media only screen and (max-width: 667px) {
-  .no-mobile-padding {
-    padding: 0px;
-  }
-  .mobile-mtb-7 {
-    margin:7px 0;
-  }
-  .width-mobile-100 {
-      width: 100%;
-  }
-  
-  .logo img {
-    width:100%;
-  }
-    .thumbsup-icon {
+  .no-mobile-padding { padding: 0px; }
+  .mobile-mtb-7 { margin:7px 0; }
+  .width-mobile-100 { width: 100%; }
+  .logo img { width:100%; }
+
+  .thumbsup-icon {
     text-align: center;
     padding: 0 10px 0 0;
     font-size: 13px;
     float: left;
-}
+  }
+
   .thumbsdown-icon {
     text-align: center;
     padding: 0 10px 0 0;
     font-size: 13px;
     float: left;
-}
+  }
 
-.get-started {
-  background-color:#fff;
-  padding: 6px 10px;
-  float: left;
-  border-radius: 4px;
-  margin: 0 11px 0 0;
+  .get-started {
+    background-color: #fff;
+    padding: 3px 10px !important;
+    float: right;
+    border-radius: 4px;
+    margin: 0 11px 0 0;
+    font-size: 14px;
+    color: #4086ff !important;
   } 
 
   .search {
-    border: none;
-    padding: 7px 10px;
+    border: 1px solid #e4e4e4;
+    padding: 6px 10px;
     border-radius: 5px;
-    background-color: #3e3ae3;
-    color: white;
-    width: 100%;
+    background-color: #fff;
+    width: 250px;
+    float: right;
+    font-size: 13px;
+  } 
+
+  .btn-search {
+    width: 30px;
+    height: 32px;
+    position: absolute;
+    background: transparent;
+    right: 23px;
+    border: 0;
   }
 
   .card-deck .card-body {
@@ -11956,24 +12132,27 @@ position: absolute;
     background-color: #e3f0ff;
     padding: 2rem;
     margin-bottom: 20px;
-}
+  }
+
   .card-deck .card {
     border: none;
     padding: 0;
   }
-  .head-txt-sec {
-    padding: 0;
-  }
+
+  .head-txt-sec { padding: 0; }
+
   .agent-boxes-label {
     font-weight: bold;
-    text-transform: uppercase;
     display: block;
   }
+
   .agent-name-align {
     margin: 0 0 15px 0;
     padding:10px 0;
     border-bottom: 1px solid #ddd;
   }
+
+  .agent-name-align label { font-weight: normal; }
 
   .org-name-align {
     margin: 0 0 10px 0;
@@ -11981,38 +12160,45 @@ position: absolute;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
   .tag-align {
+    width: 100%;
     margin: 0 0 10px 0;
     padding:14px 0;
-    text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
   .price-align {
     margin: 0 0 10px 0;
     padding:14px 0;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
+  .price-align label { font-weight: normal; }
+
   .health-align {
     margin: 0 0 10px 0;
     padding:14px 0;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
   .action-align {
     margin: 0 0 10px 0;
     padding:14px 0;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+
   .sidebar {
+    width: 100% !important;
     position: absolute;
     background: white;
-    border-radius: 3px;
     border: 5px;
     color: white;
     height: 100%;
-    width: 320px;
+    /*width: 320px;*/
     padding: 0px 10px;
     box-shadow: grey 0px 3px 5px 2px;
     right: 0px;
@@ -12021,39 +12207,127 @@ position: absolute;
     transition: transform 225ms cubic-bezier(0, 0, 0.2, 1) 0ms;
     overflow-y: scroll;
     overflow-x: hidden;
-}
-
-  .head-txt-sec {
-    display: none;
   }
-  .media {
-    margin-top: 25px;
-}
-.sidenav {
-  width: 33rem;
-}
-.step-guide-boxes {
-  margin: 0 0 50px 0;
+
+  .head-txt-sec { display: none; }
+  .media { margin-top: 25px; }
+  .sidenav { width: 33rem; }
+  .step-guide-boxes { margin: 0 0 50px 0; }
+
+  .video {
+    margin: 0px;
+    padding: 0px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .video img { width:100%; }
+  .connect-wallet-title { margin: 40px 0 30px 0; }
+
+  .overview-connect {
+    margin: 0 auto;
+    padding: 35px 0;
+    text-align: center;
+    border-top: 1px solid #8dbbf0;
+    width: 50%
+  }
 }
 
-.video {
-  margin: 0px;
-  padding: 0px;
-  text-align: center;
-  width: 100%;
+/* Hamburger stying */
+.hamburger-menu { 
+  display: none;
+  text-align: right; 
 }
-.video img {
-  width:100%;
+
+.bars{
+  padding: 5px 10px;
+  border: none;
+  outline: none;
+  background-color: transparent;
 }
-.connect-wallet-title {
-    margin: 40px 0 30px 0;
+
+.bars span {
+  width: 15px;
+  height: 3px;
+  margin-bottom: 3px;
+  display: block;
+  background-color: #fff;
 }
-.overview-connect {
-  margin: 0 auto;
-  padding: 35px 0;
-  text-align: center;
-  border-top: 1px solid #8dbbf0;
-  width: 50%
+
+.bars span:last-of-type { margin-bottom: 0; }
+
+.header-menu ul { 
+  padding: 0;
+  margin-top: 5px; 
 }
+
+.header-menu ul li{ list-style: none; }
+
+.header-menu li.get-started { 
+  padding-left: 0 !important;
+  margin: 0;
+  float: none;
 }
+
+.header-menu li a {
+  padding-left: 12px; 
+  color: #fff; 
+}
+
+.header-menu li a:hover {
+  text-decoration: underline;
+}
+
+.mobile-header .network-name { visibility: hidden; }
+
+@media(max-width: 991px) {
+  .hamburger-menu { display: block; }
+  .navigation { display: none; }
+
+  .agent-detail { height: auto; }
+}
+
+@media(max-width: 564px){
+  .service-agents-container,
+  .search-bar {
+    width: 50%;
+  }
+
+  .service-agents { font-size: 16px; }
+  .search-bar input { width: 100%; }
+
+}
+
+@media(max-width: 535px){
+  .desktop-header .network-name { visibility: hidden; }
+
+  .mobile-header .network-name { 
+    width: 100%;
+    visibility: visible; 
+  }
+}
+
+@media(max-width:767px){
+  .channel-header { text-align: center; }
+
+  .channel-header div {
+    border-bottom: 1px solid #E4E4E4;
+    padding-bottom: 10px;  
+    margin: 10px 0;
+  }
+
+  .manage-account { padding-left: 10px; }
+}
+
 /*# sourceMappingURL=style.css.map */
+
+
+
+
+
+
+
+
+
+
+
