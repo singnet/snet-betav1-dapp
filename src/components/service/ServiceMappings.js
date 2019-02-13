@@ -19,8 +19,9 @@ import SentimentAnalysisService from "./SentimentAnalysisService";
 import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
 import VisualQAOpencog from './VisualQAOpencog.js';
 import MosesService from "./MosesService";
-import FaceDetectService from "./FaceDetectService";
+import FaceDetectService from "./FaceDetectService"
 import FaceLandmarksService from "./FaceLandmarksService"
+import FaceAlignService from "./FaceAlignService"
 
 import DefaultService from './DefaultService.js';
 
@@ -49,6 +50,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "moses-service")] = MosesService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-detect")] = FaceDetectService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-landmarks")] = FaceLandmarksService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-align")] = FaceAlignService;
     }
 
     generateUniqueID(orgId,serviceId) {
