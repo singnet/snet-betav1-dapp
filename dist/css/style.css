@@ -9291,8 +9291,8 @@ body.modal-open .modal .close {
 
 .btn-tag {
   color: #0066ff;
-  background-color: #fff;
-  border: 1px solid #0066ff;
+  background-color: #f2f6fc;
+  /*border: 1px solid #0066ff;*/
   border-radius: 50px;
   padding: 2px 5px;
   font-size: 14px;
@@ -9302,8 +9302,8 @@ body.modal-open .modal .close {
 
 .btn-secondary {
     color: #0066ff;
-    background-color: #fff;
-    border-color: #0066ff;
+    background-color: #f2f6fc;
+    /*border-color: #0066ff;*/
     border-radius: 50px;
     padding: 6px 14px;
     font-size: 12px;
@@ -11015,7 +11015,8 @@ nav .nav-tabs .nav-link:hover {
     color: #303030;
 }
 .chennels-amt-field {
-  width: 150px;
+  /*width: 150px;*/
+  width: 100%;
   margin: 0 10px 0 0;
   padding: 5px;
   border: 1px solid #e4e4e4;
@@ -11543,12 +11544,20 @@ i {
   left: 100;
   background-color: #fff;
 }
+
 .up {
   transform: rotate(-135deg);
   -webkit-transform: rotate(-135deg);
   left: 50%;
   position: absolute;
   top: -7px;
+  background-color: #fff;
+  border-right-width: 2px;
+  border-right-style: solid;
+  border-right-color: #0066ff;  
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+  border-bottom-color: #0066ff;
 }
 
 .sidebar {
@@ -11556,7 +11565,7 @@ position: absolute;
   background: white;
   border: 5px;
   color: white;
-  height: 100%;
+  /*height: 100%;*/
   width: 550px;
   padding: 0px 10px;
   box-shadow: grey 0px 3px 5px 2px;
@@ -11609,6 +11618,7 @@ position: absolute;
   font-weight: bold;
   line-height: 20px;
   padding: 12px 10px;
+  margin: 0 15px;
   background-color: #f2f6fc;
   border: 1px solid #f2f6fc;
 }
@@ -11618,6 +11628,14 @@ position: absolute;
   margin: 0;
   padding: 15px 0;
   border-bottom: 2px solid #dee2e6;
+}
+
+.job-details-url a { line-height: 20px; }
+
+.amt-label, 
+.expiry-block-no-label { 
+  padding: 0;
+  line-height: 20px; 
 }
 
 .agenthealth{
@@ -12166,7 +12184,7 @@ position: absolute;
     background: white;
     border: 5px;
     color: white;
-    height: 100%;
+    /*height: 100%;*/
     /*width: 320px;*/
     padding: 0px 10px;
     box-shadow: grey 0px 3px 5px 2px;
