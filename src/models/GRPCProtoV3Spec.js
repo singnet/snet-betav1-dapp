@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { hasOwnDefinedProperty } from "../util";
 import GRPCV3Service from "./GRPCV3Service";
+import NullGRPCV3Service from "./NullGRPCV3Service";
 
 export default class GRPCProtoV3Spec {
   constructor(serviceSpec) {
@@ -48,5 +49,10 @@ export default class GRPCProtoV3Spec {
 
   get services() {
     return [...this._services];
+  }
+
+  findServiceByName(serviceName) {
+    const service = _.find(this._services, (service) => service.hasSameName(serviceName));
+    return service || new NullGRPCV3Service();
   }
 }

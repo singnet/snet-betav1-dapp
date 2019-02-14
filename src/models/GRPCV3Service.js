@@ -12,4 +12,8 @@ export default class GRPCV3Service {
   get methodNames() {
     return [...this._methodNames];
   }
+
+  hasSameName(serviceName) {
+    return this._serviceName === serviceName;
+  }
 }

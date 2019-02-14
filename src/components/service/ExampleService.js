@@ -127,7 +127,8 @@ export default class ExampleService extends React.Component {
   }
 
   renderForm() {
-    const serviceMethodNames = this.serviceMethods;
+    const service = this.props.protoSpec.findServiceByName(this.state.serviceName);
+    const serviceMethodNames = service.methodNames;
     return (
       <React.Fragment>
         <div className="row">
