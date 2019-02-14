@@ -29,7 +29,104 @@ const coveringCanvas = {
       left: '0px',
     };
 
-export default class FaceLandmarksService extends React.Component {
+const centerCanvas = {
+        marginLeft:"auto",
+        marginRight:"auto",
+        display: "block"
+    };
+
+class FaceIdentityBadge extends React.Component {
+    constructor(props) {
+        super(props);
+        this.width = 320;
+        this.height = 160;
+        this.sWidth = this.width / 16;
+        this.sHeight = this.height / 8;
+        this.canvas_ref = React.createRef();
+    }
+
+    componentDidMount(){
+        this.renderBadge(this.props.identity);
+    }
+
+    componentDidUpdate(prevProps, prevState)
+    {
+        if (this.props.identity !== prevProps.identity) {
+            this.renderBadge(this.props.identity);
+        }
+    }
+
+    mapColor(p){
+        var rComponent = 0;
+        var gComponent = 0;
+        var bComponent = 0;
+        
+        if (p < -0.5){
+            var x = (-p - 0.5) * 2.0;
+            rComponent = 0;
+            gComponent = x * 255;
+            bComponent = 255;
+        } else if (p < 0.0) {
+            var x = (-p) * 2.0;
+            rComponent = 0;
+            gComponent = 255;
+            bComponent = 255 - (x * 255);
+        } else if (p < 0.5) {
+            var x = p * 2.0;
+            rComponent = (x * 255);
+            gComponent = 255;
+            bComponent = 0;
+        } else if (p < 1.0) {
+            var x = (p - 0.5) * 2.0;
+            rComponent = 255;
+            gComponent = 255 - (x * 255);
+            bComponent = 0;
+        }
+        
+        var s = "rgb(" + rComponent + "," + gComponent + "," + bComponent + ")";
+        return s;
+    }
+
+    mapColorMonochrome(p){
+        var rComponent = 0;
+        var gComponent = 0;
+        var bComponent = 0;
+        
+        if (p < 0){
+            var x = -p;
+            bComponent = x * 255;
+        } else {
+            var x = p;
+            gComponent = x * 255;
+        }
+        
+        var s = "rgb(" + rComponent + "," + gComponent + "," + bComponent + ")";
+        return s;
+    }
+
+    renderBadge(identity)
+    {
+        var canvas = this.canvas_ref.current;
+        if (canvas !== undefined && canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+            identity.map((item,idx) => {
+                var x = idx % 16;
+                var y = Math.floor(idx / 16);
+                var t = (item + 1.0 / 2.0); // -1 .. 1 => 0 .. 1
+                var logit = Math.log(t / (1-t));
+                ctx.fillStyle = this.mapColorMonochrome(logit); //'rgb(' + (item * 255) + ', 0, 0)';
+                ctx.fillRect(x * this.sWidth, y * this.sHeight, this.sWidth, this.sHeight);
+            });
+            
+        }
+    }
+
+    render() {
+        return <canvas style={centerCanvas} width={this.width} height={this.height} ref={this.canvas_ref} value={JSON.stringify(this.props.identity)}></canvas>
+    }
+}
+
+export default class FaceIdentityService extends React.Component {
 
     constructor(props) {
         super(props);
@@ -45,7 +142,6 @@ export default class FaceLandmarksService extends React.Component {
             imageData: undefined,
             imgsrc: undefined,
             facesString: '[{"x":10,"y":10,"w":100,"h":100}]',
-            landmarkModel: "68",
         };
 
         this.isComplete = false;
@@ -56,11 +152,6 @@ export default class FaceLandmarksService extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.response !== prevState.response) {
-          this.renderLandmarks(this.state.response);
-        }
-        if (this.state.landmarkModel !== prevState.landmarkModel)
-            this.setState({inputValid: this.checkValid()});
         if (this.state.facesString !== prevState.facesString) {
             let inputValid = this.checkValid();
             if (inputValid) {
@@ -150,8 +241,7 @@ export default class FaceLandmarksService extends React.Component {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
                 header: {
-                    landmark_model: this.state.landmarkModel,
-                    faces: { face_bbox: JSON.parse(this.state.facesString) },
+                    faces: JSON.parse(this.state.facesString),
                 },
                 image_chunk: {
                     content: this.state.imageData,
@@ -177,9 +267,6 @@ export default class FaceLandmarksService extends React.Component {
         if (this.state.methodName === undefined ||this.state.methodName === "Select a method" || this.state.methodName.length == 0)
             inputValid = false;
             
-        if (this.state.landmarkModel !== "68" && this.state.landmarkModel !== "5")
-            inputValid = false;
-    
         if (this.state.imageData === undefined)
             inputValid = false;
     
@@ -199,88 +286,6 @@ export default class FaceLandmarksService extends React.Component {
 
         reader.readAsDataURL(new Blob([imageData]));
     }
-
-    drawX(ctx, x, y) {
-        let size = 3;
-        
-        ctx.moveTo(x - size, y - size);
-        ctx.lineTo(x + size, y + size);
-        ctx.stroke();
-    
-        ctx.moveTo(x + size, y - size);
-        ctx.lineTo(x - size, y + size);
-    }
-    
-    renderLandmarks(result) {
-        let img = this.refs.sourceImg;
-        let cnvs = this.refs.bboxCanvas;
-        let outsideWrap = this.refs.outsideWrap;
-        if (img === undefined || cnvs === undefined || outsideWrap == undefined)
-          return;
-        if (img.naturalWidth === 0 || img.naturalHeight === 0)
-        {
-            setTimeout ( () => this.renderLandmarks(result), 200 );
-            return;
-        }
-        let desiredWidth = 500.0; // TODO: find appropriate reference width from components
-        let scaleFactor = desiredWidth / img.naturalWidth;
-        outsideWrap.style.width = img.naturalWidth * scaleFactor + "px";
-        outsideWrap.style.height = img.naturalHeight * scaleFactor + "px";
-        cnvs.style.position = "absolute";
-        cnvs.style.left = img.offsetLeft + "px";
-        cnvs.style.top = img.offsetTop + "px";
-        cnvs.width = img.naturalWidth * scaleFactor;
-        cnvs.height = img.naturalHeight * scaleFactor;
-      
-        let ctx = cnvs.getContext("2d");
-        result.landmarked_faces.forEach((item) => {
-          ctx.beginPath();
-          item.point.forEach((p) => {
-            this.drawX(ctx, p.x * scaleFactor, p.y * scaleFactor);
-          })
-          ctx.lineWidth = 1;
-          ctx.strokeStyle = '#00ff00';
-          ctx.stroke();
-        });
-        
-    }
-
-    renderBoundingBox(result) {
-        // {"faces": [{"x": 511, "y": 170, "w": 283, "h": 312}, {"x": 61, "y": 252, "w": 236, "h": 259}]}
-        let img = this.refs.sourceImg;
-        let cnvs = this.refs.bboxCanvas;
-        let outsideWrap = this.refs.outsideWrap;
-        if (img === undefined || cnvs === undefined || outsideWrap == undefined)
-          return;
-        if (img.naturalWidth === 0 || img.naturalHeight === 0)
-        {
-            setTimeout ( () => this.renderBoundingBox(result), 200 );
-            return;
-        }
-        let desiredWidth = 500.0; // TODO: find appropriate reference width from components
-        let scaleFactor = desiredWidth / img.naturalWidth;
-        outsideWrap.style.width = img.naturalWidth * scaleFactor + "px";
-        outsideWrap.style.height = img.naturalHeight * scaleFactor + "px";
-        cnvs.style.position = "absolute";
-        cnvs.style.left = img.offsetLeft + "px";
-        cnvs.style.top = img.offsetTop + "px";
-        cnvs.width = img.naturalWidth * scaleFactor;
-        cnvs.height = img.naturalHeight * scaleFactor;
-      
-        let ctx = cnvs.getContext("2d");
-        result.face_bbox.forEach((item) => {
-            ctx.beginPath();
-            ctx.rect(
-                item.x * scaleFactor,
-                item.y * scaleFactor,
-                item.w * scaleFactor,
-                item.h * scaleFactor
-            );
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = '#00ff00';
-            ctx.stroke();
-          }); 
-      }
 
     renderForm() {
         return (
@@ -315,14 +320,6 @@ export default class FaceLandmarksService extends React.Component {
                 <div className="row">
                     <div className="col-md-6 col-lg-6">
                         <label>
-                        Landmark model:
-                        <input type="text" value={this.state.landmarkModel} onChange={ this.handleChange.bind(this, 'landmarkModel') } />
-                        </label>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-6 col-lg-6">
-                        <label>
                         Faces JSON (you can get this from face detect):
                         <textarea onChange={ this.handleChange.bind(this, 'facesString')} value={this.state.facesString} />
                         </label>
@@ -338,17 +335,29 @@ export default class FaceLandmarksService extends React.Component {
     }
 
     renderComplete() {
-        return (
-            <div>
-                <p style={{fontSize: "13px"}}>Response from service is {JSON.stringify(this.state.response)} </p>
-                <div ref="outsideWrap" style={outsideWrapper}>
-                    <div style={insideWrapper}>
-                    <img ref="sourceImg" style={coveredImage} src={this.state.imgsrc}/>
-                    <canvas ref="bboxCanvas" style={coveringCanvas}/>
+        var identities = this.state.response.identities.map((item, idx) => {
+            return (
+                <div key={idx}>
+                    <div className="row" key={idx}>
+                        <div className="col-md-12 col-lg-12"><h3>Raw vector</h3></div>
+                    </div>
+                    <div className="row" key={idx}>
+                        <div className="col-md-12 col-lg-12"><textarea rows="3" cols="60" readOnly value={JSON.stringify(item.identity)}/></div>
+                    </div>
+                    <div className="row" key={idx}>
+                        <div className="col-md-12 col-lg-12"><h3>Badge</h3></div>
+                    </div>
+                    <div className="row" key={idx}>
+                        <div className="col-md-12 col-lg-12"><FaceIdentityBadge identity={item.identity}/></div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+          });
+          return(
+            <React.Fragment>
+                {identities}                
+            </React.Fragment>
+          );
     }
 
     render() {

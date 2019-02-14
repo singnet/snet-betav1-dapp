@@ -3,32 +3,6 @@ import SNETImageUpload from "./standardComponents/SNETImageUpload";
 import {hasOwnDefinedProperty} from '../../util'
 
 
-const outsideWrapper = { 
-    width: '256px',
-    height: '256px',
-    margin: '0px 0px', 
-    border: '0px',
-};
-const insideWrapper = { 
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-};
-const coveredImage = { 
-      width: '100%',
-      height: '100%',
-      position: 'absolute',
-      top: '0px',
-      left: '0px',
-    };
-const coveringCanvas = { 
-      width: '100%',
-      height: '100%',
-      position: 'absolute',
-      top: '0px',
-      left: '0px',
-    };
-
 export default class FaceAlignService extends React.Component {
 
     constructor(props) {
@@ -64,6 +38,8 @@ export default class FaceAlignService extends React.Component {
             this.setState({inputValid: this.checkValid()});
         }
         if (this.state.methodName !== prevState.methodName)
+            this.setState({inputValid: this.checkValid()});
+        if (this.state.imageData !== prevState.imageData)
             this.setState({inputValid: this.checkValid()});
       }
 
@@ -246,12 +222,14 @@ export default class FaceAlignService extends React.Component {
             );
           });
           return(
-            <div className="row">
-              <div className="col-md-6 col-lg-6"><p>Aligned faces:</p></div>
-            </div>
-            <div className="row">
-              {alignedFaceImgList}
-            </div>
+            <React.Fragment>
+                <div className="row">
+                <div className="col-md-6 col-lg-6"><p>Aligned faces:</p></div>
+                </div>
+                <div className="row">
+                {alignedFaceImgList}
+                </div>
+            </React.Fragment>
           );
     }
 

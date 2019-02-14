@@ -22,6 +22,7 @@ import MosesService from "./MosesService";
 import FaceDetectService from "./FaceDetectService"
 import FaceLandmarksService from "./FaceLandmarksService"
 import FaceAlignService from "./FaceAlignService"
+import FaceIdentityService from "./FaceIdentityService"
 
 import DefaultService from './DefaultService.js';
 
@@ -51,6 +52,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-detect")] = FaceDetectService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-landmarks")] = FaceLandmarksService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-align")] = FaceAlignService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-identity")] = FaceIdentityService;
     }
 
     generateUniqueID(orgId,serviceId) {
