@@ -12207,6 +12207,7 @@ position: absolute;
 /* Hamburger stying */
 .hamburger-menu { 
   display: none;
+  position: relative;
   text-align: right; 
 }
 
@@ -12226,6 +12227,11 @@ position: absolute;
 }
 
 .bars span:last-of-type { margin-bottom: 0; }
+
+.header-menu {
+  position: absolute;
+  right: 24px;
+}
 
 .header-menu ul { 
   padding: 0;
@@ -12284,6 +12290,11 @@ position: absolute;
   }
 }
 
+@media(max-width: 399px){
+  .header-menu { width: 100%; }
+  .header-menu .get-started { float: right !important; }
+}
+
 @media(max-width: 380px){
   .service-name-data,
   .balance-data,
@@ -12291,6 +12302,8 @@ position: absolute;
   .data-on-expand,
   .claim-channel-btn span {font-size: 12px !important; }
 }
+
+@media(max-width:360px) { .header-menu { top: 40px; } }
 
 
 
