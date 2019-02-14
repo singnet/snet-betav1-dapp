@@ -1,17 +1,19 @@
 import React from 'react';
 import {hasOwnDefinedProperty} from '../../util'
+import Button from '@material-ui/core/Button';
 
 export default class NeuralSpeechSynthesis extends React.Component {
 
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
+        this.users_guide =  "https://github.com/iktina/speech-synthesis-service";
+        this.serviceName =  "TTS";
+        this.methodName =  "t2s";
+
         this.state = {
-            serviceName: "TTS",
-            methodName: "t2s",
             response: undefined,
             text: ""
         };
@@ -77,20 +79,6 @@ export default class NeuralSpeechSynthesis extends React.Component {
         });
     }
 
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
-        });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
-        }
-    }
-
     onKeyPressvalidator(event) {
         // console.log(event.target.value);
     }
@@ -100,8 +88,8 @@ export default class NeuralSpeechSynthesis extends React.Component {
         btn.disabled = true;
         btn.innerHTML = "Wait...";
 
-        this.props.callApiCallback(this.state.serviceName,
-            this.state.methodName, {
+        this.props.callApiCallback(this.serviceName,
+            this.methodName, {
                 text: this.state.text
             });
     }
@@ -119,10 +107,18 @@ export default class NeuralSpeechSynthesis extends React.Component {
                 </div>
                
                 <div className="row">
-                    <div className="col-md-6 col-lg-6" style={{textAlign: "right", marginTop: "5px", width: "250px"}}>
+                    <div className="col-md-6 col-lg-6" style={{textAlign: "right", marginTop: "5px", width: "245px"}}>
                         <button id="invoke-button" type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
                     </div>
                 </div>
+
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px", marginTop: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-2">
+                        <Button target="_blank" href={this.users_guide} style={{fontSize: "13px", marginTop: "5px"}}>Guide</Button>
+                    </div>
+                </div>
+
             </React.Fragment>
         )
     }
@@ -135,7 +131,7 @@ export default class NeuralSpeechSynthesis extends React.Component {
         );
     }
 
-    componentDidMount() {
+    componentDidUpdate() {
       if (this.isComplete) {
           var data = new Uint8Array(this.state.response);
           var blob = new Blob([data], {type : 'audio/wav'});
