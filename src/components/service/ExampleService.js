@@ -13,7 +13,6 @@ export default class ExampleService extends React.Component {
         this.state = {
             serviceName: "Calculator",
             methodName: "Select a method",
-            response: undefined,
             a: 0,
             b: 0
         };
@@ -35,14 +34,6 @@ export default class ExampleService extends React.Component {
         this.isComplete = nextProps.isComplete;
         if (!this.isComplete) {
             this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
-                    this.state.response = nextProps.response;
-                } else {
-                    this.state.response = nextProps.response.value;
-                }
-            }
         }
     }
 
@@ -170,13 +161,23 @@ export default class ExampleService extends React.Component {
         )
     }
 
-    renderComplete() {
-        return (
-            <div>
-                <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p>
-            </div>
-        );
+  parseResponse() {
+    const { response }= this.props;
+
+    if(typeof response !== 'undefined') {
+      if(typeof response === 'string') {
+        return response;
+      }
+
+      return response.value;
     }
+  }
+
+  renderComplete() {
+    const response = this.parseResponse();
+
+    return <div><p style={{ fontSize: "13px" }}>Response from service is {response}</p></div>;
+  }
 
     render() {
         if (this.isComplete)
