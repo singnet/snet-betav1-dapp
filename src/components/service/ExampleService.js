@@ -26,12 +26,12 @@ export default class ExampleService extends React.Component {
         });
     }
 
-  handleServiceName(event) {
-    const serviceName = event.target.value;
-    this.setState({
-      serviceName: serviceName
-    });
-  }
+    handleServiceName(event) {
+        let strService = event.target.value;
+        this.setState({
+            serviceName: strService
+        });
+    }
 
     onKeyPressvalidator(event) {
         const keyCode = event.keyCode || event.which;
@@ -52,98 +52,74 @@ export default class ExampleService extends React.Component {
             });
     }
 
-  renderServiceMethodNames(serviceMethodNames) {
-    const serviceNameOptions = ["Select a method", ...serviceMethodNames];
-    return serviceNameOptions.map((serviceMethodName, index) => {
-      return <option key={index}>{serviceMethodName}</option>;
-    });
-  }
-
-  renderForm() {
-    const service = this.props.protoSpec.findServiceByName(this.state.serviceName);
-    const serviceMethodNames = service.methodNames;
-    return (
-      <React.Fragment>
-        <div className="row">
-          <div className="col-md-3 col-lg-3" style={{ padding: "10px", fontSize: "13px", marginLeft: "10px" }}>
-            Method Name:
-          </div>
-          <div className="col-md-3 col-lg-3">
-            <select
-              name="methodName"
-              style={{ height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px" }}
-              onChange={this.handleFormUpdate}
-            >
-              {this.renderServiceMethodNames(serviceMethodNames)}
-            </select>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-md-3 col-lg-3" style={{ padding: "10px", fontSize: "13px", marginLeft: "10px" }}>
-            Number 1:
-          </div>
-          <div className="col-md-3 col-lg-3">
-            <input
-              name="a"
-              type="number"
-              style={{ height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px" }}
-              value={this.state.a}
-              onChange={this.handleFormUpdate}
-              onKeyPress={(e) => this.onKeyPressvalidator(e)}
-            />
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-md-3 col-lg-3" style={{ padding: "10px", fontSize: "13px", marginLeft: "10px" }}>
-            Number 2:
-          </div>
-          <div className="col-md-3 col-lg-3">
-            <input
-              name="b"
-              type="number"
-              style={{ height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px" }}
-              value={this.state.b}
-              onChange={this.handleFormUpdate}
-              onKeyPress={(e) => this.onKeyPressvalidator(e)}
-            />
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-md-6 col-lg-6" style={{ textAlign: "right" }}>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={this.submitAction}
-              disabled={!this.canBeInvoked()}
-            >
-              Invoke
-            </button>
-          </div>
-        </div>
-      </React.Fragment>
-    )
-  }
-
-  parseResponse() {
-    const { response } = this.props;
-
-    if(typeof response !== 'undefined') {
-      if(typeof response === 'string') {
-        return response;
-      }
-
-      return response.value;
+    renderServiceMethodNames(serviceMethodNames) {
+        const serviceNameOptions = ["Select a method", ...serviceMethodNames];
+        return serviceNameOptions.map((serviceMethodName, index) => {
+          return <option key={index}>{serviceMethodName}</option>;
+        });
     }
-  }
 
-  renderComplete() {
-    const response = this.parseResponse();
+    renderForm() {
+        const service = this.props.protoSpec.findServiceByName(this.state.serviceName);
+        const serviceMethodNames = service.methodNames;
+        return (
+            <React.Fragment>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Method Name: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <select name="methodName"
+                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                                onChange={this.handleFormUpdate}>
+                            {this.renderServiceMethodNames(serviceMethodNames)}
+                        </select>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number 1: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="a" type="number"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               value={this.state.a} onChange={this.handleFormUpdate}
+                               onKeyPress={(e) => this.onKeyPressvalidator(e)}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number 2: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="b" type="number"
+                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                               value={this.state.b} onChange={this.handleFormUpdate}
+                               onKeyPress={(e) => this.onKeyPressvalidator(e)}></input>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
+                    </div>
+                </div>
+            </React.Fragment>
+        )
+    }
 
-    return <div><p style={{ fontSize: "13px" }}>Response from service is {response}</p></div>;
-  }
+    parseResponse() {
+        const { response } = this.props;
+        if(typeof response !== 'undefined') {
+            if(typeof response === 'string') {
+                return response;
+            }
+            return response.value;
+        }
+    }
+
+    renderComplete() {
+        const response = this.parseResponse();
+
+        return (
+            <div>
+                <p style={{fontSize: "13px"}}>Response from service is {response} </p>
+            </div>
+        );
+    }
 
     render() {
         if (this.props.isComplete)
