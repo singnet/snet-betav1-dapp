@@ -24,8 +24,8 @@ export default class GRPCProtoV3Spec {
       }
 
       const service = new GRPCV3Service(specKey, specDefinition);
-      return serviceAccumulator.push(service);
-    });
+      return [...serviceAccumulator, service];
+    }, []);
 
     return services;
   }
