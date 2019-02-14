@@ -420,26 +420,26 @@ export class Account extends Component {
                                     : null}
                                 </div>
                                 <div className="row">
-                                    <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
+                                    <div className=" col-xs-12 col-sm-4 col-md-4 col-lg-3 no-padding mtb-10">
                                         <label>Token Balance</label>
                                     </div>
-                                        <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
+                                        <div className=" col-xs-12 col-sm-8 col-md-8 col-lg-9 mtb-10 no-padding ">
                                             <label>{this.state.agiBalance} AGI</label>
                                         </div>
                                 </div>
                                 <div className="row">
-                                    <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
+                                    <div className=" col-xs-12 col-sm-4 col-md-4 col-lg-3 no-padding mtb-10">
                                         <label>Escrow Balance</label>
                                     </div>
-                                        <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
+                                        <div className=" col-xs-12 col-sm-8 col-md-8 col-lg-9 mtb-10 no-padding ">
                                             <label>{AGI.toDecimal(this.state.escrowaccountbalance)} AGI</label>
                                         </div>
                                 </div>
                                 <div className="row">
-                                    <div className=" col-xs-12 col-sm-4 col-md-3 col-lg-3 no-padding mtb-10">
+                                    <div className=" col-xs-12 col-sm-4 col-md-4 col-lg-3 no-padding mtb-10">
                                         <label>Authorized Tokens</label>
                                     </div>
-                                        <div className=" col-xs-12 col-sm-8 col-md-9 col-lg-9 mtb-10 no-padding ">
+                                        <div className=" col-xs-12 col-sm-8 col-md-8 col-lg-9 mtb-10 no-padding ">
                                             <label>{AGI.toDecimal(this.state.allowedtokenbalance)} AGI</label>
                                         </div>
                                 </div>
@@ -494,49 +494,59 @@ export class Account extends Component {
                         <div>
                             <DAppModal open={this.state.showModal} message={this.chainMessage} showProgress={true}/>
                         </div>
-                        <div className="manage-account">
+                        <div className="manage-account channel-details">
                         <h3>Channel Details</h3>
                         </div>
                         <div className="col-xs-12 col-sm-16 col-md-16 col-lg-16 channel-info ">
                             <div className="row channel-header">
-                                <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
+                                <div className="col-sm-2 col-md-2 col-lg-2 hidden-xs">
                                     <span>Channel ID</span>
                                 </div>
-                                <div className="col-sm-3 col-md-2 col-lg-3 hidden-xs">
+                                <div className="col-sm-2 col-md-2 col-lg-2 hidden-xs">
                                     <span>Organization</span>
                                 </div>
-                                <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
+                                <div className="col-xs-4 col-sm-3 col-md-3 col-lg-3">
                                     <span>Service</span>
                                 </div>                                                                
-                                <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
+                                <div className="col-xs-4 col-sm-2 col-md-2 col-lg-2">
                                     <span>Balance</span>
                                 </div>
-                                <div className="col-sm-3 col-md-3 col-lg-2 hidden-xs">
+                                <div className="col-xs-3 col-sm-2 col-md-2 col-lg-2">
                                     <span>Expiry Block</span>
                                 </div>
-                                <div className="col-sm-1 col-md-1 col-lg-1 hidden-xs">&nbsp;</div>
+                                <div className="col-xs-3 col-sm-1 col-md-1 col-lg-1">&nbsp;</div>
                             </div>
                             {this.state.userprofile.map((row, index) =>
                             <ExpansionPanel onChange={this.handleExpansion} key={index} style={{ borderRadius: "5px", backgroundColor: "#E3F0FF", marginBottom: "15px" }}>
                                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} style={{ padding: "0px" }}>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["channel_id"]}</span></div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["org_id"]}</span></div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3"> <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["display_name"]}</span></div>                    
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
-                                    <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{AGI.inAGI(row["balance_in_cogs"])} AGI</span></Typography>
-                                </div>
-                                <div className="col-xs-12 col-sm-3 col-md-2 col-lg-3">
-                                    <Typography><span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["expiration"]}</span></Typography>
-                                </div>
+                                  <div className="col-sm-2 col-md-2 col-lg-2 hidden-xs">
+                                    <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["channel_id"]}</span>
+                                  </div>
+                                  <div className="col-sm-2 col-md-2 col-lg-2 hidden-xs">
+                                    <span className="col-xs-6 col-sm-12 no-padding" style={{ fontSize: "14px" }}>{row["org_id"]}</span>
+                                  </div>
+                                  <div className="col-xs-4 col-sm-3 col-md-3 col-lg-3">
+                                    <span className="col-xs-6 col-sm-12 no-padding service-name-data" style={{ fontSize: "14px" }}>{row["display_name"]}</span>
+                                  </div>                    
+                                  <div className="col-xs-4 col-sm-2 col-md-2 col-lg-2">
+                                    <Typography>
+                                      <span className="col-xs-6 col-sm-12 no-padding balance-data" style={{ fontSize: "14px" }}>{AGI.inAGI(row["balance_in_cogs"])} AGI</span>
+                                    </Typography>
+                                  </div>
+                                  <div className="col-xs-3 col-sm-2 col-md-2 col-lg-2">
+                                    <Typography>
+                                      <span className="col-xs-6 col-sm-12 no-padding expiry-block-data" style={{ fontSize: "14px" }}>{row["expiration"]}</span>
+                                    </Typography>
+                                  </div>
                                 </ExpansionPanelSummary>
                                 <ExpansionPanelDetails style={{ backgroundColor: "#F1F1F1" }}>
-                                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-7 no-padding">
+                                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-7 no-padding data-on-expand">
                                         This channel has unused funds and has expired. You can claim your unused tokens which will be added to your escrow balance.
                                     </div>
                                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-5 pull-right">
                                         <div style={{ textAlign: "right" }}>
                                             {(this.state.supportedNetwork && this.state.account !== null) ?
-                                                <button type="button" className="btn btn-primary " onClick={()=> this.handleClaimTimeout(row)}><span style={{ fontSize: "15px" }}>Claim Channel</span></button>
+                                                <button type="button" className="btn btn-primary claim-channel-btn" onClick={()=> this.handleClaimTimeout(row)}><span style={{ fontSize: "15px" }}>Claim Channel</span></button>
                                             :
                                                 <button type="button" className="btn " disabled><span style={{ fontSize: "15px" }}>Claim Channel</span></button>
                                             }

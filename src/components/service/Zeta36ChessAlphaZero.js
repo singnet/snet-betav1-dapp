@@ -85,6 +85,16 @@ export default class Zeta36ChessAlphaZero extends React.Component {
         this.serviceMethods = data;
     }
 
+    canBeInvoked() {
+        return (
+            (this.state.move.length === 4 || this.state.move.length === 5) &&
+            ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].includes(this.state.move[0]) &&
+            ['1', '2', '3', '4', '5', '6', '7', '8'].includes(this.state.move[1]) &&
+            ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].includes(this.state.move[2]) &&
+            ['1', '2', '3', '4', '5', '6', '7', '8'].includes(this.state.move[3])
+        );
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -115,53 +125,34 @@ export default class Zeta36ChessAlphaZero extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>UID: </div>
                     <div className="col-md-3 col-lg-3">
-                        <select id="select1"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>UID</div>
-                    <div className="col-md-3 col-lg-2">
                         <input name="uid" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.uid}onChange={this.handleFormUpdate}></input>
+                               placeholder={"eg: Your Name"}
+                               value={this.state.uid} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Move</div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Move: </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="move" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.move}onChange={this.handleFormUpdate}></input>
+                               placeholder={"eg: c2c4"}
+                               value={this.state.move} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Command</div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Command: </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="cmd" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.cmd}onChange={this.handleFormUpdate}></input>
+                               placeholder={"eg: empty or restart (the game)"}
+                               value={this.state.cmd} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
                         <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
@@ -176,7 +167,7 @@ export default class Zeta36ChessAlphaZero extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

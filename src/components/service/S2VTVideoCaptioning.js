@@ -20,8 +20,8 @@ export default class S2VTVideoCaptioning extends React.Component {
             methodName: "video_cap",
 
             url: "",
-            start_time_sec: "",
-            stop_time_sec: "",
+            start_time_sec: 0,
+            stop_time_sec: 0,
 
             response: undefined
         };
@@ -85,6 +85,19 @@ export default class S2VTVideoCaptioning extends React.Component {
         this.serviceMethods = data;
     }
 
+    isValidVideoURL(str) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            (str.endsWith(".avi") || str.endsWith(".mp4"))
+        );
+    }
+    canBeInvoked() {
+        return (
+            this.isValidVideoURL(this.state.url) &&
+            this.state.start_time_sec <= this.state.stop_time_sec
+        );
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -106,8 +119,8 @@ export default class S2VTVideoCaptioning extends React.Component {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
                 url: this.state.url,
-                start_time_sec: this.state.start_time_sec,
-                stop_time_sec: this.state.stop_time_sec
+                start_time_sec: this.state.start_time_sec.toString(),
+                stop_time_sec: this.state.stop_time_sec.toString()
             });
     }
 
@@ -115,52 +128,31 @@ export default class S2VTVideoCaptioning extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Video (URL): </div>
                     <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Video (URL)</div>
-                    <div className="col-md-3 col-lg-2">
                         <input name="url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Start Time</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="start_time_sec" type="text"
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>StartTime (s): </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="start_time_sec" type="number" min="0"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.start_time_sec} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Stop Time</div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="stop_time_sec" type="text"
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>StopTime (s): </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="stop_time_sec" type="number" min={this.state.start_time_sec}
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.stop_time_sec} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
                         <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
@@ -175,7 +167,7 @@ export default class S2VTVideoCaptioning extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
