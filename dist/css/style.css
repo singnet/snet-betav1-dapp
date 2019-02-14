@@ -9289,6 +9289,34 @@ body.modal-open .modal .close {
   margin: auto;
 }
 
+.job-details-unavailable {
+  font-size: 16px;
+  background-color: #efced1;
+  border: 1px solid #efced1;
+  padding: 15px 10px;
+  color: black;
+}
+
+.job-details-tag-align {
+  color: #303030;
+  text-align: center;
+  margin: 10px 0px 10px 0px;
+  display: table;
+  justify-content: center;
+  align-items: center;
+}
+
+.job-details-tag {
+  color: #0066ff;
+  background-color: #fff;
+  border: 1px solid #0066ff;
+  border-radius: 50px;
+  padding: 7px 7px;
+  font-size: 14px;
+  font-weight: normal;
+  margin: 2px;
+}
+
 .btn-tag {
   color: #0066ff;
   background-color: #f2f6fc;
@@ -11623,11 +11651,19 @@ position: absolute;
   border: 1px solid #f2f6fc;
 }
 
+.job-description{
+  font-size: 14px;
+  margin: 0;
+  padding: 15px 0;
+  line-height: 18px;
+}
+
 .job-details-url {
   font-size: 14px;
   margin: 0;
   padding: 15px 0;
   border-bottom: 2px solid #dee2e6;
+  line-height: 18px;
 }
 
 .job-details-url a { line-height: 20px; }

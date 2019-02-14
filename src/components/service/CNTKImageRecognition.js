@@ -19,9 +19,9 @@ export default class CNTKImageRecognition extends React.Component {
             reference: "https://cntk.ai/pythondocs/CNTK_301_Image_Recognition_with_Deep_Transfer_Learning.html",
 
             serviceName: "Recognizer",
-            methodName: undefined,
+            methodName: "Select a method",
 
-            img_path: "",
+            img_path: undefined,
             model: "ResNet152",
 
             response: undefined
@@ -90,22 +90,15 @@ export default class CNTKImageRecognition extends React.Component {
         this.serviceMethods = data;
     }
 
+    canBeInvoked() {
+        return (
+            this.state.img_path &&
+            this.state.methodName !== "Select a method"
+        );
+    }
+
     getImageURL(data) {
-        if (data) {
-            // URL Image
-            if (data.startsWith("http")) {
-                this.setState({
-                    img_path: data
-                });
-            }
-            // Base64 Image
-            else {
-                this.setState({
-                    img_path: data.split(",")[1]
-                });
-            }
-            console.log(data);
-        }
+        this.setState({ img_path: data });
     }
 
     handleFormUpdate(event) {
@@ -137,31 +130,22 @@ export default class CNTKImageRecognition extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Method Name: </div>
                     <div className="col-md-3 col-lg-3">
                         <select name="methodName"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
+                                value={this.state.methodName}
                                 onChange={this.handleFormUpdate}>
                             {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
+                                <option value={row} key={index}>{row}</option>)}
                         </select>
                     </div>
                 </div>
                 <div className="row" align="center">
-                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} allowURL={true} />
+                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} instantUrlFetch={true} allowURL={true} />
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
                         <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
@@ -176,7 +160,7 @@ export default class CNTKImageRecognition extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

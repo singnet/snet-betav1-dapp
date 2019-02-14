@@ -1,6 +1,7 @@
 import React from 'react';
 import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
+import Slider from '@material-ui/lab/Slider';
 
 import SNETImageUpload from "./standardComponents/SNETImageUpload";
 
@@ -13,6 +14,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
         this.getImageURL = this.getImageURL.bind(this);
         this.getServiceMethods = this.getServiceMethods.bind(this);
+        this.handleSliderChange = this.handleSliderChange.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/yolov3-object-detection.md",
@@ -24,10 +26,11 @@ export default class YOLOv3ObjectDetection extends React.Component {
 
             model: "yolov3",
             img_path: "",
-            confidence: "",
+            confidence: 0.5,
 
             response: undefined
         };
+
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -89,22 +92,16 @@ export default class YOLOv3ObjectDetection extends React.Component {
     }
 
     getImageURL(data) {
-        if (data) {
-            // URL Image
-            if (data.startsWith("http")) {
-                this.setState({
-                    img_path: data
-                });
-            }
-            // Base64 Image
-            else {
-                this.setState({
-                    img_path: data.split(",")[1]
-                });
-            }
-            console.log(data);
-        }
+        this.setState({ img_path: data });
     }
+
+    canBeInvoked() {
+        return (this.state.img_path);
+    }
+
+    handleSliderChange(event, value) {
+        this.setState({ confidence: value });
+    };
 
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
@@ -128,7 +125,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
             this.state.methodName, {
                 model: this.state.model,
                 img_path: this.state.img_path,
-                confidence: this.state.confidence
+                confidence: this.state.confidence.toFixed(2)
             });
     }
 
@@ -136,40 +133,23 @@ export default class YOLOv3ObjectDetection extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Confidence (0-1)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="confidence" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.confidence} onChange={this.handleFormUpdate}></input>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Confidence ({this.state.confidence.toFixed(2)}): </div>
+                    <div className="col-md-3 col-lg-3" style={{width: "280px"}}>
+                        <Slider
+                            style={{ padding: "15px 0px", width: "100%" }}
+                            value={this.state.confidence}
+                            min={0.05}
+                            max={1.0}
+                            step={0.05}
+                            onChange={this.handleSliderChange}
+                        />
                     </div>
                 </div>
                 <div className="row" align="center">
-                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} allowURL={true} />
+                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} instantUrlFetch={true} allowURL={true} />
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
                         <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
@@ -184,7 +164,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>

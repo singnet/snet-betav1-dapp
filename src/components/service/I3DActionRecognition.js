@@ -19,11 +19,12 @@ export default class I3DActionRecognition extends React.Component {
             serviceName: "VideoActionRecognition",
             methodName: "video_action_recon",
 
-            model: "",
+            model: "400",
             url: "",
 
             response: undefined
         };
+        this.modelOptions = ["400", "600"];
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -84,6 +85,17 @@ export default class I3DActionRecognition extends React.Component {
         this.serviceMethods = data;
     }
 
+    isValidVideoURL(str) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            (str.endsWith(".avi") || str.endsWith(".mp4"))
+        );
+    }
+
+    canBeInvoked() {
+        return (this.isValidVideoURL(this.state.url));
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -113,46 +125,26 @@ export default class I3DActionRecognition extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>I3D Model: </div>
                     <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
+                        <select name="model"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                 onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
+                            {this.modelOptions.map((row, index) =>
+                                <option value={row} key={index}>{row}</option>)}
                         </select>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Model (400 or
-                        600)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="model" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.model} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Video URL</div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Video URL: </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
                         <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
@@ -167,7 +159,7 @@ export default class I3DActionRecognition extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
