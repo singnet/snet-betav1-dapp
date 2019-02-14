@@ -806,7 +806,7 @@ export default class SNETImageUpload extends React.Component {
                                 <Typography
                                     color="inherit"
                                     noWrap
-                                    variant="title"
+                                    variant="h6"
                                     style={{
                                         fontSize: 18,
                                         fontFamily: snetFont,
