@@ -1,5 +1,4 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
 
 export default class ExampleService extends React.Component {
 
@@ -8,7 +7,6 @@ export default class ExampleService extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
-        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             serviceName: "Calculator",
@@ -16,64 +14,6 @@ export default class ExampleService extends React.Component {
             a: 0,
             b: 0
         };
-
-        this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
-
-    parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        }
-    }
-
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        var objects = undefined;
-        var items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                this.methodsForAllServices[rr] = methods;
-            }
-        });
-        this.getServiceMethods(this.allServices[0]);
-    }
-
-    getServiceMethods(strService) {
-        this.setState({
-            serviceName: strService
-        });
-        var data = this.methodsForAllServices[strService];
-        if (typeof data === 'undefined') {
-            data = [];
-        }
-        this.serviceMethods = data;
     }
 
     canBeInvoked() {
@@ -86,19 +26,12 @@ export default class ExampleService extends React.Component {
         });
     }
 
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
-        });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
-        }
-    }
+  handleServiceName(event) {
+    const serviceName = event.target.value;
+    this.setState({
+      serviceName: serviceName
+    });
+  }
 
     onKeyPressvalidator(event) {
         const keyCode = event.keyCode || event.which;
@@ -195,7 +128,7 @@ export default class ExampleService extends React.Component {
   }
 
   parseResponse() {
-    const { response }= this.props;
+    const { response } = this.props;
 
     if(typeof response !== 'undefined') {
       if(typeof response === 'string') {
@@ -213,7 +146,7 @@ export default class ExampleService extends React.Component {
   }
 
     render() {
-        if (this.isComplete)
+        if (this.props.isComplete)
             return (
                 <div>
                     {this.renderComplete()}
