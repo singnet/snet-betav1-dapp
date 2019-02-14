@@ -9308,8 +9308,8 @@ body.modal-open .modal .close {
 
 .job-details-tag {
   color: #0066ff;
-  background-color: #fff;
-  border: 1px solid #0066ff;
+  background-color: #f2f6fc;
+  /*border: 1px solid #0066ff;*/
   border-radius: 50px;
   padding: 7px 7px;
   font-size: 14px;
