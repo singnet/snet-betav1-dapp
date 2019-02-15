@@ -68,6 +68,7 @@ export default class ExampleService extends React.Component {
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Method Name: </div>
                     <div className="col-md-3 col-lg-3">
                         <select name="methodName"
+                                value={this.state.methodName}
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                 onChange={this.handleFormUpdate}>
                             {this.renderServiceMethodNames(serviceMethodNames)}
