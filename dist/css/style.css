@@ -12116,6 +12116,9 @@ position: absolute;
     margin-top: 13px;
   }
 
+  .fa-window-maximize,
+  .fa-window-minimize { display: none; }
+
   .get-started {
     background-color: #fff;
     padding: 3px 10px !important;
