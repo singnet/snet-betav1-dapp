@@ -9308,8 +9308,8 @@ body.modal-open .modal .close {
 
 .job-details-tag {
   color: #0066ff;
-  background-color: #fff;
-  border: 1px solid #0066ff;
+  background-color: #f2f6fc;
+  /*border: 1px solid #0066ff;*/
   border-radius: 50px;
   padding: 7px 7px;
   font-size: 14px;
@@ -11295,6 +11295,7 @@ margin-right:15px;
   /*text-align: center;*/
   /*padding: 0;*/
   font-size: 13px;
+  text-align: left;
 } 
 .likes-text {
   /*padding: 7px 0 0 10px;*/
@@ -11593,7 +11594,7 @@ position: absolute;
   background: white;
   border: 5px;
   color: white;
-  /*height: 100%;*/
+  height: 100%;
   width: 550px;
   padding: 0px 10px;
   box-shadow: grey 0px 3px 5px 2px;
@@ -11619,13 +11620,15 @@ position: absolute;
   border-bottom: 1px solid #dee2e6;
   margin: 0;
   background: #fff;
+  text-align: center;
 }
 
 .vote-like {
   padding: 0;
   float: none;
   border: 0px;
-  }
+  text-align: right;
+}
 
 .address {
   margin: 0;
@@ -11977,6 +11980,8 @@ position: absolute;
     padding-right: 14px;
   }
 
+  .vote .thumbsup-icon { padding-right: 0; }
+
   .thumbsdown-icon {
     /*text-align: center;*/
     /*padding: 0 4px 0 0;*/
@@ -12106,18 +12111,9 @@ position: absolute;
   .width-mobile-100 { width: 100%; }
   .logo img { width:100%; }
 
-  .thumbsup-icon {
-    /*text-align: center;*/
-    /*padding: 0 10px 0 0;*/
-    /*font-size: 13px;*/
-    /*float: left;*/
-  }
-
-  .thumbsdown-icon {
-    /*text-align: center;*/
-    /*padding: 0 10px 0 0;*/
-    /*font-size: 13px;*/
-    /*float: left;*/
+  .vote .thumbsup-icon {
+    padding-right: 0;
+    margin-top: 13px;
   }
 
   .get-started {
@@ -12220,7 +12216,7 @@ position: absolute;
     background: white;
     border: 5px;
     color: white;
-    /*height: 100%;*/
+    height: 100%;
     /*width: 320px;*/
     padding: 0px 10px;
     box-shadow: grey 0px 3px 5px 2px;
