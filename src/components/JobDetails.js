@@ -17,6 +17,9 @@ import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
 import {serviceStateJSON} from '../service_state'
 
+const minSliderWidth='550px';
+const maxSliderWidth ='1550px';
+
 export  class Jobdetails extends React.Component {
     constructor() {
       super(props)
@@ -33,7 +36,7 @@ export  class Jobdetails extends React.Component {
         valueTab:0,
         enableVoting:false,
         showModal:false,
-        sliderWidth:'550px',
+        sliderWidth:minSliderWidth,
         showEscrowBalanceAlert:false,
       };
 
@@ -46,8 +49,7 @@ export  class Jobdetails extends React.Component {
       this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
       this.handleChangeTabs = this.handleChangeTabs.bind(this);
       this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this);
-      this.onMaximizeJobDetailsSlider = this.onMaximizeJobDetailsSlider.bind(this);
-      this.onMinimizeJobDetailsSlider = this.onMinimizeJobDetailsSlider.bind(this);
+      this.onResizeJobDetailsSlider = this.onResizeJobDetailsSlider.bind(this);
       this.changeocvalue = this.changeocvalue.bind(this);
       this.changeocexpiration = this.changeocexpiration.bind(this);
       this.openchannelhandler = this.openchannelhandler.bind(this);
@@ -489,12 +491,9 @@ export  class Jobdetails extends React.Component {
       }
     }
 
-    onMaximizeJobDetailsSlider(){
-      this.setState({ sliderWidth: '1550px'});
-    }
-
-    onMinimizeJobDetailsSlider(){
-      this.setState({ sliderWidth: '550px'});
+    onResizeJobDetailsSlider(){
+      const newWidth = this.state.sliderWidth === minSliderWidth ? maxSliderWidth : minSliderWidth;
+      this.setState({ sliderWidth: newWidth});
     }
 
     onKeyPressvalidator(event) {
@@ -563,8 +562,10 @@ export  class Jobdetails extends React.Component {
                 <div className="sidebar">
                   <PerfectScrollbar>
                     <div style={{paddingRight:"11px", fontSize: "30px",textAlign: "right"}}>
-                      <i className="fas fa-window-minimize mini-maxi-close" onClick={this.onMinimizeJobDetailsSlider}></i>
-                      <i className="fas fa-window-maximize mini-maxi-close" onClick={this.onMaximizeJobDetailsSlider}></i>
+                      <i className={this.state.sliderWidth === minSliderWidth ?
+                        "fas fa-window-maximize mini-maxi-close":
+                        "fas fa-window-minimize mini-maxi-close" }
+                         onClick={this.onResizeJobDetailsSlider}></i>
                       <i className="fas fa-window-close mini-maxi-close" onClick={this.onCloseJobDetailsSlider}></i>
                     </div>
                     <Typography component={ 'div'} style={{fontFamily: "Muli"}}>
