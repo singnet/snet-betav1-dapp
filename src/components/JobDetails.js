@@ -18,7 +18,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import {serviceStateJSON} from '../service_state'
 
 const minSliderWidth='550px';
-const maxSliderWidth ='1550px';
+const maxSliderWidth ='100%';
 
 export  class Jobdetails extends React.Component {
     constructor() {
