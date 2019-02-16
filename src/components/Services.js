@@ -128,8 +128,10 @@ class SampleServices extends React.Component {
       if (isInitialized) {
         console.log("Initializing the watchNetwork timer");
         this.watchNetwork();
-        this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
-      } 
+        if (!this.watchNetworkTimer) {
+          this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
+        }
+      }
       else {
         this.setState({chainId: this.network.getDefaultNetwork()});
         console.log("Defaulting to " + this.state.chainId);
