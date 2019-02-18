@@ -12351,7 +12351,7 @@ position: absolute;
   .balance-data,
   .expiry-block-data,
   .data-on-expand,
-  .claim-channel-` span {font-size: 12px !important; }
+  .claim-channel-btn span {font-size: 12px !important; }
 }
 
 @media(max-width:360px) { .header-menu { top: 40px; } }
