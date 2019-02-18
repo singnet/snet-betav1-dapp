@@ -1,10 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import {MuiThemeProvider} from "@material-ui/core/styles"
+import { MuiThemeProvider } from "@material-ui/core/styles"
 import Pagination from "material-ui-flat-pagination"
-import {withRouter} from 'react-router-dom'
-import {AGI, getMarketplaceURL, isSupportedNetwork} from '../util'
-import {Requests} from '../requests'
+import Typography from '@material-ui/core/Typography'
+import { withRouter } from 'react-router-dom'
+import { AGI, getMarketplaceURL, isSupportedNetwork } from '../util'
+import { Requests } from '../requests'
 import BlockchainHelper from "./BlockchainHelper.js"
 import {Jobdetails} from './JobDetails.js';
 import {theme} from './ReactStyles.js';
@@ -41,15 +42,14 @@ class SampleServices extends React.Component {
     watchWallet() {
         this.network.getAccount((account) => {
             if (account !== this.state.account) {
-                this.onCloseJobDetailsSlider()
                 this.setState({account: account});
+                this.onCloseJobDetailsSlider()
             }
         });
     }
 
   watchNetwork() {
     this.network.getChainID((chainId) => {
-
       if (chainId !== this.state.chainId) {
           this.onCloseJobDetailsSlider()
         this.setState({ chainId: chainId });
@@ -75,14 +75,14 @@ class SampleServices extends React.Component {
     }
 
     let ucSearchTerm = this.state.searchTerm.toUpperCase();
-    this.state.agents.map(row => 
-      (this.inArray(row["tags_uc"], ucSearchTerm)) ? 
+    this.state.agents.map(row =>
+      (this.inArray(row["tags_uc"], ucSearchTerm)) ?
       console.log("Matched " + row["tags_uc"]) : console.log("Not Matched " + row["tags_uc"]))
 
-    let searchedagents = this.state.agents.map(row => 
-        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1 
+    let searchedagents = this.state.agents.map(row =>
+        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1
         || (this.inArray(row["tags_uc"], ucSearchTerm)) ? row : null))
-    
+
     let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
     console.log("Setting search results to " + bestsearchresults.length)
     this.setState({searchResults:bestsearchresults});
@@ -117,7 +117,7 @@ class SampleServices extends React.Component {
     }
     this.setState({agents: pricesort})
   }
-  
+
   handleservicenamesort() {
     var servicenamesort = this.state.agents
     if (this.state.toggleServiceName === false) {
@@ -141,11 +141,10 @@ class SampleServices extends React.Component {
         if (!this.watchNetworkTimer) {
           this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
         }
+        if (!this.watchWalletTimer) {
+              this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
+        }
       }
-        this.watchWallet()
-        this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
-        this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
-      } 
       else {
         this.setState({chainId: this.network.getDefaultNetwork()});
         this.loadDetails(this.network.getDefaultNetwork());
