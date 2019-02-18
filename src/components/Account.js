@@ -18,9 +18,6 @@ import DAppModal from './DAppModal.js'
 export class Account extends Component {
   constructor(props) {
     super(props)
-    this.state = {
-      value: 0,
-    }
 
     this.network = new BlockchainHelper();
     this.state = {
@@ -66,12 +63,10 @@ export class Account extends Component {
 
   componentWillUnmount() {
     if (this.watchWalletTimer) {
-      console.log("Clearing wallet timer")
       clearInterval(this.watchWalletTimer);
     }
 
     if (this.watchNetworkTimer) {
-      console.log("Clearing network timer")
       clearInterval(this.watchNetworkTimer);
     }
   }
@@ -79,7 +74,6 @@ export class Account extends Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        console.log("Initializing timers")
         this.watchNetwork();
         this.watchWallet();
         if (!this.watchNetworkTimer) {
@@ -108,7 +102,7 @@ export class Account extends Component {
       if (account !== this.state.account) {
         console.log("Account changed from " + this.state.account +" to " + account)
         this.setState({account:account})
-        this.loadAGIBalances(this.state.chainId)
+        this.loadDetails(this.state.chainId)
       }
     });
   }
@@ -151,7 +145,6 @@ export class Account extends Component {
       this.setState({userprofile: []})
       return;
     }
-    console.log("Loading details")
     this.setState({supportedNetwork: true})  
     let mpeURL = getMarketplaceURL(chainId);
     let _urlfetchprofile = mpeURL + 'expired-channels?user_address='+web3.eth.defaultAccount;
@@ -292,7 +285,7 @@ export class Account extends Component {
     let instanceTokenContract = caller.network.getTokenInstance(caller.state.chainId);
     instanceTokenContract.allowance(caller.state.account, caller.network.getMPEAddress(caller.state.chainId), async (err, allowedbalance) => {
       var amountInCogs = AGI.inCogs(web3, caller.state.depositAmount);
-      console.log("Attempting to deposit " + amountInCogs + " attempt " + counter)
+
       if (Number(amountInCogs) > Number(allowedbalance)) {
           if(counter < 15) {
               console.log("Checking deposit AllowedBalance is " + allowedbalance + " deposit amount is " + amountInCogs);
