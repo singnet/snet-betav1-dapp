@@ -18,6 +18,9 @@ import DAppModal from './DAppModal.js'
 export class Account extends Component {
   constructor(props) {
     super(props)
+    this.state = {
+      value: 0,
+    }
 
     this.network = new BlockchainHelper();
     this.state = {
@@ -63,10 +66,12 @@ export class Account extends Component {
 
   componentWillUnmount() {
     if (this.watchWalletTimer) {
+      console.log("Clearing wallet timer")
       clearInterval(this.watchWalletTimer);
     }
 
     if (this.watchNetworkTimer) {
+      console.log("Clearing network timer")
       clearInterval(this.watchNetworkTimer);
     }
   }
@@ -74,6 +79,7 @@ export class Account extends Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
+        console.log("Initializing timers")
         this.watchNetwork();
         this.watchWallet();
         if (!this.watchNetworkTimer) {
@@ -102,7 +108,7 @@ export class Account extends Component {
       if (account !== this.state.account) {
         console.log("Account changed from " + this.state.account +" to " + account)
         this.setState({account:account})
-        this.loadDetails(this.state.chainId)
+        this.loadAGIBalances(this.state.chainId)
       }
     });
   }
@@ -141,11 +147,12 @@ export class Account extends Component {
 
   loadDetails(chainId) {
     if (typeof web3 === 'undefined' || !isSupportedNetwork(chainId)) {
-      this.setState({supportedNetwork: false})  
+      this.setState({supportedNetwork: false})
       this.setState({userprofile: []})
       return;
     }
-    this.setState({supportedNetwork: true})  
+    console.log("Loading details")
+    this.setState({supportedNetwork: true})
     let mpeURL = getMarketplaceURL(chainId);
     let _urlfetchprofile = mpeURL + 'expired-channels?user_address='+web3.eth.defaultAccount;
     Requests.get(_urlfetchprofile)
@@ -183,7 +190,7 @@ export class Account extends Component {
   Expirationchange(e) {
     this.setState({ extexp: e.target.value })
   }
-  
+
   extamountchange(e) {
     this.setState({ extamount: e.target.value })
   }
@@ -232,7 +239,7 @@ export class Account extends Component {
         this.network.waitForTransaction(txnHash).then(receipt => {
             if(typeof callBack !== 'undefined') {
                 callBack(caller)
-            } else {            
+            } else {
                 this.nextJobStep();
                 this.setState({[messageField]:successMessage})
                 this.setState({depositAmount: 0})
@@ -265,12 +272,12 @@ export class Account extends Component {
     web3.eth.getGasPrice((err, gasPrice) => {
       if(err) {
         gasPrice = DEFAULT_GAS_PRICE;
-      }      
+      }
       instanceTokenContract.approve.estimateGas(this.network.getMPEAddress(this.state.chainId),amountInCogs, (err, estimatedGas) => {
         if(err) {
             estimatedGas = DEFAULT_GAS_ESTIMATE;
-        }        
-        this.executeContractMethod(instanceTokenContract.approve, this.handleDeposit, estimatedGas, gasPrice, "contractMessage", 
+        }
+        this.executeContractMethod(instanceTokenContract.approve, this.handleDeposit, estimatedGas, gasPrice, "contractMessage",
         "",
         [this.network.getMPEAddress(this.state.chainId),amountInCogs]);
       })
@@ -281,11 +288,11 @@ export class Account extends Component {
     if(typeof counter === 'undefined'){
         counter = 0
     }
-    
+
     let instanceTokenContract = caller.network.getTokenInstance(caller.state.chainId);
     instanceTokenContract.allowance(caller.state.account, caller.network.getMPEAddress(caller.state.chainId), async (err, allowedbalance) => {
       var amountInCogs = AGI.inCogs(web3, caller.state.depositAmount);
-
+      console.log("Attempting to deposit " + amountInCogs + " attempt " + counter)
       if (Number(amountInCogs) > Number(allowedbalance)) {
           if(counter < 15) {
               console.log("Checking deposit AllowedBalance is " + allowedbalance + " deposit amount is " + amountInCogs);
