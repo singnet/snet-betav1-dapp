@@ -5,7 +5,6 @@ export default class ExampleService extends React.Component {
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
         this.state = {
@@ -23,13 +22,6 @@ export default class ExampleService extends React.Component {
     handleFormUpdate(event) {
         this.setState({
             [event.target.name]: event.target.value
-        });
-    }
-
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
         });
     }
 
