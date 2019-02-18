@@ -86,14 +86,14 @@ export default class AnnotationResultVisualizer extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.sliderWidth != this.props.sliderWidth) {
-      this.randomLayout()
+      this.randomLayout();
     }
   }
 
   registerEventListeners() {
     this.cy.nodes().on(
       "mouseover",
-      function (event) {
+      function(event) {
         this.setState({
           selectedNode: {
             node: event.target.data(),
@@ -104,19 +104,19 @@ export default class AnnotationResultVisualizer extends React.Component {
     );
     this.cy.nodes().on(
       "select",
-      function (event) {
+      function(event) {
         this.focusOnNode(event.target.data().id);
       }.bind(this)
     );
     this.cy.nodes().on(
       "mouseout",
-      function (event) {
+      function(event) {
         this.setState({ selectedNode: { node: null, position: null } });
       }.bind(this)
     );
     this.cy.nodes().on(
       "unselect",
-      function (event) {
+      function(event) {
         this.removeFocus();
       }.bind(this)
     );
@@ -175,17 +175,17 @@ export default class AnnotationResultVisualizer extends React.Component {
   toggleAnnotationVisibility(annotation, show) {
     show
       ? this.cy.batch(() => {
-        this.cy.add(
-          this.props.graph.nodes.filter(
-            e => e.data.group === annotation && e.data.id
-          )
-        );
-        this.cy.add(
-          this.props.graph.edges.filter(
-            e => e.data.group === annotation && e.data.source && e.data.target
-          )
-        );
-      })
+          this.cy.add(
+            this.props.graph.nodes.filter(
+              e => e.data.group === annotation && e.data.id
+            )
+          );
+          this.cy.add(
+            this.props.graph.edges.filter(
+              e => e.data.group === annotation && e.data.source && e.data.target
+            )
+          );
+        })
       : this.cy.remove(`[group='${annotation}']`);
     this.randomLayout();
     this.registerEventListeners();
@@ -215,7 +215,7 @@ export default class AnnotationResultVisualizer extends React.Component {
   }
 
   render() {
-    console.log('width', this.props.sliderWidth)
+    console.log("width", this.props.sliderWidth);
 
     return (
       <div
@@ -376,7 +376,7 @@ export default class AnnotationResultVisualizer extends React.Component {
           >
             <h4>{`${this.state.selectedNode.node.name} ( ${
               this.state.selectedNode.node.id
-              } )`}</h4>
+            } )`}</h4>
             <p>
               {this.formatDescription(this.state.selectedNode.node.definition)}
             </p>

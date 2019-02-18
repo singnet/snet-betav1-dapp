@@ -43,8 +43,8 @@ export const showNotification = ({ message, busy }, callBack) => {
           }
         />
       ) : (
-          <ErrorSnackbarContent message={<span>{message}</span>} />
-        )}
+        <ErrorSnackbarContent message={<span>{message}</span>} />
+      )}
     </Snackbar>
   );
 };
@@ -95,13 +95,8 @@ export default class GeneAnnotationService extends React.Component {
       genes: [],
       geneList: null,
       selectedAnnotations: [],
-      annotationResult: null,
-      busy: false,
       notification: null
     };
-    this.isComplete = false;
-
-    this.parseProps(props);
     // bind functions
     this.handleGeneAdded = this.handleGeneAdded.bind(this);
     this.handleGeneRemoved = this.handleGeneRemoved.bind(this);
@@ -112,25 +107,20 @@ export default class GeneAnnotationService extends React.Component {
     this.downloadSchemeFile = this.downloadSchemeFile.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
-    console.log("Updating in base class");
-    if (this.isComplete !== nextProps.isComplete) {
-      this.parseProps(nextProps);
+  componentDidUpdate(prevProps) {
+    if (prevProps.isComplete !== this.props.isComplete) {
+      this.setState({ notification: null });
     }
   }
 
-  parseProps(nextProps) {
-    this.isComplete = nextProps.isComplete;
-    console.log("isComplete ", this.isComplete);
-    if (this.isComplete) {
-      if (typeof nextProps.response !== "undefined") {
-        console.log("Result", nextProps.response);
-        this.state.annotationResult = {
-          graph: JSON.parse(nextProps.response.graph),
-          schemeFile: nextProps.response.scm
-        };
-        this.state.notification = null;
-      }
+  parseResponse() {
+    const { response } = this.props;
+    if (typeof response !== "undefined") {
+      const r = {
+        graph: JSON.parse(response.graph),
+        schemeFile: response.scm
+      };
+      return r;
     }
   }
 
@@ -187,13 +177,13 @@ export default class GeneAnnotationService extends React.Component {
       let selectedAnnotations = state.selectedAnnotations.slice();
       isSelected
         ? selectedAnnotations.push({
-          name: annotation,
-          filter: availableAnnotations.find(a => a.key === annotation)
-            .defaults
-        })
+            name: annotation,
+            filter: availableAnnotations.find(a => a.key === annotation)
+              .defaults
+          })
         : (selectedAnnotations = selectedAnnotations.filter(
-          a => a.name !== annotation
-        ));
+            a => a.name !== annotation
+          ));
 
       return { selectedAnnotations: selectedAnnotations };
     });
@@ -236,7 +226,7 @@ export default class GeneAnnotationService extends React.Component {
 
   downloadSchemeFile() {
     const json = `data:application/txt, ${encodeURIComponent(
-      this.state.annotationResult.schemeFile
+      this.parseResponse().schemeFile
     )}`;
     const link = document.createElement("a");
     link.setAttribute("href", json);
@@ -255,32 +245,25 @@ export default class GeneAnnotationService extends React.Component {
       annotation["functionName"] = sa.name;
       annotation["filters"] = sa.filter
         ? Object.keys(sa.filter).map(k => {
-          const filter = {};
-          filter["filter"] = k;
-          filter["value"] = Array.isArray(sa.filter[k])
-            ? sa.filter[k]
-              .reduce((acc, value) => {
-                return acc + " " + value;
-              }, "")
-              .trim()
-            : this.capitalizeFirstLetter(sa.filter[k].toString());
-          return filter;
-        })
+            const filter = {};
+            filter["filter"] = k;
+            filter["value"] = Array.isArray(sa.filter[k])
+              ? sa.filter[k]
+                  .reduce((acc, value) => {
+                    return acc + " " + value;
+                  }, "")
+                  .trim()
+              : this.capitalizeFirstLetter(sa.filter[k].toString());
+            return filter;
+          })
         : [];
-
       return annotation;
     });
     annotationResult.genes = this.state.genes.map(g => ({ geneName: g }));
-    console.log("Request params", JSON.stringify(annotationResult));
     this.props.callApiCallback("Annotate", "Annotate", annotationResult);
-
     this.setState({
       notification: { message: "Fetching annotation results ...", busy: true }
     });
-    console.log(
-      "Selected annotations before request",
-      this.state.selectedAnnotations
-    );
   }
 
   renderForm() {
@@ -321,19 +304,19 @@ export default class GeneAnnotationService extends React.Component {
   renderComplete() {
     return (
       <React.Fragment>
-        {this.state.annotationResult.graph.nodes.length < MAXIMUM_GRAPH_SIZE ? (
+        {this.parseResponse().graph.nodes.length < MAXIMUM_GRAPH_SIZE ? (
           <AnnotationResultVisualizer
             notification={this.state.notification}
             annotations={this.state.selectedAnnotations.map(a => a.name)}
-            graph={this.state.annotationResult.graph}
+            graph={this.parseResponse().graph}
             downloadSchemeFile={this.downloadSchemeFile}
             sliderWidth={this.props.sliderWidth}
           />
         ) : (
-            <AnnotationResultDownload
-              downloadSchemeFile={this.downloadSchemeFile}
-            />
-          )}
+          <AnnotationResultDownload
+            downloadSchemeFile={this.downloadSchemeFile}
+          />
+        )}
       </React.Fragment>
     );
   }
@@ -345,7 +328,7 @@ export default class GeneAnnotationService extends React.Component {
           showNotification(this.state.notification, () => {
             this.setState({ notification: null });
           })}
-        {this.isComplete ? this.renderComplete() : this.renderForm()}
+        {this.props.isComplete ? this.renderComplete() : this.renderForm()}
       </React.Fragment>
     );
   }
