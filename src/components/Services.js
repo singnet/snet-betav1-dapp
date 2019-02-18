@@ -138,6 +138,10 @@ class SampleServices extends React.Component {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
         this.watchNetwork();
+        if (!this.watchNetworkTimer) {
+          this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
+        }
+      }
         this.watchWallet()
         this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
         this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);

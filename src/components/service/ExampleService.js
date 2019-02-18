@@ -1,5 +1,4 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
 
 export default class ExampleService extends React.Component {
 
@@ -8,82 +7,13 @@ export default class ExampleService extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
-        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             serviceName: "Calculator",
             methodName: "Select a method",
-            response: undefined,
             a: 0,
             b: 0
         };
-
-        this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
-
-    parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
-                    this.state.response = nextProps.response;
-                } else {
-                    this.state.response = nextProps.response.value;
-                }
-            }
-        }
-    }
-
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        var objects = undefined;
-        var items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
-            }
-        });
-        this.getServiceMethods(this.allServices[0]);
-    }
-
-    getServiceMethods(strService) {
-        this.setState({
-            serviceName: strService
-        });
-        var data = this.methodsForAllServices[strService];
-        if (typeof data === 'undefined') {
-            data = [];
-        }
-        this.serviceMethods = data;
     }
 
     canBeInvoked() {
@@ -101,13 +31,6 @@ export default class ExampleService extends React.Component {
         this.setState({
             serviceName: strService
         });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
-        }
     }
 
     onKeyPressvalidator(event) {
@@ -129,17 +52,26 @@ export default class ExampleService extends React.Component {
             });
     }
 
+    renderServiceMethodNames(serviceMethodNames) {
+        const serviceNameOptions = ["Select a method", ...serviceMethodNames];
+        return serviceNameOptions.map((serviceMethodName, index) => {
+          return <option key={index}>{serviceMethodName}</option>;
+        });
+    }
+
     renderForm() {
+        const service = this.props.protoSpec.findServiceByName(this.state.serviceName);
+        const serviceMethodNames = service.methodNames;
         return (
             <React.Fragment>
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Method Name: </div>
                     <div className="col-md-3 col-lg-3">
                         <select name="methodName"
+                                value={this.state.methodName}
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                 onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
+                            {this.renderServiceMethodNames(serviceMethodNames)}
                         </select>
                     </div>
                 </div>
@@ -170,16 +102,28 @@ export default class ExampleService extends React.Component {
         )
     }
 
+    parseResponse() {
+        const { response } = this.props;
+        if(typeof response !== 'undefined') {
+            if(typeof response === 'string') {
+                return response;
+            }
+            return response.value;
+        }
+    }
+
     renderComplete() {
+        const response = this.parseResponse();
+
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is {this.state.response} </p>
+                <p style={{fontSize: "13px"}}>Response from service is {response} </p>
             </div>
         );
     }
 
     render() {
-        if (this.isComplete)
+        if (this.props.isComplete)
             return (
                 <div>
                     {this.renderComplete()}

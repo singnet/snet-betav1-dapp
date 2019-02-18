@@ -16,6 +16,10 @@ import Vote from './Vote.js';
 import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
 import {serviceStateJSON} from '../service_state'
+import GRPCProtoV3Spec from "../models/GRPCProtoV3Spec";
+
+const minSliderWidth='550px';
+const maxSliderWidth ='100%';
 
 export  class Jobdetails extends React.Component {
     constructor() {
@@ -33,7 +37,7 @@ export  class Jobdetails extends React.Component {
         valueTab:0,
         enableVoting:false,
         showModal:false,
-        sliderWidth:'550px',
+        sliderWidth:minSliderWidth,
         showEscrowBalanceAlert:false,
       };
 
@@ -42,12 +46,12 @@ export  class Jobdetails extends React.Component {
       this.channelHelper = new ChannelHelper();
       this.currentBlockNumber = 0;
       this.serviceSpecJSON = undefined;
+      this.protoSpec = undefined;
       this.serviceMappings = new ServiceMappings();
       this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
       this.handleChangeTabs = this.handleChangeTabs.bind(this);
       this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this);
-      this.onMaximizeJobDetailsSlider = this.onMaximizeJobDetailsSlider.bind(this);
-      this.onMinimizeJobDetailsSlider = this.onMinimizeJobDetailsSlider.bind(this);
+      this.onResizeJobDetailsSlider = this.onResizeJobDetailsSlider.bind(this);
       this.changeocvalue = this.changeocvalue.bind(this);
       this.changeocexpiration = this.changeocexpiration.bind(this);
       this.openchannelhandler = this.openchannelhandler.bind(this);
@@ -96,7 +100,9 @@ export  class Jobdetails extends React.Component {
       return fetch(encodeURI(_urlservicebuf))
         .then(serviceSpecResponse => serviceSpecResponse.json())
         .then(serviceSpec => new Promise(function(resolve) {
-          caller.serviceSpecJSON = Root.fromJSON(serviceSpec[0]);
+          const serviceSpecJSON = Root.fromJSON(serviceSpec[0]);
+          caller.serviceSpecJSON = serviceSpecJSON;
+          caller.protoSpec = new GRPCProtoV3Spec(serviceSpecJSON);
           resolve();
         }));
     }
@@ -489,12 +495,9 @@ export  class Jobdetails extends React.Component {
       }
     }
 
-    onMaximizeJobDetailsSlider(){
-      this.setState({ sliderWidth: '1550px'});
-    }
-
-    onMinimizeJobDetailsSlider(){
-      this.setState({ sliderWidth: '550px'});
+    onResizeJobDetailsSlider(){
+      const newWidth = this.state.sliderWidth === minSliderWidth ? maxSliderWidth : minSliderWidth;
+      this.setState({ sliderWidth: newWidth});
     }
 
     onKeyPressvalidator(event) {
@@ -563,8 +566,10 @@ export  class Jobdetails extends React.Component {
                 <div className="sidebar">
                   <PerfectScrollbar>
                     <div style={{paddingRight:"11px", fontSize: "30px",textAlign: "right"}}>
-                      <i className="fas fa-window-minimize mini-maxi-close" onClick={this.onMinimizeJobDetailsSlider}></i>
-                      <i className="fas fa-window-maximize mini-maxi-close" onClick={this.onMaximizeJobDetailsSlider}></i>
+                      <i className={this.state.sliderWidth === minSliderWidth ?
+                        "fas fa-window-maximize mini-maxi-close":
+                        "fas fa-window-minimize mini-maxi-close" }
+                         onClick={this.onResizeJobDetailsSlider}></i>
                       <i className="fas fa-window-close mini-maxi-close" onClick={this.onCloseJobDetailsSlider}></i>
                     </div>
                     <Typography component={ 'div'} style={{fontFamily: "Muli"}}>
@@ -616,36 +621,36 @@ export  class Jobdetails extends React.Component {
                                     <TabContainer>
                                         
                                         <div className={(this.state.fundTabEnabled)? "row channels-sec" : "row channels-sec-disabled"}>
-                                        <div className="col-md-12 no-padding mtb-10">
-                                        <div className="col-md-12 no-padding"> 
-                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Amount:
-                                            <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
-                                                Tokens to be added to the channel to make the call</span>} >
-                                                <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
-                                            </Tooltip>                                            
+                                          <div className="col-md-12 no-padding mtb-10">
+                                            <div className="col-xs-12 col-md-12 no-padding"> 
+                                              <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 amt-label">Amount:
+                                                <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
+                                                  Tokens to be added to the channel to make the call</span>} >
+                                                  <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                                </Tooltip>                                            
+                                              </div>
+                                            <div className="col-xs-7 col-sm-4 col-md-4">
+                                              <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
+                                                disabled={!this.state.fundTabEnabled}/>
                                             </div>
-                                            <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
-                                                 disabled={!this.state.fundTabEnabled}/>
-                                            </div>
-                                            </div>
-                                            </div>
-                                            <div className="col-md-12 no-padding"> 
-                                            <div className="col-xs-12 col-sm-2 col-md-8 mtb-10">Expiry Blocknumber:
+                                          </div>
+                                        </div>
+                                        <div className="col-xs-12 col-md-12 no-padding"> 
+                                          <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Blocknumber:
                                             <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
                                                 Expiry in terms of Ethereum block number. The channel becomes eligible for you to reclaim funds once the Ethereum block number exceeds the provided number. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current block number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number. </span>} >
                                                 <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
                                             </Tooltip>       
-                                            </div>                                     
-                                            <div className="col-xs-12 col-sm-4 col-md-4">
-                                                <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={!this.state.fundTabEnabled}/>
-                                            </div>
-                                            </div>
-                                            <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
-                                                <button type="button" className={this.state.fundTabEnabled?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
+                                          </div>            
+                                          <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
+                                            <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={!this.state.fundTabEnabled}/>
+                                          </div>
+                                        </div>
+                                        <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
+                                          <button type="button" className={this.state.fundTabEnabled?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
                                                         disabled={!this.state.fundTabEnabled}>Reserve Funds</button>
-                                            </div>
-                                            </div>
+                                        </div>
+                                      </div>
 
                                         <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
                                         <div className="row">
@@ -667,7 +672,7 @@ export  class Jobdetails extends React.Component {
                                              <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
                                           </div>:
                                           <React.Fragment>
-                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse} sliderWidth={this.state.sliderWidth}/>
+                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse} sliderWidth={this.state.sliderWidth} protoSpec={this.protoSpec} />
                                           </React.Fragment>
                                         }
                                         <div className="row">

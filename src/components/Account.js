@@ -76,8 +76,12 @@ export class Account extends Component {
       if (isInitialized) {
         this.watchNetwork();
         this.watchWallet();
-        this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
-        this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
+        if (!this.watchNetworkTimer) {
+          this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
+        }
+        if (!this.watchWalletTimer) {
+          this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
+        }
       }
     }).catch(err => {
       console.error(err);

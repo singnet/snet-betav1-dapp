@@ -9308,8 +9308,8 @@ body.modal-open .modal .close {
 
 .job-details-tag {
   color: #0066ff;
-  background-color: #fff;
-  border: 1px solid #0066ff;
+  background-color: #f2f6fc;
+  /*border: 1px solid #0066ff;*/
   border-radius: 50px;
   padding: 7px 7px;
   font-size: 14px;
@@ -9319,8 +9319,8 @@ body.modal-open .modal .close {
 
 .btn-tag {
   color: #0066ff;
-  background-color: #fff;
-  border: 1px solid #0066ff;
+  background-color: #f2f6fc;
+  /*border: 1px solid #0066ff;*/
   border-radius: 50px;
   padding: 2px 5px;
   font-size: 14px;
@@ -9330,8 +9330,8 @@ body.modal-open .modal .close {
 
 .btn-secondary {
     color: #0066ff;
-    background-color: #fff;
-    border-color: #0066ff;
+    background-color: #f2f6fc;
+    /*border-color: #0066ff;*/
     border-radius: 50px;
     padding: 6px 14px;
     font-size: 12px;
@@ -11043,7 +11043,8 @@ nav .nav-tabs .nav-link:hover {
     color: #303030;
 }
 .chennels-amt-field {
-  width: 150px;
+  /*width: 150px;*/
+  width: 100%;
   margin: 0 10px 0 0;
   padding: 5px;
   border: 1px solid #e4e4e4;
@@ -11294,6 +11295,7 @@ margin-right:15px;
   /*text-align: center;*/
   /*padding: 0;*/
   font-size: 13px;
+  /*text-align: left;*/
 } 
 .likes-text {
   /*padding: 7px 0 0 10px;*/
@@ -11571,12 +11573,20 @@ i {
   left: 100;
   background-color: #fff;
 }
+
 .up {
   transform: rotate(-135deg);
   -webkit-transform: rotate(-135deg);
   left: 50%;
   position: absolute;
   top: -7px;
+  background-color: #fff;
+  border-right-width: 2px;
+  border-right-style: solid;
+  border-right-color: #0066ff;  
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+  border-bottom-color: #0066ff;
 }
 
 .sidebar {
@@ -11610,13 +11620,15 @@ position: absolute;
   border-bottom: 1px solid #dee2e6;
   margin: 0;
   background: #fff;
+  text-align: center;
 }
 
 .vote-like {
   padding: 0;
   float: none;
   border: 0px;
-  }
+  /*text-align: right;*/
+}
 
 .address {
   margin: 0;
@@ -11637,6 +11649,7 @@ position: absolute;
   font-weight: bold;
   line-height: 20px;
   padding: 12px 10px;
+  margin: 0 15px;
   background-color: #f2f6fc;
   border: 1px solid #f2f6fc;
 }
@@ -11654,6 +11667,14 @@ position: absolute;
   padding: 15px 0;
   border-bottom: 2px solid #dee2e6;
   line-height: 18px;
+}
+
+.job-details-url a { line-height: 20px; }
+
+.amt-label, 
+.expiry-block-no-label { 
+  padding: 0;
+  line-height: 20px; 
 }
 
 .agenthealth{
@@ -11959,6 +11980,8 @@ position: absolute;
     padding-right: 14px;
   }
 
+  .vote .thumbsup-icon { padding-right: 0; }
+
   .thumbsdown-icon {
     /*text-align: center;*/
     /*padding: 0 4px 0 0;*/
@@ -12088,19 +12111,13 @@ position: absolute;
   .width-mobile-100 { width: 100%; }
   .logo img { width:100%; }
 
-  .thumbsup-icon {
-    /*text-align: center;*/
-    /*padding: 0 10px 0 0;*/
-    /*font-size: 13px;*/
-    /*float: left;*/
+  .vote .thumbsup-icon {
+    padding-right: 0;
+    margin-top: 13px;
   }
 
-  .thumbsdown-icon {
-    /*text-align: center;*/
-    /*padding: 0 10px 0 0;*/
-    /*font-size: 13px;*/
-    /*float: left;*/
-  }
+  .fa-window-maximize,
+  .fa-window-minimize { display: none; }
 
   .get-started {
     background-color: #fff;
