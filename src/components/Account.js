@@ -108,7 +108,7 @@ export class Account extends Component {
       if (account !== this.state.account) {
         console.log("Account changed from " + this.state.account +" to " + account)
         this.setState({account:account})
-        this.loadAGIBalances(this.state.chainId)
+        this.loadDetails(this.state.chainId)
       }
     });
   }
