@@ -48,8 +48,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 
-import Paper from "@material-ui/core/Paper";
-
 // Color Palette
 const snetGreyError = grey[700];
 const snetGrey = grey[500];
@@ -57,6 +55,7 @@ const dropzoneBackgroundGrey = grey[200];
 const snetBackgroundGrey = grey[100];
 const snetRed = red[500];
 const snetBackgroundRed = red[100];
+
 // Definitions
 const spacingUnit = 8;
 const snetFont = "Roboto";
@@ -77,14 +76,11 @@ export default class SNETImageUpload extends React.Component {
 
         this.state = {
             // Component's flow of execution
-            mainState: this.props.outputImage.length > 0 ? "display" : "initial", // initial, loading, uploaded, display
-            value: this.props.outputImage.length > 0 ?
-                4
+            mainState: "initial", // initial, loading, uploaded, display
+            value: this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
+                (this.props.disableUploadTab + this.props.disableUrlTab)
                 :
-                this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
-                    (this.props.disableUploadTab + this.props.disableUrlTab)
-                    :
-                    0,
+                0,
             searchText: null,
             errorMessage: null,
             displayError: false,
@@ -97,9 +93,13 @@ export default class SNETImageUpload extends React.Component {
             // Image data readers
             base64Reader: undefined,
             byteReader: undefined,
+
             // Output display mode
-            imageXPosition: "150px",
+            imageXPosition: undefined, // arbitrary, will be set properly
             dividerXPosition: this.props.width / 2,
+            displayModeTitle: this.props.displayModeTitle,
+            outputImage: this.props.outputImage,
+            outputImageName: this.props.outputImageName,
         };
         this.tabStyle = {
             position: 'relative',
@@ -107,20 +107,12 @@ export default class SNETImageUpload extends React.Component {
             padding: spacingUnit,
             height: this.tabHeight + "px",
         };
-        this.textStyle = {
-            fontFamily: snetFont,
-            fontVariantCaps: "normal",
-            textTransform: 'initial',
-        };
+
         this.tabLabelStyle = {
             fontFamily: snetFont,
             fontVariantCaps: "normal",
             textTransform: 'initial',
             fontSize: 14,
-        };
-        this.iconStyle = {
-            fontSize: 24,
-            size: "large",
         };
 
         // Color Palette
@@ -141,32 +133,59 @@ export default class SNETImageUpload extends React.Component {
         this.outputImageErrorMessage = "Output image could not be rendered.";
 
         // Refs
-        this.imagePaper = React.createRef();
-        this.displayImage = React.createRef();
+        this.imageDiv = React.createRef();
+        this.inputImage = React.createRef();
+        this.outputImage = React.createRef();
 
         // Function binding
         this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.urlCallback = this.urlCallback.bind(this);
         this.sendData = this.sendData.bind(this);
-
+        this.setInputImageDimensions = this.setInputImageDimensions.bind(this);
+        this.setInitialImageXPosition = this.setInitialImageXPosition.bind(this);
     }
 
+    // When props.outputImage changes, the component changes to the display mode.
+    componentWillReceiveProps(nextProps, nextContent) {
+        let mimeType;
 
-    componentWillReceiveProps(nextProps){
-        if (nextProps.outputImage !== this.props.outputImage){
-            console.log("Prop change!");
+
+        //"data:" + this.state.outputImageMimeType + ";base64," +
+        if (nextProps.outputImage) {
+            console.log("Output image received!");
+
+            // Extracts base64-encoded image's mime type
+            if(nextProps.outputImageMimeType === undefined){
+                if(nextProps.outputImage.charAt(0) === '/'){
+                    mimeType = "image/jpeg";
+                }else if(nextProps.outputImage.charAt(0) === 'R'){
+                    mimeType = "image/gif";
+                }else if(nextProps.outputImage.charAt(0) === 'i'){
+                    mimeType = "image/png";
+                }else{
+                    mimeType = "application/octet-stream"
+                }
+            } else {
+                mimeType = nextProps.outputImageMimeType;
+            }
+
             this.setState({
-                value:4,
+                displayModeTitle: nextProps.displayModeTitle,
+                outputImage: "data:" + mimeType + ";base64," + nextProps.outputImage,
+                outputImageMimeType: mimeType,
+                outputImageName: nextProps.outputImageName,
+                mainState: "display",
+                value: nextProps.disableOutputTab?
+                            nextProps.disableComparisonTab?
+                                3
+                                :
+                                5
+                            :
+                            4,
             });
         }
     }
-    //
-    // shouldComponentUpdate(nextProps) {
-    //     let update = nextProps.outputImage !== this.props.outputImage;
-    //
-    //     return(update)
-    // }
 
     setLoadingState() {
         this.setState({
@@ -456,7 +475,7 @@ export default class SNETImageUpload extends React.Component {
         }.bind(this);
 
         if (this.props.returnByteArray) {
-            img.outputFormat = this.props.outputFormat;
+            img.outputFormat = this.props.outputFormat; // intentionally added prop to img tag to access it later
             img.onload = function () {
                 const canvas = document.createElement("canvas"),
                     context = canvas.getContext('2d');
@@ -700,16 +719,15 @@ export default class SNETImageUpload extends React.Component {
                     />
                     <Fade in={this.state.displayImageName}>
                         <GridListTileBar
-                            style={{backgroundColor: "yellow"}}
                             title={<Typography
                                 style={{
-                                    alignText: 'center',
+                                    display: 'flex',
+                                    justifyContent: 'center',
                                     fontFamily: snetFont,
                                     fontVariantCaps: "normal",
                                     textTransform: 'initial',
                                     color: snetBackgroundGrey,
                                     fontSize: 14,
-                                    backgroundColor: "green"
                                 }}> {this.state.filename} </Typography>}
                         />
                     </Fade>
@@ -723,20 +741,9 @@ export default class SNETImageUpload extends React.Component {
     *  -----------------*/
 
     handleTabChange(event, value) {
-        if (this.state.inputImageData === null) { // If no image has been selected, simply changes tab
-            this.setState({
-                value: value,
-            });
-        } else {
-            this.setState({ // If an image had been uploaded, resets it and sends "null" to parent component
-                value: value,
-                mainState: "initial",
-                inputImageData: null,
-                mimeType: null,
-                encoding: null,
-                filename: null,
-            }, () => this.sendData(this.state.inputImageData));
-        }
+        this.setState({
+            value: value,
+        });
     };
 
     renderTabs() {
@@ -756,13 +763,13 @@ export default class SNETImageUpload extends React.Component {
                         {this.renderGalleryTab()}
                     </div>
                     <div>
-                        {(this.props.outputImage.length > 0) && !(this.props.disableInputTab) && this.renderInputImage()}
+                        {(this.state.mainState === "display") && !(this.props.disableInputTab) && this.renderInputImage()}
                     </div>
                     <div>
-                        {(this.props.outputImage.length > 0) && this.renderOutputImage()}
+                        {(this.state.mainState === "display") && !(this.props.disableOutputTab) && this.renderOutputImage()}
                     </div>
                     <div>
-                        {(this.props.outputImage.length > 0) && !(this.props.disableComparisonTab) && this.renderComparison()}
+                        {(this.state.mainState === "display") && !(this.props.disableComparisonTab) && this.renderComparison()}
                     </div>
                 </SwipeableViews>
                 <ClickAwayListener onClickAway={() => this.setState({displayError: false})}>
@@ -843,7 +850,7 @@ export default class SNETImageUpload extends React.Component {
                 >
                     <img
                         alt="Service input"
-                        src={this.state.imageData}
+                        src={this.state.inputImageData}
                         onError={() => this.setState({
                             mainState: "initial",
                             searchText: null,
@@ -867,6 +874,8 @@ export default class SNETImageUpload extends React.Component {
                             style={{}}
                             title={<Typography
                                 style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
                                     alignText: 'center',
                                     fontFamily: snetFont,
                                     fontVariantCaps: "normal",
@@ -898,9 +907,9 @@ export default class SNETImageUpload extends React.Component {
                 >
                     <img
                         alt="Service output"
-                        src={"data:" + this.props.outputImageMimeType + ";base64," + this.props.outputImage}
+                        src={this.state.outputImage}
                         onError={() => this.setState({
-                            mainState: "initial",
+                            mainState: "display",
                             searchText: null,
                             inputImageData: null,
                             filename: null,
@@ -917,19 +926,21 @@ export default class SNETImageUpload extends React.Component {
                             width: "100%",
                         }}
                     />
-                    {this.props.outputImageName !== null ?
+                    {this.state.outputImageName !== null ?
                         <Fade in={this.state.displayImageName}>
                             <GridListTileBar
                                 style={{}}
                                 title={<Typography
                                     style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
                                         alignText: 'center',
                                         fontFamily: snetFont,
                                         fontVariantCaps: "normal",
                                         textTransform: 'initial',
                                         color: snetBackgroundGrey,
                                         fontSize: 14,
-                                    }}> {this.props.outputImageName} </Typography>}
+                                    }}> {this.state.outputImageName} </Typography>}
                             />
                         </Fade>
                         :
@@ -941,9 +952,9 @@ export default class SNETImageUpload extends React.Component {
     }
 
     handleMouseMove(event) {
-        let offsetLeft = this.imagePaper.current.getBoundingClientRect().left;
-        let offsetImageLeft = this.displayImage.current.getBoundingClientRect().left;
-        let imageHalfHeight = this.imagePaper.current.clientHeight / 2;
+        let offsetLeft = this.imageDiv.current.getBoundingClientRect().left;
+        let offsetImageLeft = this.outputImage.current.getBoundingClientRect().left;
+        let imageHalfHeight = this.imageDiv.current.clientHeight / 2;
         console.log(event.clientX);
         console.log(offsetLeft);
         console.log(offsetImageLeft);
@@ -954,12 +965,28 @@ export default class SNETImageUpload extends React.Component {
         })
     }
 
+    setInputImageDimensions() {
+        console.log("Dimensions:");
+        console.log(this.inputImage.current.clientHeight);
+        console.log(this.inputImage.current.clientWidth);
+        this.setState({
+            inputImageHeight: this.inputImage.current.clientHeight,
+            inputImageWidth: this.inputImage.current.clientWidth,
+        })
+    }
+
+    setInitialImageXPosition(){
+        this.setState({
+            imageXPosition: this.outputImage.current.clientWidth / 2,
+        })
+    }
+
     renderComparison() {
         return (
             <Fade in={this.state.mainState === "display"}>
                 <div
-                    ref={this.imagePaper}
-                    id="imagePaper"
+                    ref={this.imageDiv}
+                    id="imageDiv"
                     style={{
                         position: 'relative',
                         overflow: 'hidden',
@@ -974,6 +1001,7 @@ export default class SNETImageUpload extends React.Component {
                     onMouseMove={this.handleMouseMove}
                 >
                     <img
+                        ref={this.inputImage}
                         style={this.props.displayProportionalImage ? {
                             maxHeight: this.tabHeight + "px",
                             maxWidth: "100%",
@@ -987,24 +1015,33 @@ export default class SNETImageUpload extends React.Component {
                         }}
                         alt="Service response..."
                         src={this.state.inputImageData}
+                        onLoad={this.setInputImageDimensions}
                     />
                     <img
-                        ref={this.displayImage}
-                        style={this.props.displayProportionalImage ? {
-                            maxHeight: this.tabHeight + "px",
-                            maxWidth: "100%",
-                            align: "center",
-                            position: "absolute",
-                            clip: "rect(0px," + this.state.imageXPosition + "px,10000px,0px)"
-                        } : {
-                            height: this.tabHeight + "px",
-                            width: "100%",
-                            align: "center",
-                            position: "absolute",
-                            clip: "rect(0px," + this.state.imageXPosition + "px,10000px,0px)"
-                        }}
+                        ref={this.outputImage}
+                        style={
+                            this.props.displayProportionalImage ?
+                                {
+                                    maxHeight: this.tabHeight + "px",
+                                    maxWidth: "100%",
+                                    align: "center",
+                                    position: "absolute",
+                                    clip: "rect(0px," + this.state.imageXPosition + "px,10000px,0px)"
+                                }
+                                :
+                                {
+                                    height: this.tabHeight + "px",
+                                    width: "100%",
+                                    align: "center",
+                                    position: "absolute",
+                                    clip: "rect(0px," + this.state.imageXPosition + "px,10000px,0px)"
+                                }
+                        }
+                        onLoad={this.setInitialImageXPosition}
+                        height={this.props.overlayInputImage && this.state.inputImageHeight}
+                        width={this.props.overlayInputImage && this.state.inputImageWidth}
                         alt="Service response..."
-                        src={"data:" + this.props.outputImageMimeType + ";base64," + this.props.outputImage}
+                        src={this.state.outputImage}
                     />
                     <div
                         style={{
@@ -1027,7 +1064,7 @@ export default class SNETImageUpload extends React.Component {
                     </div>
                     <UnfoldMoreIcon
                         style={{
-                            color: blue[500],
+                            color: this.mainColor,
                             width: "30px",
                             height: "30px",
                             position: "absolute",
@@ -1036,8 +1073,6 @@ export default class SNETImageUpload extends React.Component {
                             transform: "rotate(90deg)",
                         }}
                     />
-                    {/*</Paper>*/}
-                    {/*</div>*/}
                 </div>
             </Fade>
         )
@@ -1081,7 +1116,7 @@ export default class SNETImageUpload extends React.Component {
                                         padding: spacingUnit / 2,
                                     }}
                                 >
-                                    {this.props.outputImage.length > 0 ? this.props.outputModeTitle : this.props.imageName}
+                                    {this.state.mainState === "display" ? this.props.displayModeTitle : this.props.imageName}
                                 </Typography>
                             </Grid>
                             <Grid item xs={7}>
@@ -1091,41 +1126,30 @@ export default class SNETImageUpload extends React.Component {
                                         onChange={this.handleTabChange.bind(this)}
                                         indicatorColor="primary"
                                         textColor="primary"
-                                        // scrollButtons="on"
-                                        // centered
                                         variant="fullWidth"
                                         style={{
                                             color: snetGrey,
                                         }}
-                                        // TabIndicatorProps={{ style: { backgroundColor: this.mainColor } }}
                                     >
-                                        {(this.state.mainState !== "uploaded") && !(this.props.outputImage.length > 0) && !this.props.disableUploadTab &&
+                                        {(this.state.mainState !== "uploaded") && !(this.state.mainState === "display") && !this.props.disableUploadTab &&
                                         <Tab style={{minWidth: '5%'}} value={0}
                                              label={<span style={this.tabLabelStyle}>Upload</span>}/>}
-                                        {(this.state.mainState !== "uploaded") && !(this.props.outputImage.length > 0) && !this.props.disableUrlTab &&
+                                        {(this.state.mainState !== "uploaded") && !(this.state.mainState === "display") && !this.props.disableUrlTab &&
                                         <Tab style={{minWidth: '5%'}} value={1}
                                              label={<span style={this.tabLabelStyle}>URL</span>}/>}
-                                        {(this.state.mainState !== "uploaded") && !(this.props.outputImage.length > 0) && this.props.imageGallery.length > 0 &&
+                                        {(this.state.mainState !== "uploaded") && !(this.state.mainState === "display") && this.props.imageGallery.length > 0 &&
                                         <Tab style={{minWidth: '5%'}} value={2}
                                              label={<span style={this.tabLabelStyle}>Gallery</span>}/>}
-                                        {(this.props.outputImage.length > 0) && !(this.props.disableInputTab) &&
+                                        {(this.state.mainState === "display") && !(this.props.disableInputTab) &&
                                         <Tab style={{minWidth: '5%'}} value={3}
-                                             label={<span style={this.tabLabelStyle}>Input</span>}/>}
-                                        {(this.props.outputImage.length > 0) && (!this.props.disableInputTab || !this.props.disableComparisonTab) &&
+                                             label={<span style={this.tabLabelStyle}>{this.props.inputTabTitle}</span>}/>}
+                                        {(this.state.mainState === "display") && (!this.props.disableOutputTab) &&
                                         <Tab style={{minWidth: '5%'}} value={4}
                                              label={<span
-                                                 style={this.tabLabelStyle}>{this.props.outputImageTitle}</span>}/>}
-                                        {/*{this.props.outputImage.length > 0 &&*/}
-                                        {/*[*/}
-                                        {/*<Tab key={3} style={{minWidth: '5%'}} value={3} label={<span*/}
-                                        {/*style={this.tabLabelStyle}>Input</span>}/>,*/}
-                                        {/*<Tab key={4} style={{minWidth: '5%'}} value={4} label={<span*/}
-                                        {/*style={this.tabLabelStyle}>{this.props.outputImageTitle}</span>}/>*/}
-                                        {/*]*/}
-                                        {/*}*/}
-                                        {this.props.outputImage.length > 0 && !this.props.disableComparisonTab &&
+                                                 style={this.tabLabelStyle}>{this.props.outputTabTitle}</span>}/>}
+                                        {this.state.mainState === "display" && !this.props.disableComparisonTab &&
                                         <Tab style={{minWidth: '5%'}} value={5}
-                                             label={<span style={this.tabLabelStyle}>Comparison</span>}/>}
+                                             label={<span style={this.tabLabelStyle}>{this.props.comparisonTabTitle}</span>}/>}
                                     </Tabs>
                                 </MuiThemeProvider>
                             </Grid>
@@ -1170,16 +1194,16 @@ export default class SNETImageUpload extends React.Component {
                                     </Tooltip>
                                 </Fade>
                                 }
-                                {(this.props.outputImage.length > 0) &&
-                                <Fade in={(this.props.outputImage.length > 0)}>
+                                {(this.state.mainState === "display") && !this.props.disableDownloadButton &&
+                                <Fade in={(this.state.mainState === "display")}>
                                     <Tooltip title={
                                         <Typography style={{fontFamily: snetFont, fontSize: 12, color: "white"}}>
                                             Download output image
                                         </Typography>
                                     }>
                                         <a
-                                            href={"data:" + this.props.outputImageMimeType + ";base64," + this.props.outputImage}
-                                            download
+                                            href={this.state.outputImage}
+                                            download={this.state.outputImageName}
                                         >
                                             <IconButton>
                                                 <CloudDownloadIcon style={{
@@ -1208,6 +1232,7 @@ export default class SNETImageUpload extends React.Component {
 }
 
 SNETImageUpload.propTypes = {
+
     width: PropTypes.string, // e.g.: "500px", "50%" (of parent component width)
     tabHeight: PropTypes.number, // a number without units
     imageDataFunc: PropTypes.func.isRequired,
@@ -1225,18 +1250,24 @@ SNETImageUpload.propTypes = {
     galleryCols: PropTypes.number,
     infoTip: PropTypes.string,
     mainColor: PropTypes.object,
+
     // Output mode props
-    outputModeTitle: PropTypes.string,
+    displayModeTitle: PropTypes.string,
     outputImage: PropTypes.string,
     outputImageMimeType: PropTypes.oneOf(["application/octet-stream", "image/png", "image/jpg", "image/jpeg", "image/gif"]),
     outputImageName: PropTypes.string,
-    outputImageTitle: PropTypes.string,
-    inputOutputComparison: PropTypes.bool,
     disableInputTab: PropTypes.bool,
+    disableOutputTab: PropTypes.bool,
     disableComparisonTab: PropTypes.bool,
+    disableDownloadButton: PropTypes.bool,
+    overlayInputImage: PropTypes.bool,
+    inputTabTitle: PropTypes.string,
+    outputTabTitle: PropTypes.string,
+    comparisonTabTitle: PropTypes.string,
 };
 
 SNETImageUpload.defaultProps = {
+
     width: "500px",
     tabHeight: 300,
     imageName: "Input Image",
@@ -1253,13 +1284,18 @@ SNETImageUpload.defaultProps = {
     galleryCols: 3,
     infoTip: "",
     mainColor: blue,
+
     // Output mode props
-    outputModeTitle: "Result",
+    displayModeTitle: "Result",
     outputImage: "",
-    outputImageMimeType: "application/octet-stream",
-    outputImageName: "Output Image",
-    outputImageTitle: "Output",
-    inputOutputComparison: true,
+    outputImageMimeType: undefined,
+    outputImageName: "service-output",
     disableInputTab: false,
+    disableOutputTab: false,
     disableComparisonTab: false,
+    disableDownloadButton: false,
+    overlayInputImage: true,
+    inputTabTitle: "Input",
+    outputTabTitle: "Output",
+    comparisonTabTitle: "Comparison"
 };
