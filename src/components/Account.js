@@ -18,10 +18,6 @@ import DAppModal from './DAppModal.js'
 export class Account extends Component {
   constructor(props) {
     super(props)
-    this.state = {
-      value: 0,
-    }
-
     this.network = new BlockchainHelper();
     this.state = {
       agiBalance: 0,
