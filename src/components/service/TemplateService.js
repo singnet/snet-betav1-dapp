@@ -27,23 +27,24 @@ export default class TemplateService extends React.Component {
     }
 
     handleFormUpdate(event) {
-        // You can more complex logic here when the user changes the form.
-        // This just stores the value of the form component that changed in the service component's state.
+        // You can add more complex logic here when the user changes the form.
+        // This just stores the value of the form component that changed, inside the service component's state.
         this.setState({
             [event.target.name]: event.target.value
         });
     }
 
     canBeInvoked() {
-        // You should validate your form here, the UI will allow
-        // the user to call the service if you return true.
+        // You should validate your form or component state is okay for calling your service.
+        // The UI will allow the user to call the service if you return true.
+        return true;
     }
 
     submitAction() {
-        // This triggers the call your service and handles the blockchain interactions.
+        // This makes a call to your service and handles the blockchain interactions.
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                // this JSON object should match the structure of your grpc service definitions.
+                // this JSON object should match the structure of your grpc method arguments.
             });
     }
 
@@ -84,7 +85,7 @@ export default class TemplateService extends React.Component {
     }
 
     renderComplete() {
-        // Here you can render the results of the call.
+        // Here you can render your service's results.
         // This may be as simple as displaying an image or text response, or as complex as creating a canvas
         // and doing custom dynamic rendering of a binary result. It's up to you!
         const response = this.props.response;
@@ -98,7 +99,7 @@ export default class TemplateService extends React.Component {
 
     render() {
         // This toggles whether we are showing a form to call the service, or showing the result.
-        // Generally you can leave this as is...
+        // Generally you can leave this method alone and focus on customising renderComplete and renderForm.
         if (this.props.isComplete)
             return (
                 <div>
