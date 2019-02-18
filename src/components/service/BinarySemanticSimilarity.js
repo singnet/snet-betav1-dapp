@@ -1,17 +1,19 @@
 import React from 'react';
 import {hasOwnDefinedProperty} from '../../util'
+import Button from '@material-ui/core/Button';
 
 export default class BinarySemanticSimilarity extends React.Component {
 
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
+        this.users_guide =  "https://github.com/iktina/semantic-similarity-binary-service";
+        this.serviceName =  "SSBERT";
+        this.methodName =  "ss_bert";
+
         this.state = {
-            serviceName: "SSBERT",
-            methodName: "ss_bert",
             response: undefined,
             a: "",
             b: ""
@@ -23,6 +25,12 @@ export default class BinarySemanticSimilarity extends React.Component {
         this.methodsForAllServices = [];
         this.parseProps(props);
     }
+
+    componentWillReceiveProps(nextProps) {
+      if(this.isComplete !== nextProps.isComplete) {
+          this.parseProps(nextProps);
+      }
+  }
 
     parseProps(nextProps) {
         this.isComplete = nextProps.isComplete;
@@ -74,20 +82,6 @@ export default class BinarySemanticSimilarity extends React.Component {
         });
     }
 
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
-        });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
-        }
-    }
-
     onKeyPressvalidator(event) {
         // console.log(event.target.value);
     }
@@ -97,8 +91,8 @@ export default class BinarySemanticSimilarity extends React.Component {
         btn.disabled = true;
         btn.innerHTML = "Wait...";
 
-        this.props.callApiCallback(this.state.serviceName,
-            this.state.methodName, {
+        this.props.callApiCallback(this.serviceName,
+            this.methodName, {
                 a: this.state.a,
                 b: this.state.b
             });
@@ -123,10 +117,18 @@ export default class BinarySemanticSimilarity extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-6 col-lg-6" style={{textAlign: "right", marginTop: "5px", width: "250px"}}>
+                    <div className="col-md-6 col-lg-6" style={{textAlign: "right", marginTop: "5px", width: "245px"}}>
                         <button id="invoke-button" type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
                     </div>
                 </div>
+
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px", marginTop: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-2">
+                        <Button target="_blank" href={this.users_guide} style={{fontSize: "13px", marginTop: "5px"}}>Guide</Button>
+                    </div>
+                </div>
+ 
             </React.Fragment>
         )
     }

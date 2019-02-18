@@ -88,6 +88,14 @@ export default class CNTKNextDayTrend extends React.Component {
         this.serviceMethods = data;
     }
 
+    canBeInvoked() {
+        return (
+            this.state.source &&
+            this.state.contract &&
+            this.state.start < this.state.end
+        );
+    }
+
     handleFormUpdate(event) {
         this.setState({[event.target.name]: event.target.value})
     }
@@ -141,13 +149,15 @@ export default class CNTKNextDayTrend extends React.Component {
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Start Date: </div>
                     <div className="col-md-3 col-lg-3" style={{width: "280px"}}>
                         <TextField
-                            id="start_date"
+                            name="start"
+                            id="start"
                             type="date"
                             style={{ width: "100%" }}
                             InputLabelProps={{
                                 shrink: true,
                             }}
                             value={this.state.start}
+                            onChange={this.handleFormUpdate}
                         />
                     </div>
                 </div>
@@ -155,13 +165,15 @@ export default class CNTKNextDayTrend extends React.Component {
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>End Date: </div>
                     <div className="col-md-3 col-lg-3" style={{width: "280px"}}>
                         <TextField
-                            id="start_date"
+                            name="end"
+                            id="end"
                             type="date"
                             style={{ width: "100%" }}
                             InputLabelProps={{
                                 shrink: true,
                             }}
                             value={this.state.end}
+                            onChange={this.handleFormUpdate}
                         />
                     </div>
                 </div>
@@ -169,13 +181,15 @@ export default class CNTKNextDayTrend extends React.Component {
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Target Date: </div>
                     <div className="col-md-3 col-lg-3" style={{width: "280px"}}>
                         <TextField
-                            id="start_date"
+                            name="target_date"
+                            id="target_date"
                             type="date"
                             style={{ width: "100%" }}
                             InputLabelProps={{
                                 shrink: true,
                             }}
                             value={this.state.target_date}
+                            onChange={this.handleFormUpdate}
                         />
                     </div>
                 </div>
@@ -195,7 +209,7 @@ export default class CNTKNextDayTrend extends React.Component {
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
