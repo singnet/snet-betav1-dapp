@@ -52,7 +52,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "emotion-recognition-service")] = EmotionRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "holistic-edge-detection-service")] = HolisticEdgeDetectionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "image-retrieval-service")] = ImageRetrievalService;
-        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "annotation-service")] = GeneAnnotationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "gene-annotation-service")] = GeneAnnotationService;
     }
 
     generateUniqueID(orgId,serviceId) {
