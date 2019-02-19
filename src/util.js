@@ -141,7 +141,6 @@ export function getProtobufjsURL(chainId) {
 
 export function isSupportedNetwork(chainId) {
   const marketPlaceURL = getMarketplaceURL(chainId);
-  console.log(marketPlaceURL)
   if(typeof marketPlaceURL === 'undefined' || marketPlaceURL === "") {
     console.log("Ignore network " + chainId)
     return false;
