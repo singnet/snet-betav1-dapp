@@ -12306,12 +12306,16 @@ position: absolute;
   text-decoration: underline;
 }
 
-.mobile-header .network-name { visibility: hidden; }
+.mobile-header { display: none; }
 .channel-detail-header { display: none; }
 .MuiCollapse-wrapperInner-198 .MuiExpansionPanelDetails-root-199 { padding: 10px 24px; }
 
 @media(max-width: 991px) {
-  .hamburger-menu { display: block; }
+  .hamburger-menu { 
+    display: block;
+    float: right;
+  }
+
   .navigation { display: none; }
 
   .agent-detail { height: auto; }
@@ -12325,19 +12329,19 @@ position: absolute;
 
   .service-agents { font-size: 16px; }
   .search-bar input { width: 100%; }
-
 }
 
 @media(max-width: 535px){
-  .desktop-header .network-name { visibility: hidden; }
+  .desktop-header .network-name { display: none; }
+  .mobile-header { display: block; }
 
   .mobile-header .network-name { 
-    width: 100%;
+    width: auto;
     position: absolute;
     top: 0;
     left: 0;
     text-align: left;
-    visibility: visible; 
+    display: block; 
   }
 }
 
@@ -12354,9 +12358,5 @@ position: absolute;
   .claim-channel-btn span {font-size: 12px !important; }
 }
 
-@media(max-width:360px) { .header-menu { top: 40px; } }
-
-
-
-
+@media(max-width:360px) { .header-menu { top: 31px; } }
 /*# sourceMappingURL=style.css.map */
