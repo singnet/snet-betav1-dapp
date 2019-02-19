@@ -35,12 +35,23 @@ class SampleServices extends React.Component {
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
     this.handlehealthsort = this.handlehealthsort.bind(this)
     this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
+    this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
   }
+
+    watchWallet() {
+        this.network.getAccount((account) => {
+            if (account !== this.state.account) {
+                this.setState({account: account});
+                this.onCloseJobDetailsSlider()
+            }
+        });
+    }
 
   watchNetwork() {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
+          this.onCloseJobDetailsSlider()
         this.setState({ chainId: chainId });
         this.loadDetails(chainId);
       }
@@ -64,14 +75,14 @@ class SampleServices extends React.Component {
     }
 
     let ucSearchTerm = this.state.searchTerm.toUpperCase();
-    this.state.agents.map(row => 
-      (this.inArray(row["tags_uc"], ucSearchTerm)) ? 
+    this.state.agents.map(row =>
+      (this.inArray(row["tags_uc"], ucSearchTerm)) ?
       console.log("Matched " + row["tags_uc"]) : console.log("Not Matched " + row["tags_uc"]))
 
-    let searchedagents = this.state.agents.map(row => 
-        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1 
+    let searchedagents = this.state.agents.map(row =>
+        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1
         || (this.inArray(row["tags_uc"], ucSearchTerm)) ? row : null))
-    
+
     let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
     console.log("Setting search results to " + bestsearchresults.length)
     this.setState({searchResults:bestsearchresults});
@@ -80,12 +91,12 @@ class SampleServices extends React.Component {
   handlehealthsort() {
     var healthSort = this.state.agents
     if (this.state.togglehealth === false) {
-      healthSort.sort((a, b) => (a === b)? 0 : a ? -1 : 1)
+      healthSort.sort((a, b) => b.is_available - a.is_available)
       this.setState({
         togglehealth: true
       })
     } else if (this.state.togglehealth === true) {
-      healthSort.sort((b, a) => (a === b)? 0 : a ? -1 : 1)
+      healthSort.sort((a, b) => a.is_available - b.is_available)
       this.setState({
         togglehealth: false
       })
@@ -106,7 +117,7 @@ class SampleServices extends React.Component {
     }
     this.setState({agents: pricesort})
   }
-  
+
   handleservicenamesort() {
     var servicenamesort = this.state.agents
     if (this.state.toggleServiceName === false) {
@@ -126,12 +137,16 @@ class SampleServices extends React.Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        console.log("Initializing the watchNetwork timer")
-        this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
-      } 
+        this.watchNetwork();
+        if (!this.watchNetworkTimer) {
+          this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
+        }
+        if (!this.watchWalletTimer) {
+              this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
+        }
+      }
       else {
         this.setState({chainId: this.network.getDefaultNetwork()});
-        console.log("Defaulting to " + this.state.chainId);
         this.loadDetails(this.network.getDefaultNetwork());
       }
     }).catch(err => {
@@ -140,14 +155,16 @@ class SampleServices extends React.Component {
   }
 
   componentWillUnmount() {
-    if (this.watchNetworkTimer) {
-      console.log("Clearing the watchNetwork timer")
-      clearInterval(this.watchNetworkTimer);
-    }
+      if (this.watchWalletTimer) {
+          clearInterval(this.watchWalletTimer);
+      }
+
+      if (this.watchNetworkTimer) {
+          clearInterval(this.watchNetworkTimer);
+      }
   }
 
   componentDidMount() {
-    console.log("componentDidMount")
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }
@@ -171,7 +188,7 @@ class SampleServices extends React.Component {
         if(Array.isArray(values[0].data)) {
           values[0].data.map(agent => {
             agent["price_in_agi"] = AGI.inAGI(agent["price_in_cogs"]);
-            agent["is_available"] = true;
+            agent["is_available"] = 0;
             agent["up_vote_count"] = 0;
             agent["down_vote_count"] = 0;
             agent["up_vote"] = false;
@@ -197,14 +214,18 @@ class SampleServices extends React.Component {
             values[0].data.map(agent => 
               values[1].data.map(healthDetail => {
                 if(healthDetail["service_id"] === agent["service_id"] && healthDetail["org_id"] === agent["org_id"]) {
-                  agent["is_available"] = (healthDetail["is_available"] === 1)
+                  agent["is_available"] = healthDetail["is_available"]
                 }
             }))            
           }      
           this.setState({agents: values[0].data})
         }   
       }
-    }
+      //Do this the first time the page gets loaded.
+        this.setState({
+            togglehealth: false
+        })
+        this.handlehealthsort() }
     ).catch((err)=> console.log(err))
 
     if (typeof web3 === 'undefined') {
@@ -232,56 +253,58 @@ class SampleServices extends React.Component {
 
   render() {
     const {open} = this.state;
-    const arraylimit = this.state.agents.length
+    let arraylimit = this.state.agents.length
 
     let agentsample = this.state.agents
-    console.log("Size of search results " + this.state.searchResults.length)
     if (this.state.searchTerm != '' || this.state.searchResults.length > 0) {
       agentsample = this.state.searchResults
+      arraylimit = this.state.searchResults.length
     }
 
     const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
       <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 media" key={index} id={rown[ "service_id"]} name={rown[ "display_name"].toUpperCase()}>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "14px"}}>
-                      {rown["display_name"]}</Typography>
+                  <div className="m-0">
+                      {rown["display_name"]}</div>
               </label>
           </div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Organization</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 org-name-align">
-              <Typography className="m-0" style={{fontSize: "14px",fontFamily: "Arial", }}>{rown["org_id"]}</Typography>
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Organization</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 org-name-align">
+              <div className="m-0" >{rown["org_id"]}</div>
           </div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Price</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 price-align">
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Price</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 price-align">
               <label className="m-0">
-                  <Typography className="m-0" style={{fontSize: "15px",fontFamily: "Arial", }}>{(rown["price_in_agi"])} AGI</Typography>
+                  <div className="m-0" >{(rown["price_in_agi"])} AGI</div>
               </label>
           </div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 tag-align">
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 tag-align">
               {(rown.hasOwnProperty('tags'))? rown["tags"].map((rowtag,rindex) =>
-              <button key={rindex} className='btn btn-secondary mr-15'>{rowtag}</button>):null}
+              <label key={rindex} className='btn-tag mr-15'>{rowtag}</label>):null}
           </div>
-          <div className="col-sm-12 col-md-1 col-lg-1 agent-boxes-label">Status</div>
-          <div className="col-sm-12 col-md-1 col-lg-1 health-align">
-              {(rown["is_available"])? 
-              <span className="agent-health green"></span>: 
-              <span className="agent-health red"></span>}
+          <div className="col-sm-1 col-md-1 col-lg-1 agent-boxes-label">Status</div>
+          <div className="col-sm-1 col-md-1 col-lg-1 health-align">
+
+              {(rown["is_available"] ===1)?
+                  <span className="agent-health green"></span>:
+                  <span className="agent-health red"></span>}
           </div>
-          <div className="col-sm-12 col-md-2 col-lg-2 agent-boxes-label">Action</div>
-          <div className="col-sm-12 col-md-2 col-lg-2 action-align">
+          <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Action</div>
+          <div className="col-sm-2 col-md-2 col-lg-2 action-align">
               <button className="btn btn-primary" onClick={(e)=>this.onOpenJobDetailsSlider(rown)} id={rown["service_id"]}>Details</button>
           </div>
-          <div className="col-sm-12 col-md-1 col-lg-1 likes-dislikes">
+          <div className="col-sm-1 col-md-1 col-lg-1 likes-dislikes">
               <div className="col-md-6 thumbsup-icon">
-                  <div className="thumbsup-img "><span className="icon-like"></span></div>
+                  <div className="thumbsup-img ">
+                  <span className={rown["up_vote_count"] > 0 ? "icon-count-like-enabled" : "icon-count-like"}></span></div>
                   <div className="likes-text">{rown["up_vote_count"]}</div>
               </div>
               <div className="col-md-6 thumbsdown-icon">
               <div className="thumbsdown-img">
-                <span className="icon-dislike"></span>
+                <span className={rown["down_vote_count"] > 0 ? "icon-count-dislike-enabled" : "icon-count-dislike"}></span>
               </div> 
               <div className="dislikes-text">{rown["down_vote_count"]}</div>
               </div>
@@ -297,10 +320,10 @@ class SampleServices extends React.Component {
                   <h4 className="align-self-center text-uppercase "></h4>
               </div>
                 <div className="container-fluid p-4  ">
-                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 service-agents-container">
                         <span className="service-agents">Service Agents</span>
                     </div>
-                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 search-bar">
                     <input className="search" placeholder={this.state.searchTerm === '' ? 'Search by Agent or Tags' : this.state.searchTerm} name="srch-term" id="srch-term" type="label" onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handleSearchKeyUp(e)} />
                     <button className="btn-search"><i className="fa fa-search search-icon" aria-hidden="true"></i></button> 
                     </div>
@@ -346,7 +369,7 @@ class SampleServices extends React.Component {
                         {agents}
                     </div>
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-right no-padding">
-                        {arraylimit>5?
+                        {arraylimit>15?
                         <MuiThemeProvider theme={theme}>
                             <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
                         </MuiThemeProvider>

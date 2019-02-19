@@ -9,23 +9,24 @@ export default class CNTKLanguageUnderstanding extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/nlp-services/blob/master/docs/users_guide/cntk-language-understanding.md",
             code_repo: "https://github.com/singnet/nlp-services/blob/master/cntk-language-understanding",
             reference: "https://cntk.ai/pythondocs/CNTK_202_Language_Understanding.html",
 
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "LanguageUnderstanding",
+            methodName: "Select a method",
 
             train_ctf_url: "",
             test_ctf_url: "",
             query_wl_url: "",
             slots_wl_url: "",
             intent_wl_url: "",
-            vocab_size: "",
-            num_labels: "",
-            num_intents: "",
+            vocab_size: 943,
+            num_labels: 129,
+            num_intents: 26,
             sentences_url: "",
 
             response: undefined
@@ -48,7 +49,11 @@ export default class CNTKLanguageUnderstanding extends React.Component {
             }
         }
     }
-
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+    }
     parseServiceSpec(serviceSpec) {
         const packageName = Object.keys(serviceSpec.nested).find(key =>
             typeof serviceSpec.nested[key] === "object" &&
@@ -64,7 +69,6 @@ export default class CNTKLanguageUnderstanding extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
-        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
@@ -75,7 +79,36 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                 methods.unshift("Select a method");
                 this.methodsForAllServices[rr] = methods;
             }
-        })
+        });
+        this.getServiceMethods(this.allServices[0]);
+    }
+
+    getServiceMethods(strService) {
+        this.setState({
+            serviceName: strService
+        });
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
+    }
+
+    isValidURL(str, file_ext) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            str.includes(file_ext)
+        );
+    }
+
+    canBeInvoked() {
+        return (
+            this.isValidURL(this.state.train_ctf_url, ".ctf") &&
+            this.isValidURL(this.state.test_ctf_url, ".ctf") &&
+            this.isValidURL(this.state.query_wl_url, ".wl") &&
+            this.isValidURL(this.state.sentences_url, ".txt") &&
+            this.state.methodName !== "Select a method"
+        );
     }
 
     handleFormUpdate(event) {
@@ -98,15 +131,15 @@ export default class CNTKLanguageUnderstanding extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                trainCtfUrl: this.state.train_ctf_url,
-                testCtfUrl: this.state.test_ctf_url,
-                queryWlUrl: this.state.query_wl_url,
-                slotsWlUrl: this.state.slots_wl_url,
-                intentWlUrl: this.state.intent_wl_url,
-                vocabSize: this.state.vocab_size,
-                numLabels: this.state.num_labels,
-                numIntents: this.state.num_intents,
-                sentencesUrl: this.state.sentences_url
+                train_ctf_url: this.state.train_ctf_url,
+                test_ctf_url: this.state.test_ctf_url,
+                query_wl_url: this.state.query_wl_url,
+                slots_wl_url: this.state.slots_wl_url,
+                intent_wl_url: this.state.intent_wl_url,
+                vocab_size: this.state.vocab_size,
+                num_labels: this.state.num_labels,
+                num_intents: this.state.num_intents,
+                sentences_url: this.state.sentences_url
             });
     }
 
@@ -114,17 +147,7 @@ export default class CNTKLanguageUnderstanding extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Method Name: </div>
                     <div className="col-md-3 col-lg-3">
                         <select name="methodName"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
@@ -135,105 +158,94 @@ export default class CNTKLanguageUnderstanding extends React.Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Train CTF (URL)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Train CTF (URL): </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="train_ctf_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.train_ctf_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Test CTF (URL)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Test CTF (URL): </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="test_ctf_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.test_ctf_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Query List (URL)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Query List (URL): </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="query_wl_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.query_wl_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Slots List (URL)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Slots List (URL): </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="slots_wl_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.slots_wl_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Intent List
-                        (URL)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Intent List (URL): </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="intent_wl_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.intent_wl_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Vocabulary Size
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="vocab_size" type="text"
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Vocabulary Size: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="vocab_size" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.vocab_size} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Number of Labels
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="num_labels" type="text"
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number of Labels: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="num_labels" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.num_labels} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Number of
-                        Intents
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="num_intents" type="text"
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Number of Intents: </div>
+                    <div className="col-md-3 col-lg-3">
+                        <input name="num_intents" type="number" min="1"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.num_intents} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Sentences (URL)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Sentences (URL): </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="sentences_url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.sentences_url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.users_guide}
+                        <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                        <Button target="_blank" href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.reference}
+                        <Button target="_blank" href={this.state.reference}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
@@ -246,8 +258,8 @@ export default class CNTKLanguageUnderstanding extends React.Component {
         let output_url = "\n";
 
         if (typeof this.state.response === "object") {
-            model_url = this.state.response.modelUrl + "\n";
-            output_url = this.state.response.outputUrl;
+            model_url = this.state.response.model_url + "\n";
+            output_url = this.state.response.output_url;
         } else {
             status = this.state.response + "\n";
         }

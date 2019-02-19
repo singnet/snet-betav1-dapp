@@ -1,13 +1,17 @@
 import React from 'react';
 import {hasOwnDefinedProperty} from '../../util'
 
+import Protobuf from '../../protobuf'
+
 export default class DefaultService extends React.Component {
 
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
+        this.handleMethodName  = this.handleMethodName.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
-        this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.handleFormUpdate  = this.handleFormUpdate.bind(this);
+        this.generateRequestByMethod = this.generateRequestByMethod.bind(this);
 
         this.state = {
             serviceName: undefined,
@@ -15,6 +19,7 @@ export default class DefaultService extends React.Component {
             response: undefined,
             paramString: "{}"
         };
+        this.protobuf = {};
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -25,18 +30,32 @@ export default class DefaultService extends React.Component {
     parseProps(nextProps) {
         this.isComplete = nextProps.isComplete;
         if (!this.isComplete) {
+            this.protobuf = new Protobuf({ jsonDescriptor: nextProps.serviceSpec })
+            this.protobuf.generateStubs()
+
+
             this.parseServiceSpec(nextProps.serviceSpec);
         } else {
             if (typeof nextProps.response !== 'undefined') {
                 if (typeof nextProps.response === 'string') {
                     this.state.response = nextProps.response;
-                } else {
-                    this.state.response = JSON.stringify(nextProps.response);
+                    return
                 }
+                
+                if (nextProps.hasOwnProperty("responseObject") && nextProps.responseObject.hasOwnProperty("value") ) {
+                    this.state.response = nextProps.responseObject.value;
+                    return
+                }
+
+                this.state.response = nextProps.response || nextProps.responseObject
             }
         }
     }
-
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+    }
     parseServiceSpec(serviceSpec) {
         const packageName = Object.keys(serviceSpec.nested).find(key =>
             typeof serviceSpec.nested[key] === "object" &&
@@ -64,6 +83,28 @@ export default class DefaultService extends React.Component {
                 this.methodsForAllServices[rr] = methods;
             }
         })
+    }
+
+    generateRequestByMethod(methodName) {
+        const { services, getFieldsFromMessage } = this.protobuf;
+
+        const methodObject = services[this.state.serviceName].methods[methodName];
+        const requestType = methodObject.RequestType;
+        const fieldsRequest = getFieldsFromMessage(requestType);
+
+
+        const paramString = JSON.stringify(fieldsRequest, undefined, 2);
+
+        return paramString
+    }
+
+    handleMethodName(event) {
+        const paramString = this.generateRequestByMethod(event.target.value)
+        this.setState({
+            paramString
+        });
+
+        this.handleFormUpdate(event);
     }
 
     handleFormUpdate(event) {
@@ -113,7 +154,7 @@ export default class DefaultService extends React.Component {
                     <div className="col-md-3 col-lg-3">
                         <select name="methodName"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
+                                onChange={this.handleMethodName}>
                             {this.serviceMethods.map((row, index) =>
                                 <option key={index}>{row}</option>)}
                         </select>

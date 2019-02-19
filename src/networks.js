@@ -1,32 +1,32 @@
 export const NETWORKS = {
     1: {
-      name: "mainnet",
+      name: "Main Ethereum Network",
       etherscan: 'https://etherscan.io',
       infura: 'http://mainnet.infura.io',
       marketplace:'',
       protobufjs:''
     },
     3: {
-      name: "Ropsten",
+      name: "Ropsten Test Network",
       etherscan: 'https://ropsten.etherscan.io',
       infura: 'https://ropsten.infura.io',
       marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/ropsten/',
-      protobufjs:'http://protojs.singularitynet.io/ropsten/'
+      protobufjs:'https://protojs.singularitynet.io/ropsten/',
+      default:true
     }, 
     4: {
-      name: "Rinkeby",
+      name: "Rinkeby Test Network",
       etherscan: 'https://rinkeby.etherscan.io', 
       infura: 'https://rinkeby.infura.io',
       marketplace:'',
       protobufjs:''
     },
     42: {
-      name: "Kovan",
+      name: "Kovan Test Network",
       etherscan: 'https://kovan.etherscan.io',
       infura: 'https:/kovan.infura.io',
       marketplace:'https://260r82zgt7.execute-api.us-east-1.amazonaws.com/kovan/',
-      protobufjs:'http://protojs.singularitynet.io/kovan/',
-      default:true
+      protobufjs:'https://protojs.singularitynet.io/kovan/'
     },
   };
 

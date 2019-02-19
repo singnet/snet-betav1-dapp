@@ -9,20 +9,22 @@ export default class I3DActionRecognition extends React.Component {
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
             users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/i3d-video-action-recognition.md",
             code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/i3d-video-action-recognition",
             reference: "https://github.com/deepmind/kinetics-i3d",
 
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "VideoActionRecognition",
+            methodName: "video_action_recon",
 
-            model: "",
+            model: "400",
             url: "",
 
             response: undefined
         };
+        this.modelOptions = ["400", "600"];
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -41,7 +43,11 @@ export default class I3DActionRecognition extends React.Component {
             }
         }
     }
-
+    componentWillReceiveProps(nextProps) {
+        if(this.isComplete !== nextProps.isComplete) {
+            this.parseProps(nextProps);
+        }
+    }
     parseServiceSpec(serviceSpec) {
         const packageName = Object.keys(serviceSpec.nested).find(key =>
             typeof serviceSpec.nested[key] === "object" &&
@@ -57,18 +63,37 @@ export default class I3DActionRecognition extends React.Component {
             objects = Object.keys(serviceSpec.nested);
         }
 
-        this.allServices.push("Select a service");
         this.methodsForAllServices = [];
         objects.map(rr => {
             if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
                 this.allServices.push(rr);
                 this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
+                this.methodsForAllServices[rr] = Object.keys(items[rr]["methods"]);
             }
-        })
+        });
+        this.getServiceMethods(this.allServices[0]);
+    }
+
+    getServiceMethods(strService) {
+        this.setState({
+            serviceName: strService
+        });
+        var data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
+    }
+
+    isValidVideoURL(str) {
+        return (
+            (str.startsWith("http://") || str.startsWith("https://")) &&
+            (str.endsWith(".avi") || str.endsWith(".mp4"))
+        );
+    }
+
+    canBeInvoked() {
+        return (this.isValidVideoURL(this.state.url));
     }
 
     handleFormUpdate(event) {
@@ -100,61 +125,41 @@ export default class I3DActionRecognition extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>I3D Model: </div>
                     <div className="col-md-3 col-lg-3">
-                        <select style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
+                        <select name="model"
                                 style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                 onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
+                            {this.modelOptions.map((row, index) =>
+                                <option value={row} key={index}>{row}</option>)}
                         </select>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Model (400 or
-                        600)
-                    </div>
-                    <div className="col-md-3 col-lg-2">
-                        <input name="model" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.model} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Video URL</div>
-                    <div className="col-md-3 col-lg-2">
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Video URL: </div>
+                    <div className="col-md-3 col-lg-3">
                         <input name="url" type="text"
                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
                                value={this.state.url} onChange={this.handleFormUpdate}></input>
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>About</div>
+                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.users_guide}
+                        <Button target="_blank" href={this.state.users_guide}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Guide</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
+                        <Button target="_blank" href={this.state.code_repo} style={{fontSize: "13px", marginLeft: "10px"}}>Code</Button>
                     </div>
                     <div className="col-xs-3 col-xs-2">
-                        <Button href={this.state.reference}
+                        <Button target="_blank" href={this.state.reference}
                                 style={{fontSize: "13px", marginLeft: "10px"}}>Reference</Button>
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-md-6 col-lg-6" style={{textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
