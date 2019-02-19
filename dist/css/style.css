@@ -9307,9 +9307,9 @@ body.modal-open .modal .close {
 }
 
 .job-details-tag {
-  color: #0066ff;
-  background-color: #f2f6fc;
-  /*border: 1px solid #0066ff;*/
+  color: gray;
+  background-color: #eceaea;
+  border: 1px solid gray;
   border-radius: 50px;
   padding: 7px 7px;
   font-size: 14px;
@@ -9318,9 +9318,9 @@ body.modal-open .modal .close {
 }
 
 .btn-tag {
-  color: #0066ff;
-  background-color: #f2f6fc;
-  /*border: 1px solid #0066ff;*/
+  color: gray;
+  background-color: #eceaea;
+  border: 1px solid gray;
   border-radius: 50px;
   padding: 2px 5px;
   font-size: 14px;
