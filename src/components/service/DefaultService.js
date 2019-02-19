@@ -47,7 +47,7 @@ export default class DefaultService extends React.Component {
                     return
                 }
 
-                this.state.response = JSON.stringify(nextProps.response || nextProps.responseObject)
+                this.state.response = nextProps.response || nextProps.responseObject
             }
         }
     }

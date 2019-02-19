@@ -16,6 +16,7 @@ import Vote from './Vote.js';
 import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
 import {serviceStateJSON} from '../service_state'
+import GRPCProtoV3Spec from "../models/GRPCProtoV3Spec";
 
 const minSliderWidth='550px';
 const maxSliderWidth ='100%';
@@ -45,6 +46,7 @@ export  class Jobdetails extends React.Component {
       this.channelHelper = new ChannelHelper();
       this.currentBlockNumber = 0;
       this.serviceSpecJSON = undefined;
+      this.protoSpec = undefined;
       this.serviceMappings = new ServiceMappings();
       this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
       this.handleChangeTabs = this.handleChangeTabs.bind(this);
@@ -98,7 +100,9 @@ export  class Jobdetails extends React.Component {
       return fetch(encodeURI(_urlservicebuf))
         .then(serviceSpecResponse => serviceSpecResponse.json())
         .then(serviceSpec => new Promise(function(resolve) {
-          caller.serviceSpecJSON = Root.fromJSON(serviceSpec[0]);
+          const serviceSpecJSON = Root.fromJSON(serviceSpec[0]);
+          caller.serviceSpecJSON = serviceSpecJSON;
+          caller.protoSpec = new GRPCProtoV3Spec(serviceSpecJSON);
           resolve();
         }));
     }
@@ -668,7 +672,7 @@ export  class Jobdetails extends React.Component {
                                              <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
                                           </div>:
                                           <React.Fragment>
-                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse} sliderWidth={this.state.sliderWidth}/>
+                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse} sliderWidth={this.state.sliderWidth} protoSpec={this.protoSpec} />
                                           </React.Fragment>
                                         }
                                         <div className="row">
