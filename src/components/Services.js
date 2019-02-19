@@ -35,12 +35,23 @@ class SampleServices extends React.Component {
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
     this.handlehealthsort = this.handlehealthsort.bind(this)
     this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
+    this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
   }
+
+    watchWallet() {
+        this.network.getAccount((account) => {
+            if (account !== this.state.account) {
+                this.setState({account: account});
+                this.onCloseJobDetailsSlider()
+            }
+        });
+    }
 
   watchNetwork() {
     this.network.getChainID((chainId) => {
       if (chainId !== this.state.chainId) {
+          this.onCloseJobDetailsSlider()
         this.setState({ chainId: chainId });
         this.loadDetails(chainId);
       }
@@ -64,14 +75,14 @@ class SampleServices extends React.Component {
     }
 
     let ucSearchTerm = this.state.searchTerm.toUpperCase();
-    this.state.agents.map(row => 
-      (this.inArray(row["tags_uc"], ucSearchTerm)) ? 
+    this.state.agents.map(row =>
+      (this.inArray(row["tags_uc"], ucSearchTerm)) ?
       console.log("Matched " + row["tags_uc"]) : console.log("Not Matched " + row["tags_uc"]))
 
-    let searchedagents = this.state.agents.map(row => 
-        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1 
+    let searchedagents = this.state.agents.map(row =>
+        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1
         || (this.inArray(row["tags_uc"], ucSearchTerm)) ? row : null))
-    
+
     let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
     console.log("Setting search results to " + bestsearchresults.length)
     this.setState({searchResults:bestsearchresults});
@@ -106,7 +117,7 @@ class SampleServices extends React.Component {
     }
     this.setState({agents: pricesort})
   }
-  
+
   handleservicenamesort() {
     var servicenamesort = this.state.agents
     if (this.state.toggleServiceName === false) {
@@ -126,13 +137,16 @@ class SampleServices extends React.Component {
   handleWindowLoad() {
     this.network.initialize().then(isInitialized => {
       if (isInitialized) {
-        console.log("Initializing the watchNetwork timer");
         this.watchNetwork();
-        this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
-      } 
+        if (!this.watchNetworkTimer) {
+          this.watchNetworkTimer = setInterval(() => this.watchNetwork(), 500);
+        }
+        if (!this.watchWalletTimer) {
+              this.watchWalletTimer = setInterval(() => this.watchWallet(), 500);
+        }
+      }
       else {
         this.setState({chainId: this.network.getDefaultNetwork()});
-        console.log("Defaulting to " + this.state.chainId);
         this.loadDetails(this.network.getDefaultNetwork());
       }
     }).catch(err => {
@@ -141,14 +155,16 @@ class SampleServices extends React.Component {
   }
 
   componentWillUnmount() {
-    if (this.watchNetworkTimer) {
-      console.log("Clearing the watchNetwork timer")
-      clearInterval(this.watchNetworkTimer);
-    }
+      if (this.watchWalletTimer) {
+          clearInterval(this.watchWalletTimer);
+      }
+
+      if (this.watchNetworkTimer) {
+          clearInterval(this.watchNetworkTimer);
+      }
   }
 
   componentDidMount() {
-    console.log("componentDidMount")
     window.addEventListener('load', () => this.handleWindowLoad());
     this.handleWindowLoad();
   }

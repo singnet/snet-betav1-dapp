@@ -131,7 +131,7 @@ export default class NeuralSpeechSynthesis extends React.Component {
         );
     }
 
-    componentDidUpdate() {
+    componentDidUpdate() { 
       if (this.isComplete) {
           var data = new Uint8Array(this.state.response);
           var blob = new Blob([data], {type : 'audio/wav'});
@@ -142,9 +142,7 @@ export default class NeuralSpeechSynthesis extends React.Component {
 
           var audioURL = window.URL.createObjectURL(blob);
           audio.src = audioURL;
-          audio.style.height = "30px";
-          audio.style.width = "250px";
-          audio.style.marginLeft = "10px";
+          audio.style.width = "100%";
           ac.appendChild(audio);
       }
     }
