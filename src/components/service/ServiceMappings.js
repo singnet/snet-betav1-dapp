@@ -22,6 +22,7 @@ import MosesService from "./MosesService";
 import EmotionRecognitionService from "./EmotionRecognitionService";
 import HolisticEdgeDetectionService from "./HolisticEdgeDetectionService";
 import ImageRetrievalService from "./ImageRetrievalService";
+import GeneAnnotationService from "./GeneAnnotationService";
 
 import DefaultService from './DefaultService.js';
 
@@ -51,6 +52,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "emotion-recognition-service")] = EmotionRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "holistic-edge-detection-service")] = HolisticEdgeDetectionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "image-retrieval-service")] = ImageRetrievalService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "annotation-service")] = GeneAnnotationService;
     }
 
     generateUniqueID(orgId,serviceId) {
