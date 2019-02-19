@@ -1698,7 +1698,7 @@ i {
   text-decoration: underline;
 }
 
-.mobile-header .network-name { visibility: hidden; }
+.mobile-header { display: none; }
 .channel-detail-header { display: none; }
 .MuiCollapse-wrapperInner-198 .MuiExpansionPanelDetails-root-199 { padding: 10px 24px; }
 
