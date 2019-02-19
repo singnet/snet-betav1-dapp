@@ -7,7 +7,6 @@ import withWidth from '@material-ui/core/withWidth';
 export class ImageGridViewer extends React.Component {
     constructor(props) {
         super(props);
-        console.log(props);
     }
 
     downloadImage(image) {
@@ -18,7 +17,6 @@ export class ImageGridViewer extends React.Component {
     }
 
     renderContent(response, key) {
-        console.log(response)
         return (
             <div
                 key={key}

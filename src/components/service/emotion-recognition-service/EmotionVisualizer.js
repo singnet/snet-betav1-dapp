@@ -29,7 +29,6 @@ export default class EmotionVisualizer extends React.Component {
 
 
     download() {
-        console.log(JSON.stringify(this.props.jobResult));
         const link = document.createElement('a');
         link.setAttribute('href', "data:text/json," + JSON.stringify(this.props.jobResult));
         link.setAttribute('download', 'result.json');
@@ -39,16 +38,15 @@ export default class EmotionVisualizer extends React.Component {
     download_img() {
         // this is a link to download the rendered boxes form the given image
         let cnvs = this.refs.outsideWrap;
-        html2canvas(cnvs,{}).then((canvas) => {
+        html2canvas(cnvs, {}).then((canvas) => {
             const link = document.createElement('a');
             link.setAttribute('href', canvas.toDataURL(this.props.inputImageType));
-            link.setAttribute('download', 'result.'+this.props.inputImageType.split('/')[1]);
+            link.setAttribute('download', 'result.' + this.props.inputImageType.split('/')[1]);
             link.click();
         })
     }
 
     renderBoundingBox() {
-        console.log(this.props.jobResult['faces']);
         let img = this.refs.sourceImg;
         let cnvs = this.refs.bboxCanvas;
         let outsideWrap = this.refs.outsideWrap;
@@ -56,9 +54,6 @@ export default class EmotionVisualizer extends React.Component {
             setTimeout(() => this.renderBoundingBox(), 200);
             return;
         }
-        // console.log(img.clientHeight);
-        // console.log(img.clientHeight);
-
 
         let width;
         if (this.props.sliderWidth === '100%') {
@@ -67,7 +62,6 @@ export default class EmotionVisualizer extends React.Component {
             width = parseInt(this.props.sliderWidth, 10);
         }
         let scale = width / parseInt(img.naturalWidth, 10);
-        console.log(scale);
         outsideWrap.style.width = img.naturalWidth * scale + 'px';
         outsideWrap.style.height = img.naturalHeight * scale + 'px';
         cnvs.style.position = 'absolute';
@@ -78,7 +72,6 @@ export default class EmotionVisualizer extends React.Component {
 
         let context = cnvs.getContext('2d');
         this.props.jobResult['faces'].forEach(item => {
-            console.log(item);
             context.beginPath();
             context.rect(
                 item.bounding_box['x'] * scale,
@@ -117,15 +110,15 @@ export default class EmotionVisualizer extends React.Component {
                         <div style={styles.insideWrapper}>
                             <img
                                 ref="sourceImg"
-                                src={'data:' + this.props.inputImageType+ ';base64,' + this.props.inputImage}
+                                src={'data:' + this.props.inputImageType + ';base64,' + this.props.inputImage}
                                 style={styles.coveredImage}
                             />
                             <canvas ref="bboxCanvas" style={styles.coveringCanvas}/>
                         </div>
                         <div className="row" align="center">
-                        <button type="button" className="btn btn-primary" onClick={this.download_img}>
-                            Download Image with Bounding Boxes
-                        </button>
+                            <button type="button" className="btn btn-primary" onClick={this.download_img}>
+                                Download Image with Bounding Boxes
+                            </button>
                         </div>
                     </div>
                 )}

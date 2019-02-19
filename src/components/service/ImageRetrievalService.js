@@ -46,8 +46,6 @@ export default class ImageRetrievalService extends React.Component {
 
     handleSimilarityUpdate(event) {
         let strService = event.target.value;
-        console.log('Similarity Name');
-        console.log(strService);
         this.setState({
             similarityMeasure: strService
         });
