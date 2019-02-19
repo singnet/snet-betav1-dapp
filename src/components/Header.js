@@ -66,28 +66,28 @@ export default class Header extends React.Component {
                       <h1><span className="icon-logo"></span></h1></Link>}
                   </div>
                   { networkName }
-                <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 navigation">
-                 { menuList }
-                </div>
-                <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 hamburger-menu">
-                  <button className="bars" onClick={this.showMenu}>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </button>
-                  {
-                    this.state.showMenu ? 
-                      <div className="header-menu">
-                        {menuList}
-                      </div>
-                    : 
-                      null  
-                  }                  
-                </div>
+                  <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 navigation">
+                    { menuList }
+                  </div>
+                  <div className="col-xs-4 col-sm-4 col-md-6 col-lg-5 hamburger-menu">
+                    <button className="bars" onClick={this.showMenu}>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </button>
+                    {
+                      this.state.showMenu ? 
+                        <div className="header-menu">
+                          {menuList}
+                        </div>
+                      : 
+                        null  
+                    }                  
+                  </div>
+                </div>  
                 <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 mobile-header">
                   { networkName }
-                </div>
-                </div>                  
+                </div>                
               </div>
             </div>
           </div>
