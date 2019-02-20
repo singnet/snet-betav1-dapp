@@ -370,7 +370,7 @@ export default class MosesOptionsForm extends React.Component {
                 onChange={e => this.props.changeInput(e)}
                 name="reductKnobBuildingEffort"
                 style={{ display: "flex", flexDirection: "row" }}
-                value={this.props.defaults.reductKnobBuildingEffort}
+                value={this.props.defaults.reductKnobBuildingEffort.toString()}
               >
                 <FormControlLabel value={"0"} control={<Radio />} label="0" />
                 <FormControlLabel value={"1"} control={<Radio />} label="1" />

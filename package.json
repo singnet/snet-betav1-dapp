@@ -48,7 +48,9 @@
     "react-dropzone": "^8.0.4",
     "react-json-view": "^1.19.1",
     "react-masonry-component": "^6.2.1",
-    "html2canvas": "^1.0.0-alpha.12"
+    "html2canvas": "^1.0.0-alpha.12",
+    "cytoscape": "^3.3.3",
+    "cytoscape-cola": "^2.3.0"
   },
   "devDependencies": {
     "@material-ui/core": "^3.5.1",
