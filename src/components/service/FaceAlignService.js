@@ -8,24 +8,17 @@ export default class FaceAlignService extends React.Component {
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
-        this.handleFormUpdate = this.handleFormUpdate.bind(this);
         this.getData = this.getData.bind(this);
 
         this.state = {
-            serviceName: undefined,
-            methodName: undefined,
-            response: undefined,
+            serviceName: "FaceAlignment",
+            methodName: "AlignFace",
             imageData: undefined,
             imgsrc: undefined,
             facesString: '[{"x":10,"y":10,"w":100,"h":100}]',
         };
 
         this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -37,81 +30,14 @@ export default class FaceAlignService extends React.Component {
             }
             this.setState({inputValid: this.checkValid()});
         }
-        if (this.state.methodName !== prevState.methodName)
-            this.setState({inputValid: this.checkValid()});
         if (this.state.imageData !== prevState.imageData)
             this.setState({inputValid: this.checkValid()});
       }
 
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
-
-    parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                this.setState({response: nextProps.response});
-            }
-        }
-    }
-
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        var objects = undefined;
-        var items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.allServices.push("Select a service");
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
-            }
-        })
-    }
-
-    handleFormUpdate(event) {
-        this.setState({
-            [event.target.name]: event.target.value
-        });
-    }
     handleChange(type, e) {
         this.setState({
             [type]: e.target.value,
         });        
-    }
-
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
-        });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
-        }
     }
 
     submitAction() {
@@ -168,28 +94,6 @@ export default class FaceAlignService extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select id="select1"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
                     <div className="col-md-6 col-lg-6">
                         <SNETImageUpload imageDataFunc={this.getData} returnByteArray={true}/>
                     </div>
@@ -212,7 +116,7 @@ export default class FaceAlignService extends React.Component {
     }
 
     renderComplete() {
-        var alignedFaceImgList = this.state.response.image_chunk.map((item, idx) => {
+        var alignedFaceImgList = this.props.response.image_chunk.map((item, idx) => {
             // Of course this is how JS requires you to convert a uint8array to base64,
             // because everything in JS has to be 10x harder than other languages...
             return (
@@ -234,7 +138,7 @@ export default class FaceAlignService extends React.Component {
     }
 
     render() {
-        if (this.isComplete)
+        if (this.props.isComplete)
             return (
                 <div>
                     {this.renderComplete()}

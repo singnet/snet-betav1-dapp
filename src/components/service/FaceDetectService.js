@@ -34,94 +34,20 @@ export default class FaceDetectService extends React.Component {
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
-        this.handleFormUpdate = this.handleFormUpdate.bind(this);
         this.getData = this.getData.bind(this);
 
         this.state = {
-            serviceName: undefined,
-            methodName: undefined,
-            response: undefined,
+            serviceName: "FaceDetect",
+            methodName: "FindFace",
             imageData: undefined,
             imgsrc: undefined,
         };
 
-        this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.response !== prevState.response) {
-          this.renderBoundingBox(this.state.response);
-        }
-      }
-
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
-
-    parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                this.setState({response: nextProps.response});
-            }
-        }
-    }
-
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        var objects = undefined;
-        var items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.allServices.push("Select a service");
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
-            }
-        })
-    }
-
-    handleFormUpdate(event) {
-        this.setState({
-            [event.target.name]: event.target.value
-        });
-    }
-
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
-        });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
+        if (this.props.isComplete && this.props.response !== undefined) {
+          this.renderBoundingBox(this.props.response);
         }
     }
 
@@ -130,6 +56,10 @@ export default class FaceDetectService extends React.Component {
             this.state.methodName, {
                 content: this.state.imageData
             });
+    }
+
+    canBeInvoked() {
+        return (this.state.methodName !== "Select a method");
     }
 
     getData(imageData, mimetype, format, fn) {
@@ -156,7 +86,7 @@ export default class FaceDetectService extends React.Component {
             setTimeout ( () => this.renderBoundingBox(result), 200 );
             return;
         }
-        let desiredWidth = 500.0; // TODO: find appropriate reference width from components
+        let desiredWidth = this.props.sliderWidth;
         let scaleFactor = desiredWidth / img.naturalWidth;
         outsideWrap.style.width = img.naturalWidth * scaleFactor + "px";
         outsideWrap.style.height = img.naturalHeight * scaleFactor + "px";
@@ -185,30 +115,8 @@ export default class FaceDetectService extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select id="select1"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
                     <div className="col-md-6 col-lg-6">
-                        <SNETImageUpload imageDataFunc={this.getData} returnByteArray={true}/>
+                        <SNETImageUpload imageDataFunc={this.getData} returnByteArray={true} disableUrlTab={true}/>
                     </div>
                 </div>
                 <div className="row">
@@ -223,7 +131,7 @@ export default class FaceDetectService extends React.Component {
     renderComplete() {
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is {JSON.stringify(this.state.response)} </p>
+                <p style={{fontSize: "13px"}}>Response from service is {JSON.stringify(this.props.response)} </p>
                 <div ref="outsideWrap" style={outsideWrapper}>
                     <div style={insideWrapper}>
                     <img ref="sourceImg" style={coveredImage} src={this.state.imgsrc}/>
@@ -235,7 +143,7 @@ export default class FaceDetectService extends React.Component {
     }
 
     render() {
-        if (this.isComplete)
+        if (this.props.isComplete)
             return (
                 <div>
                     {this.renderComplete()}

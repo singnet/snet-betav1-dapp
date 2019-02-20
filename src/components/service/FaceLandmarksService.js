@@ -34,116 +34,42 @@ export default class FaceLandmarksService extends React.Component {
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
-        this.handleFormUpdate = this.handleFormUpdate.bind(this);
         this.getData = this.getData.bind(this);
 
         this.state = {
-            serviceName: undefined,
-            methodName: undefined,
-            response: undefined,
+            serviceName: "FaceLandmark",
+            methodName: "GetLandmarks",
             imageData: undefined,
             imgsrc: undefined,
             facesString: '[{"x":10,"y":10,"w":100,"h":100}]',
             landmarkModel: "68",
         };
+        this.valid = false;
+        this.parseErr = undefined;
 
-        this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.response !== prevState.response) {
-          this.renderLandmarks(this.state.response);
+        if (this.props.isComplete && this.props.response !== undefined) {
+          this.renderLandmarks(this.props.response);
         }
-        if (this.state.landmarkModel !== prevState.landmarkModel)
-            this.setState({inputValid: this.checkValid()});
-        if (this.state.facesString !== prevState.facesString) {
-            let inputValid = this.checkValid();
-            if (inputValid) {
-                // TODO render the image inside the upload widget
-                // renderBoundingBox
-            }
-            this.setState({inputValid: this.checkValid()});
+        
+        
+        // This is hacky, but could figure out a better way to avoid react difficulties
+        if (this.state.facesString != prevState.facesString ||
+            this.state.imageData != prevState.imageData ||
+            this.state.landmarkModel != prevState.landmarkModel)
+        {
+            let currValid = this.checkValid(this.state);
+            this.setState(currValid);
         }
-        if (this.state.methodName !== prevState.methodName)
-            this.setState({inputValid: this.checkValid()});
-        if (this.state.imageData !== prevState.imageData)
-            this.setState({inputValid: this.checkValid()});
-      }
 
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
     }
 
-    parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                this.setState({response: nextProps.response});
-            }
-        }
-    }
-
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        var objects = undefined;
-        var items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.allServices.push("Select a service");
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
-            }
-        })
-    }
-
-    handleFormUpdate(event) {
-        this.setState({
-            [event.target.name]: event.target.value
-        });
-    }
     handleChange(type, e) {
         this.setState({
             [type]: e.target.value,
-        });        
-    }
-
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
         });
-        this.serviceMethods.length = 0;
-        if (typeof strService !== 'undefined' && strService !== 'Select a service') {
-            let data = Object.values(this.methodsForAllServices[strService]);
-            if (typeof data !== 'undefined') {
-                this.serviceMethods= data;
-            }
-        }
     }
 
     submitAction() {
@@ -159,11 +85,16 @@ export default class FaceLandmarksService extends React.Component {
             });
     }
 
-    checkValid() {
+    canBeInvoked() {
+        return this.state.inputValid;
+    }
+
+    checkValid(state) {
         let inputValid = true;
-        
+        let err = undefined;
+
         try {
-            let faces = JSON.parse(this.state.facesString);
+            let faces = JSON.parse(state.facesString);
             faces.forEach((item) => {
               let expectedKeys = ['x', 'y', 'w', 'h'];
               expectedKeys.forEach((k) => {
@@ -171,22 +102,23 @@ export default class FaceLandmarksService extends React.Component {
               });
             });
         } catch(e) {
+            err = e.message;
             inputValid = false;
         }
         
-        if (this.state.methodName === undefined ||this.state.methodName === "Select a method" || this.state.methodName.length == 0)
+        if (state.landmarkModel !== "68" && state.landmarkModel !== "5") {
+            err = "model must be '68' or '5'";
             inputValid = false;
+        }
             
-        if (this.state.landmarkModel !== "68" && this.state.landmarkModel !== "5")
-            inputValid = false;
     
-        if (this.state.imageData === undefined)
+        if (state.imageData === undefined) {
+            err = "You need to upload an image";
             inputValid = false;
-    
-        return inputValid;
+        }
         
-      }
-      
+        return {'parseErr': err, 'inputValid': inputValid};
+    }     
     
     getData(imageData, mimetype, format, fn) {
         this.setState({imageData: imageData});
@@ -222,7 +154,7 @@ export default class FaceLandmarksService extends React.Component {
             setTimeout ( () => this.renderLandmarks(result), 200 );
             return;
         }
-        let desiredWidth = 500.0; // TODO: find appropriate reference width from components
+        let desiredWidth = this.props.sliderWidth;
         let scaleFactor = desiredWidth / img.naturalWidth;
         outsideWrap.style.width = img.naturalWidth * scaleFactor + "px";
         outsideWrap.style.height = img.naturalHeight * scaleFactor + "px";
@@ -257,7 +189,7 @@ export default class FaceLandmarksService extends React.Component {
             setTimeout ( () => this.renderBoundingBox(result), 200 );
             return;
         }
-        let desiredWidth = 500.0; // TODO: find appropriate reference width from components
+        let desiredWidth = this.props.sliderWidth;
         let scaleFactor = desiredWidth / img.naturalWidth;
         outsideWrap.style.width = img.naturalWidth * scaleFactor + "px";
         outsideWrap.style.height = img.naturalHeight * scaleFactor + "px";
@@ -286,30 +218,8 @@ export default class FaceLandmarksService extends React.Component {
         return (
             <React.Fragment>
                 <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select id="select1"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
                     <div className="col-md-6 col-lg-6">
-                        <SNETImageUpload imageDataFunc={this.getData} returnByteArray={true}/>
+                        <SNETImageUpload imageDataFunc={this.getData} returnByteArray={true} disableUrlTab={true}/>
                     </div>
                 </div>
                 <div className="row">
@@ -329,8 +239,13 @@ export default class FaceLandmarksService extends React.Component {
                     </div>
                 </div>
                 <div className="row">
+                    <div className="col-md-6 col-lg-6" style={{marginTop:"5px", textAlign: "center"}}>
+                    <p style={{fontSize: "14px",color: "red"}}>{this.state.parseErr}</p>
+                    </div>
+                </div>
+                <div className="row">
                     <div className="col-md-6 col-lg-6" style={{marginTop:"5px", textAlign: "right"}}>
-                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.state.inputValid}>Invoke</button>
+                        <button type="button" className="btn btn-primary" onClick={this.submitAction} disabled={!this.canBeInvoked()}>Invoke</button>
                     </div>
                 </div>
             </React.Fragment>
@@ -340,7 +255,7 @@ export default class FaceLandmarksService extends React.Component {
     renderComplete() {
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is {JSON.stringify(this.state.response)} </p>
+                <p style={{fontSize: "13px"}}>Response from service is {JSON.stringify(this.props.response)} </p>
                 <div ref="outsideWrap" style={outsideWrapper}>
                     <div style={insideWrapper}>
                     <img ref="sourceImg" style={coveredImage} src={this.state.imgsrc}/>
@@ -352,7 +267,7 @@ export default class FaceLandmarksService extends React.Component {
     }
 
     render() {
-        if (this.isComplete)
+        if (this.props.isComplete)
             return (
                 <div>
                     {this.renderComplete()}

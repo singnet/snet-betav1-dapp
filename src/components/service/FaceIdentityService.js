@@ -38,7 +38,8 @@ const centerCanvas = {
 class FaceIdentityBadge extends React.Component {
     constructor(props) {
         super(props);
-        this.width = 320;
+        // This will fail if sliderWidth is not in a format like '550px'
+        this.width = parseInt(props.sliderWidth) - 30;
         this.height = 160;
         this.sWidth = this.width / 16;
         this.sHeight = this.height / 8;
@@ -131,27 +132,21 @@ export default class FaceIdentityService extends React.Component {
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
-        this.handleFormUpdate = this.handleFormUpdate.bind(this);
         this.getData = this.getData.bind(this);
 
         this.state = {
-            serviceName: undefined,
-            methodName: undefined,
-            response: undefined,
+            serviceName: "FaceRecognition",
+            methodName: "RecogniseFace",
             imageData: undefined,
             imgsrc: undefined,
             facesString: '[{"x":10,"y":10,"w":100,"h":100}]',
         };
 
         this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
     }
 
     componentDidUpdate(prevProps, prevState) {
+        
         if (this.state.facesString !== prevState.facesString) {
             let inputValid = this.checkValid();
             if (inputValid) {
@@ -166,57 +161,6 @@ export default class FaceIdentityService extends React.Component {
             this.setState({inputValid: this.checkValid()});
       }
 
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
-
-    parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                this.setState({response: nextProps.response});
-            }
-        }
-    }
-
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        var objects = undefined;
-        var items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.allServices.push("Select a service");
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
-            }
-        })
-    }
-
-    handleFormUpdate(event) {
-        this.setState({
-            [event.target.name]: event.target.value
-        });
-    }
     handleChange(type, e) {
         this.setState({
             [type]: e.target.value,
@@ -290,29 +234,7 @@ export default class FaceIdentityService extends React.Component {
     renderForm() {
         return (
             <React.Fragment>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Service Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select id="select1"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleServiceName}>
-                            {this.allServices.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Method Name</div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="methodName"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.serviceMethods.map((row, index) =>
-                                <option key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
+               <div className="row">
                     <div className="col-md-6 col-lg-6">
                         <SNETImageUpload imageDataFunc={this.getData} returnByteArray={true}/>
                     </div>
@@ -335,20 +257,20 @@ export default class FaceIdentityService extends React.Component {
     }
 
     renderComplete() {
-        var identities = this.state.response.identities.map((item, idx) => {
+        var identities = this.props.response.identities.map((item, idx) => {
             return (
                 <div key={idx}>
-                    <div className="row" key={idx}>
+                    <div className="row">
                         <div className="col-md-12 col-lg-12"><h3>Raw vector</h3></div>
                     </div>
-                    <div className="row" key={idx}>
+                    <div className="row">
                         <div className="col-md-12 col-lg-12"><textarea rows="3" cols="60" readOnly value={JSON.stringify(item.identity)}/></div>
                     </div>
-                    <div className="row" key={idx}>
+                    <div className="row">
                         <div className="col-md-12 col-lg-12"><h3>Badge</h3></div>
                     </div>
-                    <div className="row" key={idx}>
-                        <div className="col-md-12 col-lg-12"><FaceIdentityBadge identity={item.identity}/></div>
+                    <div className="row">
+                        <div className="col-md-12 col-lg-12"><FaceIdentityBadge identity={item.identity} sliderWidth={this.props.sliderWidth}/></div>
                     </div>
                 </div>
             );
@@ -361,7 +283,7 @@ export default class FaceIdentityService extends React.Component {
     }
 
     render() {
-        if (this.isComplete)
+        if (this.props.isComplete)
             return (
                 <div>
                     {this.renderComplete()}
