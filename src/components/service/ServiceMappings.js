@@ -19,6 +19,7 @@ import SentimentAnalysisService from "./SentimentAnalysisService";
 import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
 import VisualQAOpencog from './VisualQAOpencog.js';
 import MosesService from "./MosesService";
+import SemanticSegmentationService from "./SemanticSegmentation.js";
 import FaceDetectService from "./FaceDetectService"
 import FaceLandmarksService from "./FaceLandmarksService"
 import FaceAlignService from "./FaceAlignService"
@@ -53,6 +54,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "moses-service")] = MosesService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-segmentation")] = SemanticSegmentationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-detect")] = FaceDetectService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-landmarks")] = FaceLandmarksService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-align")] = FaceAlignService;
