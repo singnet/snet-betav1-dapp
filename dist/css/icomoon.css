@@ -2,9 +2,9 @@
   font-family: "icomoon";
   src: url("fonts/icomoon.eot?d067fx");
   src: url("fonts/icomoon.eot?d067fx#iefix") format("embedded-opentype"),
-    url("fonts/icomoon.ttf?d067fx") format("truetype"),
-    url("fonts/icomoon.woff?d067fx") format("woff"),
-    url("fonts/icomoon.svg?d067fx#icomoon") format("svg");
+       url("fonts/icomoon.ttf?d067fx") format("truetype"),
+       url("fonts/icomoon.woff?d067fx") format("woff"),
+       url("fonts/icomoon.svg?d067fx#icomoon") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -50,6 +50,7 @@
   color: #4086ff;
   font-size: 26px;
 }
+
 .icon-dislike:before {
     content: "\e900";
     color: #757577;
@@ -62,27 +63,32 @@
     font-size: 26px;
     cursor: pointer;
 }
+
 .icon-like-disabled:before {
   content: "\e901";
     color: #757577;
     font-size: 26px;
     cursor: pointer;
 }
+
 .icon-dislike-enabled:before {
   content: "\e900";
     color: #4086ff;
     font-size: 26px;
     cursor: pointer;
 }
+
 .icon-home-icon-silhouette:before {
   content: "\e902";
   font-size: 20px;
 }
+
 .icon-logo:before {
   content: "\e903";
   color: #fff;
   font-size: 50px
 }
+
 .icon-user-3:before {
   content: "\e904";
   font-size: 20px;

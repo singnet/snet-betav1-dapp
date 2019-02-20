@@ -7,34 +7,30 @@ export default class MosesService extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      response: undefined,
       busy: false,
       error: null,
       notification: null
     };
-    this.isComplete = false;
-    this.parseProps(props);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-  componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-  }
-  parseProps(nextProps) {
-    this.isComplete = nextProps.isComplete;
-    if (this.isComplete) {
-      if (typeof nextProps.response !== "undefined") {
-        this.state.response = nextProps.response;
-        if (!nextProps.response.resultUrl) {
-          this.state.notification = {
-            message: nextProps.response.description,
-            busy: false
-          };
-        } else {
-          this.state.notification = null;
-        }
+
+  componentDidUpdate(nextProps) {
+    if (this.props.isComplete !== nextProps.isComplete) {
+      if (!this.props.response || !this.props.response.resultUrl) {
+        this.state.notification = {
+          message: nextProps.response.description,
+          busy: false
+        };
+      } else {
+        this.state.notification = null;
       }
+    }
+  }
+
+  parseResponse() {
+    const { response } = this.props;
+    if (typeof response !== "undefined") {
+      return response;
     }
   }
 
@@ -61,13 +57,13 @@ export default class MosesService extends React.Component {
   }
 
   renderComplete() {
-    return <MosesServiceResult result={this.state.response} />;
+    return <MosesServiceResult result={this.parseResponse()} />;
   }
 
   render() {
     return (
       <div>
-        {this.isComplete ? this.renderComplete() : this.renderForm()}
+        {this.props.isComplete ? this.renderComplete() : this.renderForm()}
         {this.state.notification &&
           showNotification(this.state.notification, () => {
             this.setState({ notification: null });
