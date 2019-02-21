@@ -60,6 +60,7 @@ As in the "upload mode", the service provider may choose to disable any combinat
 | imageName | string | "Input Image" | Image name that will be displayed on top of the component.|
 | disableUploadTab | bool | false | If `true`, does not render *Upload* tab. |
 | disableUrlTab | bool | false | If `true`, does not render *Url* tab. |
+| disableResetButton | bool | false | If `true`, does not render the image reset button. Prevents user from re-uploading an image, use to display the input image after the service is complete.|
 | returnByteArray | bool | `false` | If `true` returns Uint8Array encoded image data to `imageDataFunc()` instead of base64. |
 | allowedInputTypes | string or array | "image/*" | Specifies allowed file types for "Upload" component. Accepts a file type-string or an array of types (e.g.: "image/jpeg", \["image/jpg", "image/jpeg"]). |
 | maxImageSize | number | 10000000 | Maximum image file size for Upload tab in bytes. Default: 10mb. |
