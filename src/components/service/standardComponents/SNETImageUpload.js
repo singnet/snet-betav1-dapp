@@ -1178,7 +1178,7 @@ export default class SNETImageUpload extends React.Component {
                                 justifyContent: 'center',
                                 alignItems: "center"
                             }}>
-                                {this.state.mainState === "uploaded" &&
+                                {this.state.mainState === "uploaded" && !this.props.disableResetButton &&
                                 <Fade in={this.state.mainState === "uploaded"}>
                                     <Tooltip title={
                                         <Typography style={{fontFamily: snetFont, fontSize: 12, color: "white"}}>
@@ -1239,6 +1239,7 @@ SNETImageUpload.propTypes = {
     imageName: PropTypes.string,
     disableUploadTab: PropTypes.bool, // If true disables upload tab
     disableUrlTab: PropTypes.bool, // If true disables url tab
+    disableResetButton: PropTypes.bool, // If true disables image reset button
     returnByteArray: PropTypes.bool, // whether to return base64 or byteArray image data
     outputFormat: PropTypes.oneOf(["image/png", "image/jpg", "image/jpeg"]),
     allowedInputTypes: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
@@ -1273,6 +1274,7 @@ SNETImageUpload.defaultProps = {
     imageName: "Input Image",
     disableUploadTab: false, // If true disables upload tab
     disableUrlTab: false, // If true disables url tab
+    disableResetButton: false,
     returnByteArray: false,
     outputFormat: "image/png",
     allowedInputTypes: "image/*",
