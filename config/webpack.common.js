@@ -40,7 +40,11 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use:  ['style-loader', MiniCssExtractPlugin.loader, 'css-loader']
+        use:  [
+          'style-loader',
+          MiniCssExtractPlugin.loader,
+          'css-loader'
+        ]
       },
       {
         test: /\.less$/,
@@ -83,9 +87,6 @@ module.exports = {
         minifyCSS: true,
         minifyURLs: true,
       },
-    }),
-    new MiniCssExtractPlugin({
-      filename: 'css/cmk.[contenthash].css',
     })
   ]
 };
