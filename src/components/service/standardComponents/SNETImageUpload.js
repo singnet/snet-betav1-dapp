@@ -153,8 +153,6 @@ export default class SNETImageUpload extends React.Component {
 
         //"data:" + this.state.outputImageMimeType + ";base64," +
         if (nextProps.outputImage) {
-            console.log("IMAGE UPLOAD: Output image received! Switching to display mode.");
-
             // Extracts base64-encoded image's mime type
             if(nextProps.outputImageMimeType === undefined){
                 if(nextProps.outputImage.charAt(0) === '/'){
