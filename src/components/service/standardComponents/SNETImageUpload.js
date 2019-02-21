@@ -153,7 +153,7 @@ export default class SNETImageUpload extends React.Component {
 
         //"data:" + this.state.outputImageMimeType + ";base64," +
         if (nextProps.outputImage) {
-            console.log("Output image received!");
+            console.log("IMAGE UPLOAD: Output image received! Switching to display mode.");
 
             // Extracts base64-encoded image's mime type
             if(nextProps.outputImageMimeType === undefined){
@@ -955,9 +955,6 @@ export default class SNETImageUpload extends React.Component {
         let offsetLeft = this.imageDiv.current.getBoundingClientRect().left;
         let offsetImageLeft = this.outputImage.current.getBoundingClientRect().left;
         let imageHalfHeight = this.imageDiv.current.clientHeight / 2;
-        console.log(event.clientX);
-        console.log(offsetLeft);
-        console.log(offsetImageLeft);
         this.setState({
             imageXPosition: event.clientX - offsetImageLeft,
             dividerXPosition: event.clientX - offsetLeft,
@@ -966,9 +963,6 @@ export default class SNETImageUpload extends React.Component {
     }
 
     setInputImageDimensions() {
-        console.log("Dimensions:");
-        console.log(this.inputImage.current.clientHeight);
-        console.log(this.inputImage.current.clientWidth);
         this.setState({
             inputImageHeight: this.inputImage.current.clientHeight,
             inputImageWidth: this.inputImage.current.clientWidth,
