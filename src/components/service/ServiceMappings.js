@@ -19,9 +19,17 @@ import SentimentAnalysisService from "./SentimentAnalysisService";
 import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
 import VisualQAOpencog from './VisualQAOpencog.js';
 import MosesService from "./MosesService";
+import SemanticSegmentationService from "./SemanticSegmentation.js";
+import FaceDetectService from "./FaceDetectService"
+import FaceLandmarksService from "./FaceLandmarksService"
+import FaceAlignService from "./FaceAlignService"
+import FaceIdentityService from "./FaceIdentityService"
 import EmotionRecognitionService from "./EmotionRecognitionService";
 import HolisticEdgeDetectionService from "./HolisticEdgeDetectionService";
 import ImageRetrievalService from "./ImageRetrievalService";
+import GeneAnnotationService from "./GeneAnnotationService";
+import TranslationService from "./TranslationService";
+import NewsSummaryService from "./NewsSummaryService";
 
 import DefaultService from './DefaultService.js';
 
@@ -48,9 +56,17 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis")] = SentimentAnalysisService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery")] = TimeSeriesAnomalyDiscoveryService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "moses-service")] = MosesService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-segmentation")] = SemanticSegmentationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-detect")] = FaceDetectService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-landmarks")] = FaceLandmarksService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-align")] = FaceAlignService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-identity")] = FaceIdentityService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "emotion-recognition-service")] = EmotionRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "holistic-edge-detection-service")] = HolisticEdgeDetectionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "image-retrieval-service")] = ImageRetrievalService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "gene-annotation-service")] = GeneAnnotationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation")] = TranslationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary")] = NewsSummaryService;
     }
 
     generateUniqueID(orgId,serviceId) {
