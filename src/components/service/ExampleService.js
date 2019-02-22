@@ -7,13 +7,10 @@ export default class ExampleService extends React.Component {
     this.handleServiceName = this.handleServiceName.bind(this);
     this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
-    this.state = {
-      serviceName: "Calculator",
-      methodName: "Select a method",
-      a: 0,
-      b: 0
-    };
-  }
+    constructor(props) {
+        super(props);
+        this.submitAction = this.submitAction.bind(this);
+        this.handleFormUpdate = this.handleFormUpdate.bind(this);
 
   canBeInvoked() {
     return this.state.methodName !== "Select a method";
@@ -32,22 +29,16 @@ export default class ExampleService extends React.Component {
     });
   }
 
-  onKeyPressvalidator(event) {
-    const keyCode = event.keyCode || event.which;
-    if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
-      event.preventDefault();
-    } else {
-      let dots = event.target.value.split(".");
-      if (dots.length > 1 && keyCode == 46) event.preventDefault();
+    onKeyPressvalidator(event) {
+        const keyCode = event.keyCode || event.which;
+        if (!(keyCode == 8 || keyCode == 46) && (keyCode < 48 || keyCode > 57)) {
+            event.preventDefault()
+        } else {
+            let dots = event.target.value.split('.');
+            if (dots.length > 1 && keyCode == 46)
+                event.preventDefault()
+        }
     }
-  }
-
-  submitAction() {
-    this.props.callApiCallback(this.state.serviceName, this.state.methodName, {
-      a: this.state.a,
-      b: this.state.b
-    });
-  }
 
   renderServiceMethodNames(serviceMethodNames) {
     const serviceNameOptions = ["Select a method", ...serviceMethodNames];
