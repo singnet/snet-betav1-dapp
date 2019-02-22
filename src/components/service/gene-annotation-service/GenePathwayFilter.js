@@ -7,10 +7,7 @@ import {
   Switch
 } from "@material-ui/core";
 
-const options = [
-  { label: "SMPDB", value: "smpdb" },
-  { label: "Reactome", value: "reactome" }
-];
+const options = [{ label: "Reactome", value: "reactome" }];
 
 export default class GenePathwayFilter extends React.Component {
   constructor(props) {
