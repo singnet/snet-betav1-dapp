@@ -58,7 +58,7 @@ const snetBackgroundRed = red[100];
 
 // Definitions
 const spacingUnit = 8;
-const snetFont = "Roboto";
+const snetFont = "Muli";
 const minimumWidth = "400px";
 const minimumTabHeight = 160;
 
