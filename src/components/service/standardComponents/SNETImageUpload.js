@@ -150,39 +150,100 @@ export default class SNETImageUpload extends React.Component {
     componentWillReceiveProps(nextProps, nextContent) {
         let mimeType;
 
-
         //"data:" + this.state.outputImageMimeType + ";base64," +
         if (nextProps.outputImage) {
-            // Extracts base64-encoded image's mime type
-            if(nextProps.outputImageMimeType === undefined){
-                if(nextProps.outputImage.charAt(0) === '/'){
-                    mimeType = "image/jpeg";
-                }else if(nextProps.outputImage.charAt(0) === 'R'){
-                    mimeType = "image/gif";
-                }else if(nextProps.outputImage.charAt(0) === 'i'){
-                    mimeType = "image/png";
-                }else{
-                    mimeType = "application/octet-stream"
+            if(nextProps.outputImage !== this.props.outputImage){
+                // Extracts base64-encoded image's mime type
+                if(nextProps.outputImageMimeType === undefined){
+                    if(nextProps.outputImage.charAt(0) === '/'){
+                        mimeType = "image/jpeg";
+                    }else if(nextProps.outputImage.charAt(0) === 'R'){
+                        mimeType = "image/gif";
+                    }else if(nextProps.outputImage.charAt(0) === 'i'){
+                        mimeType = "image/png";
+                    }else{
+                        mimeType = "application/octet-stream"
+                    }
+                } else {
+                    mimeType = nextProps.outputImageMimeType;
                 }
-            } else {
-                mimeType = nextProps.outputImageMimeType;
-            }
 
-            this.setState({
-                displayModeTitle: nextProps.displayModeTitle,
-                outputImage: "data:" + mimeType + ";base64," + nextProps.outputImage,
-                outputImageMimeType: mimeType,
-                outputImageName: nextProps.outputImageName,
-                mainState: "display",
-                value: nextProps.disableOutputTab?
-                            nextProps.disableComparisonTab?
-                                3
-                                :
-                                5
+                this.setState({
+                    displayModeTitle: nextProps.displayModeTitle,
+                    outputImage: "data:" + mimeType + ";base64," + nextProps.outputImage,
+                    outputImageMimeType: mimeType,
+                    outputImageName: nextProps.outputImageName,
+                    mainState: "display",
+                    value: nextProps.disableOutputTab?
+                        nextProps.disableComparisonTab?
+                            3
                             :
-                            4,
-            });
+                            5
+                        :
+                        4,
+                });
+            }
+        } else { // Resets component if outputImage is empty again
+            if (this.props.outputImage){
+                this.setState({
+                    // Component's flow of execution
+                    mainState: "initial", // initial, loading, uploaded, display
+                    value: this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
+                        (this.props.disableUploadTab + this.props.disableUrlTab)
+                        :
+                        0,
+                    searchText: null,
+                    errorMessage: null,
+                    displayError: false,
+                    displayImageName: false,
+                    // Selected image data (sent via callback function)
+                    inputImageData: null,    // encoded image data. NOT ALWAYS THE SAME DATA SENT VIA CALLBACK
+                    mimeType: null,     // "jpeg", "png", etc
+                    encoding: null,     // "byteArray", "base64", "url"
+                    filename: null,     // image filename
+                    // Image data readers
+                    base64Reader: undefined,
+                    byteReader: undefined,
+
+                    // Output display mode
+                    imageXPosition: undefined, // arbitrary, will be set properly
+                    dividerXPosition: this.props.width / 2,
+                    displayModeTitle: this.props.displayModeTitle,
+                    outputImage: this.props.outputImage,
+                    outputImageName: this.props.outputImageName,
+                }, () => this.sendData(this.state.inputImageData));
+            }
         }
+
+        // Resets the component if disableResetButton is false:
+        this.props.disableResetButton && !nextProps.disableResetButton &&
+        this.setState({
+            // Component's flow of execution
+            mainState: "initial", // initial, loading, uploaded, display
+            value: this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
+                (this.props.disableUploadTab + this.props.disableUrlTab)
+                :
+                0,
+            searchText: null,
+            errorMessage: null,
+            displayError: false,
+            displayImageName: false,
+            // Selected image data (sent via callback function)
+            inputImageData: null,    // encoded image data. NOT ALWAYS THE SAME DATA SENT VIA CALLBACK
+            mimeType: null,     // "jpeg", "png", etc
+            encoding: null,     // "byteArray", "base64", "url"
+            filename: null,     // image filename
+            // Image data readers
+            base64Reader: undefined,
+            byteReader: undefined,
+
+            // Output display mode
+            imageXPosition: undefined, // arbitrary, will be set properly
+            dividerXPosition: this.props.width / 2,
+            displayModeTitle: this.props.displayModeTitle,
+            outputImage: this.props.outputImage,
+            outputImageName: this.props.outputImageName,
+        }, () => this.sendData(this.state.inputImageData));
     }
 
     setLoadingState() {
