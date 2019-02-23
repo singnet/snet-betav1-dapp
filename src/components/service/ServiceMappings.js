@@ -30,6 +30,7 @@ import ImageRetrievalService from "./ImageRetrievalService";
 import GeneAnnotationService from "./GeneAnnotationService";
 import TranslationService from "./TranslationService";
 import NewsSummaryService from "./NewsSummaryService";
+import StyleTransfer from "./StyleTransfer";
 
 import DefaultService from './DefaultService.js';
 
@@ -67,10 +68,11 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "gene-annotation-service")] = GeneAnnotationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation")] = TranslationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary")] = NewsSummaryService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "style-transfer")] = StyleTransfer;
     }
 
     generateUniqueID(orgId,serviceId) {
-        return orgId + "__$%^^%$__" + serviceId; 
+        return orgId + "__$%^^%$__" + serviceId;
     }
 
     getComponent(orgId, serviceId) {
