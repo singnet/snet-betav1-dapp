@@ -28,6 +28,8 @@ import EmotionRecognitionService from "./EmotionRecognitionService";
 import HolisticEdgeDetectionService from "./HolisticEdgeDetectionService";
 import ImageRetrievalService from "./ImageRetrievalService";
 import GeneAnnotationService from "./GeneAnnotationService";
+import TranslationService from "./TranslationService";
+import NewsSummaryService from "./NewsSummaryService";
 
 import DefaultService from './DefaultService.js';
 
@@ -63,6 +65,8 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "holistic-edge-detection-service")] = HolisticEdgeDetectionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "image-retrieval-service")] = ImageRetrievalService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "gene-annotation-service")] = GeneAnnotationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation")] = TranslationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary")] = NewsSummaryService;
     }
 
     generateUniqueID(orgId,serviceId) {
