@@ -138,7 +138,6 @@ export default class SNETImageUpload extends React.Component {
         this.outputImage = React.createRef();
 
         // Function binding
-        this.componentWillReceiveProps = this.componentWillReceiveProps.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.urlCallback = this.urlCallback.bind(this);
         this.sendData = this.sendData.bind(this);
