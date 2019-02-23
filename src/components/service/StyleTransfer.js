@@ -1,5 +1,4 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
 import Button from '@material-ui/core/Button';
 import SNETImageUpload from "./standardComponents/SNETImageUpload";
 import {Grid, IconButton, MuiThemeProvider, Tooltip} from "@material-ui/core";
@@ -23,8 +22,7 @@ export default class StyleTransfer extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-
+        this.initialState = {
             // From .proto file
             // Single option for both service and method names
             serviceName: "StyleTransfer",
@@ -38,21 +36,9 @@ export default class StyleTransfer extends React.Component {
             alpha: 1.0, // 0 to 1
             crop: false,
             saveExt: "",
-            // Response from service
-            response: undefined,
-
-            // For the outlined select components
-            modelLabelWidth: 0,
-            scaleLabelWidth: 0,
-
-            isComplete: false,
-            error: false,
         };
 
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
+        this.state = this.initialState;
 
         this.users_guide = "https://singnet.github.io/style-transfer-service/";
         this.code_repo = "https://github.com/singnet/style-transfer-service";
@@ -71,9 +57,8 @@ export default class StyleTransfer extends React.Component {
         ];
 
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
-        this.handleFormUpdate = this.handleFormUpdate.bind(this);
-        this.handleChange = this.handleChange.bind(this);
+        this.canBeInvoked = this.canBeInvoked.bind(this);
+
         this.preserveColorSwitchChange = this.preserveColorSwitchChange.bind(this);
         this.cropSwitchChange = this.cropSwitchChange.bind(this);
         this.getContentImageData = this.getContentImageData.bind(this);
@@ -102,98 +87,9 @@ export default class StyleTransfer extends React.Component {
         });
     }
 
-    parseProps(nextProps) {
-        this.state.isComplete = nextProps.isComplete;
-        if (!this.state.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            console.log(nextProps.response);
-            if (typeof nextProps.response !== 'undefined') {
-                this.state.response = nextProps.response;
-            }
-        }
-    }
-
-    componentWillReceiveProps(nextProps, nextContent) {
-        console.log(nextProps);
-        console.log(nextContent);
-
-        if(this.state.isComplete && !nextProps.isComplete){
-            this.setState({
-
-                // From .proto file
-                // Single option for both service and method names
-                serviceName: "StyleTransfer",
-                methodName: "transfer_image_style",
-                // Actual inputs
-                content: "",
-                style: "",
-                contentSize: 640,
-                styleSize: 640,
-                preserveColor: false,
-                alpha: 1.0, // 0 to 1
-                crop: false,
-                saveExt: "",
-                // Response from service
-                response: undefined,
-
-                // For the outlined select components
-                modelLabelWidth: 0,
-                scaleLabelWidth: 0,
-
-                isComplete: false,
-                error: false,
-            })
-        }
-
-        if (this.state.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
-
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        let objects = undefined;
-        let items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-
-                var methods = Object.keys(items[rr]["methods"]);
-                methods.unshift("Select a method");
-                this.methodsForAllServices[rr] = methods;
-            }
-        });
-    }
-
-    handleFormUpdate(event) {
-        this.setState({[event.target.name]: event.target.value})
-    }
-
-    handleServiceName(event) {
-        let strService = event.target.value;
-        this.setState({
-            serviceName: strService
-        });
-        console.log("Selected service is " + strService);
-        let data = this.methodsForAllServices[strService];
-        if (typeof data === 'undefined') {
-            data = [];
-        }
-        this.serviceMethods = data;
+    canBeInvoked() {
+        // Can be invoked if both content and style images have been chosen
+        return (this.state.content && this.state.style);
     }
 
     submitAction() {
@@ -210,18 +106,6 @@ export default class StyleTransfer extends React.Component {
                 crop: this.state.crop,
                 saveExt: this.state.saveExt,
             });
-    }
-
-    handleChange(event) {
-        if (event.target.name === "model") {
-            this.setState({
-                [event.target.name]: event.target.value,
-                scale: ""
-            });
-        } else {
-            this.setState({[event.target.name]: event.target.value});
-        }
-
     }
 
     getContentImageData(data) {
@@ -348,10 +232,7 @@ export default class StyleTransfer extends React.Component {
                                 color="primary"
                                 style={{fontSize: "13px", marginLeft: "10px"}}
                                 onClick={this.submitAction}
-                                disabled={
-                                    !this.state.content ||
-                                    !this.state.style
-                                }
+                                disabled={!this.canBeInvoked()}
                         >
                             Invoke
                         </Button>
@@ -361,12 +242,23 @@ export default class StyleTransfer extends React.Component {
         )
     }
 
-    render() {
-
-        if(this.state.isComplete){
-
+    parseResponse() {
+        const { response, isComplete } = this.props;
+        if(isComplete){
+            if(typeof response !== 'undefined') {
+                if(typeof response === 'string') {
+                    return response;
+                }
+                return response.data;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
+    }
 
+    render() {
         return (
             <div style={{flexGrow: 1}}>
                 <Paper style={{
@@ -483,7 +375,7 @@ export default class StyleTransfer extends React.Component {
                                     maxImageSize={3000000}
                                     imageDataFunc={this.getContentImageData}
                                     imageName="Input"
-                                    outputImage={this.state.response ? this.state.response.data : null}
+                                    outputImage={this.parseResponse()}
                                     outputImageName="stylizedImage"
                                     width="90%"
                                     instantUrlFetch={true}
@@ -495,16 +387,14 @@ export default class StyleTransfer extends React.Component {
                                     imageDataFunc={this.getStyleImageData}
                                     imageName="Style"
                                     maxImageSize={3000000}
-                                    disableResetButton={this.state.isComplete}
+                                    disableResetButton={this.props.isComplete}
                                     width="90%"
                                     instantUrlFetch={true}
                                     allowURL={true}
                                     imageGallery={this.styleGallery}
                                 />
                             </Grid>
-                            {
-                                !this.state.isComplete && this.renderForm()
-                            }
+                            { !this.props.isComplete && this.renderForm() }
                         </Grid>
                     </MuiThemeProvider>
                 </Paper>
