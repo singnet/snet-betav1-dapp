@@ -112,18 +112,8 @@ export default class LanguageDetectionService extends React.Component {
         )
     }
 
-    parseResponse() {
-        const {response} = this.props;
-        if (typeof response !== 'undefined') {
-            if (typeof response === 'string') {
-                return response;
-            }
-            return response;
-        }
-    }
-
     renderComplete() {
-        const response = this.parseResponse();
+        const response = this.props.response;
         const CustomTableCell = withStyles(theme => ({
             head: {
                 backgroundColor: theme.palette.common.black,
@@ -161,10 +151,10 @@ export default class LanguageDetectionService extends React.Component {
                                         {row['sentence']}
                                     </CustomTableCell>
                                     <CustomTableCell align="center">
-                                        {row['prediction'][0]['language'] + ' - '+ parseFloat(row['prediction'][0]['confidence']).toFixed(2)+"%"}
+                                        {row['prediction'][0]['language'] + ' - ' + parseFloat(row['prediction'][0]['confidence']).toFixed(2) + "%"}
                                     </CustomTableCell>
                                     <CustomTableCell align="center">
-                                        {row['prediction'][1]['language'] + ' - '+ parseFloat(row['prediction'][1]['confidence']).toFixed(2)+"%"}
+                                        {row['prediction'][1]['language'] + ' - ' + parseFloat(row['prediction'][1]['confidence']).toFixed(2) + "%"}
                                     </CustomTableCell>
                                 </TableRow>
                             ))}

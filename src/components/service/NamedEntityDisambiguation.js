@@ -113,18 +113,8 @@ export default class NamedEntityDisambiguation extends React.Component {
         )
     }
 
-    parseResponse() {
-        const {response} = this.props;
-        if (typeof response !== 'undefined') {
-            if (typeof response === 'string') {
-                return response;
-            }
-            return response;
-        }
-    }
-
     renderComplete() {
-        const response = this.parseResponse();
+        const response = this.props.response;
         const CustomTableCell = withStyles(theme => ({
             head: {
                 backgroundColor: theme.palette.common.black,
@@ -165,7 +155,8 @@ export default class NamedEntityDisambiguation extends React.Component {
                                         {row['disambiguation_word']}
                                     </CustomTableCell>
                                     <CustomTableCell align="center">
-                                        {row['disambiguation_link']}
+                                        <a rel="noopener noreferrer" target="_blank"
+                                           href={row['disambiguation_link']}>{row['disambiguation_link']}</a>
                                     </CustomTableCell>
                                 </TableRow>
                             ))}

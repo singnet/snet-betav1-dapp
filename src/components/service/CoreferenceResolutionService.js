@@ -147,50 +147,25 @@ export default class CoreferenceResolutionService extends React.Component {
         )
     }
 
-    parseResponse() {
-        const {response} = this.props;
-        if (typeof response !== 'undefined') {
-            if (typeof response === 'string') {
-                return response;
-            }
-            return response;
-        }
-    }
-
     randomColor(idx) {
-        let result;
-        let count = 0;
-        // for (let prop in Colors.names) {
-        //     if (Math.random() < 1 / ++count) {
-        //         result = prop;
-        //     }
-        // }
         return Colors.names[idx]
     }
 
     renderComplete() {
-        const response = this.parseResponse();
+        const response = this.props.response;
         let similarItems = [];
         response['references'].forEach((item, index) => {
             let similarItem = [];
-            // Array.from(new Array(5), (x, i) => i + 5)
             similarItem.push.apply(similarItem, Array.from(new Array(parseInt(item['key']['secondIndex']) - parseInt(item['key']['firstIndex']) + 1), (x, i) => i + parseInt(item['key']['firstIndex'])));
-            // similarItem.push.apply(similarItem, [item['key']['firstIndex'], item['key']['secondIndex']]);
             item['mappings'].forEach((item_map, index) => {
-                // similarItem.push.apply(similarItem, [item_map['firstIndex'], item_map['secondIndex']]);
-                // similarItem.push.apply(similarItem, Array.from([parseInt(item['secondIndex']) - parseInt(item['firstIndex']), (x, i) => i + parseInt(item['firstIndex'])]));
                 similarItem.push.apply(similarItem, Array.from(new Array(parseInt(item_map['secondIndex']) - parseInt(item_map['firstIndex']) + 1), (x, i) => i + parseInt(item_map['firstIndex'])));
             });
             similarItems.push(similarItem)
         });
-        let colors = [];
-        similarItems.forEach((array, index) => {
-            colors.push(this.randomColor(index));
-        });
         // Now let's take the word in words and create a big new array that is a mapping of colors and items
-        let colorForm = {}
+        let colorForm = {};
         response['words']['word'].forEach((word, index) => {
-                    colorForm[index] = "#000000"
+            colorForm[index] = "#000000"
         });
         similarItems.forEach((item, idx) => {
             item.forEach((it, val) => {
@@ -198,7 +173,7 @@ export default class CoreferenceResolutionService extends React.Component {
             })
         });
         return (
-            <div style={{borderWidth: 2, borderColor: "#000000", boarderSytle:"solid"}}>
+            <div style={{borderWidth: 2, borderColor: "#000000", boarderSytle: "solid"}}>
                 <p style={{fontSize: '13px'}}> Similar colors are represent identical entities in this sentence: </p>
                 <p>
                     {response['words']['word'].map((word, index) => (
