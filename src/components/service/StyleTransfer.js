@@ -15,7 +15,7 @@ import Switch from "@material-ui/core/Switch";
 import Slider from "@material-ui/lab/Slider";
 
 
-const snetFont = "Roboto";
+const snetFont = "Muli";
 const snetFontSize = 14;
 
 export default class StyleTransfer extends React.Component {
