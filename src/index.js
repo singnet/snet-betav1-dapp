@@ -8,10 +8,6 @@ import Landingpage from "./components/Landing.js";
 import connectwallet from "./components/ConnectWallet.js";
 import GetStarted from "./components/GetStarted.js";
 
-import './css/style.css';
-import './css/background.css';
-import './css/profile.css';
-
 ReactDOM.render(
   <BrowserRouter>
   <div>
