@@ -13,10 +13,6 @@ import red from "@material-ui/core/es/colors/red";
 import Switch from "@material-ui/core/Switch";
 import Slider from "@material-ui/lab/Slider";
 
-
-const snetFont = "Muli";
-const snetFontSize = 14;
-
 export default class StyleTransfer extends React.Component {
 
     constructor(props) {
@@ -39,6 +35,9 @@ export default class StyleTransfer extends React.Component {
         };
 
         this.state = this.initialState;
+
+        this.mainFont = "Muli";
+        this.mainFontSize = 14;
 
         this.users_guide = "https://singnet.github.io/style-transfer-service/";
         this.code_repo = "https://github.com/singnet/style-transfer-service";
@@ -138,7 +137,7 @@ export default class StyleTransfer extends React.Component {
                             <Tooltip
                                 title={
                                     <Typography
-                                        style={{fontFamily: snetFont, fontSize: snetFontSize, color: "white"}}>
+                                        style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>
                                         Preserve content image's original colors.
                                     </Typography>
                                 }
@@ -154,8 +153,8 @@ export default class StyleTransfer extends React.Component {
                         <Grid item>
                             <Typography
                                 style={{
-                                    fontFamily: snetFont,
-                                    fontSize: snetFontSize,
+                                    fontFamily: this.mainFont,
+                                    fontSize: this.mainFontSize,
                                 }}
                             >
                                 Preserve Color
@@ -167,7 +166,7 @@ export default class StyleTransfer extends React.Component {
                             <Tooltip
                                 title={
                                     <Typography
-                                        style={{fontFamily: snetFont, fontSize: snetFontSize, color: "white"}}>
+                                        style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>
                                         Use only the central square crop of the image.
                                     </Typography>
                                 }>
@@ -182,8 +181,8 @@ export default class StyleTransfer extends React.Component {
                         <Grid item>
                             <Typography
                                 style={{
-                                    fontFamily: snetFont,
-                                    fontSize: snetFontSize,
+                                    fontFamily: this.mainFont,
+                                    fontSize: this.mainFontSize,
                                 }}
                             >
                                 Crop
@@ -196,7 +195,7 @@ export default class StyleTransfer extends React.Component {
                         <Tooltip
                             title={
                                 <Typography
-                                    style={{fontFamily: snetFont, fontSize: snetFontSize, color: "white"}}
+                                    style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}
                                     id="slider_label">
                                     {
                                         Math.round(alpha * 100) /100 // Rounds to 2 decimals
@@ -217,8 +216,8 @@ export default class StyleTransfer extends React.Component {
                     <Grid item xs={12} container justify="center">
                         <Typography
                             style={{
-                                fontFamily: snetFont,
-                                fontSize: snetFontSize,
+                                fontFamily: this.mainFont,
+                                fontSize: this.mainFontSize,
                             }}
                         >
                             Content-style trade-off
@@ -273,8 +272,8 @@ export default class StyleTransfer extends React.Component {
                                 <Grid item>
                                     <Typography
                                         style={{
-                                            fontFamily: snetFont,
-                                            fontSize: snetFontSize * 4 / 3,
+                                            fontFamily: this.mainFont,
+                                            fontSize: this.mainFontSize * 4 / 3,
                                         }}
                                     >
                                         Style Transfer
@@ -286,8 +285,8 @@ export default class StyleTransfer extends React.Component {
                                             title={
                                                 <Typography
                                                     style={{
-                                                        fontFamily: snetFont,
-                                                        fontSize: snetFontSize,
+                                                        fontFamily: this.mainFont,
+                                                        fontSize: this.mainFontSize,
                                                         color: "white"
                                                     }}>
                                                     View code on Github
@@ -316,8 +315,8 @@ export default class StyleTransfer extends React.Component {
                                             title={
                                                 <Typography
                                                     style={{
-                                                        fontFamily: snetFont,
-                                                        fontSize: snetFontSize,
+                                                        fontFamily: this.mainFont,
+                                                        fontSize: this.mainFontSize,
                                                         color: "white"
                                                     }}>
                                                     User's guide
@@ -343,8 +342,8 @@ export default class StyleTransfer extends React.Component {
                                             title={
                                                 <Typography
                                                     style={{
-                                                        fontFamily: snetFont,
-                                                        fontSize: snetFontSize,
+                                                        fontFamily: this.mainFont,
+                                                        fontSize: this.mainFontSize,
                                                         color: "white"
                                                     }}>
                                                     View original project

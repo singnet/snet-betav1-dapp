@@ -31,7 +31,13 @@ import GeneAnnotationService from "./GeneAnnotationService";
 import TranslationService from "./TranslationService";
 import NewsSummaryService from "./NewsSummaryService";
 import StyleTransfer from "./StyleTransfer";
+<<<<<<< HEAD
 import Places365SceneRecognition from "./Places365SceneRecognition";
+=======
+import LanguageDetectionService from './LanguageDetectionService';
+import CoreferenceResolutionService from './CoreferenceResolutionService';
+import NamedEntityDisambiguation from './NamedEntityDisambiguation';
+>>>>>>> master
 
 import DefaultService from './DefaultService.js';
 
@@ -70,6 +76,9 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation")] = TranslationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary")] = NewsSummaryService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "style-transfer")] = StyleTransfer;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection-service")] = LanguageDetectionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service")] = CoreferenceResolutionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation")] = NamedEntityDisambiguation;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition")] = Places365SceneRecognition;
     }
 
