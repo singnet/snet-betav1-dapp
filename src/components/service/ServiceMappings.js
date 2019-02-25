@@ -30,6 +30,9 @@ import ImageRetrievalService from "./ImageRetrievalService";
 import GeneAnnotationService from "./GeneAnnotationService";
 import TranslationService from "./TranslationService";
 import NewsSummaryService from "./NewsSummaryService";
+import LanguageDetectionService from './LanguageDetectionService';
+import CoreferenceResolutionService from './CoreferenceResolutionService';
+import NamedEntityDisambiguation from './NamedEntityDisambiguation';
 
 import DefaultService from './DefaultService.js';
 
@@ -67,6 +70,9 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "gene-annotation-service")] = GeneAnnotationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation")] = TranslationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary")] = NewsSummaryService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection-service")] = LanguageDetectionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service")] = CoreferenceResolutionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation")] = NamedEntityDisambiguation;
     }
 
     generateUniqueID(orgId,serviceId) {
