@@ -8,7 +8,6 @@ import {
 } from "@material-ui/core";
 
 const options = [
-  { label: "SMPDB", value: "smpdb" },
   { label: "Reactome", value: "reactome" }
 ];
 
