@@ -10,6 +10,11 @@ import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import grey from "@material-ui/core/es/colors/grey";
 import red from "@material-ui/core/es/colors/red";
+import TableCell from "@material-ui/core/TableCell";
+import TableHead from "@material-ui/core/TableHead";
+import Table from "@material-ui/core/Table";
+import TableRow from "@material-ui/core/TableRow";
+import TableBody from "@material-ui/core/TableBody";
 
 export default class Places365SceneRecognition extends React.Component {
 
@@ -29,8 +34,20 @@ export default class Places365SceneRecognition extends React.Component {
         this.state = this.initialState;
 
         this.mainFont = "Muli";
-        this.mainFontSize = 14;
-        
+        this.mainFontSize = 16;
+        this.itemFontSize = 14;
+        this.titleStyle = {fontFamily: this.mainFont, fontSize: this.mainFontSize, fontWeight: "bold"};
+        this.tableHeaderStyle = {fontFamily: this.mainFont, fontSize: this.itemFontSize + 1, fontWeight: "bold"};
+        this.itemStyle = {fontFamily: this.mainFont, fontSize: this.itemFontSize};
+        this.dividerStyle = {
+            border: 0,
+                clear: "both",
+            display: "block",
+            width: "96%",
+            backgroundColor: grey[300],
+            height: "1px",
+        };
+
         this.users_guide = "https://singnet.github.io/dnn-model-services/users_guide/places365-scene-recognition.html";
         this.code_repo = "https://github.com/singnet/dnn-model-services/tree/master/Services/gRPC/places365-scene-recognition";
         this.reference = "https://github.com/CSAILVision/places365";
@@ -82,103 +99,9 @@ export default class Places365SceneRecognition extends React.Component {
     }
 
     renderForm() {
-        const {response} = this.props;
 
         return (
             <React.Fragment>
-                {/*<Grid item xs={12} container justify="space-around" style={{paddingTop: 12}}>*/}
-                    {/*<Grid item xs={6} justify="center" container direction="column" alignItems="center">*/}
-                        {/*<Grid item>*/}
-                            {/*<Tooltip*/}
-                                {/*title={*/}
-                                    {/*<Typography*/}
-                                        {/*style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>*/}
-                                        {/*Preserve content image's original colors.*/}
-                                    {/*</Typography>*/}
-                                {/*}*/}
-                            {/*>*/}
-                                {/*<Switch*/}
-                                    {/*checked={preserveColor}*/}
-                                    {/*onChange={this.preserveColorSwitchChange}*/}
-                                    {/*value={preserveColor}*/}
-                                    {/*color="primary"*/}
-                                {/*/>*/}
-                            {/*</Tooltip>*/}
-                        {/*</Grid>*/}
-                        {/*<Grid item>*/}
-                            {/*<Typography*/}
-                                {/*style={{*/}
-                                    {/*fontFamily: this.mainFont,*/}
-                                    {/*fontSize: this.mainFontSize,*/}
-                                {/*}}*/}
-                            {/*>*/}
-                                {/*Preserve Color*/}
-                            {/*</Typography>*/}
-                        {/*</Grid>*/}
-                    {/*</Grid>*/}
-                    {/*<Grid item xs={6} justify="center" container direction="column" alignItems="center">*/}
-                        {/*<Grid item>*/}
-                            {/*<Tooltip*/}
-                                {/*title={*/}
-                                    {/*<Typography*/}
-                                        {/*style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>*/}
-                                        {/*Use only the central square crop of the image.*/}
-                                    {/*</Typography>*/}
-                                {/*}>*/}
-                                {/*<Switch*/}
-                                    {/*checked={crop}*/}
-                                    {/*onChange={this.cropSwitchChange}*/}
-                                    {/*value={crop}*/}
-                                    {/*color="primary"*/}
-                                {/*/>*/}
-                            {/*</Tooltip>*/}
-                        {/*</Grid>*/}
-                        {/*<Grid item>*/}
-                            {/*<Typography*/}
-                                {/*style={{*/}
-                                    {/*fontFamily: this.mainFont,*/}
-                                    {/*fontSize: this.mainFontSize,*/}
-                                {/*}}*/}
-                            {/*>*/}
-                                {/*Crop*/}
-                            {/*</Typography>*/}
-                        {/*</Grid>*/}
-                    {/*</Grid>*/}
-                {/*</Grid>*/}
-                {/*<Grid item xs={12} container direction="column" spacing={8} style={{paddingTop: 16}}>*/}
-                    {/*<Grid item xs={12} container justify="center">*/}
-                        {/*<Tooltip*/}
-                            {/*title={*/}
-                                {/*<Typography*/}
-                                    {/*style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}*/}
-                                    {/*id="slider_label">*/}
-                                    {/*{*/}
-                                        {/*Math.round(alpha * 100) /100 // Rounds to 2 decimals*/}
-                                    {/*}*/}
-                                {/*</Typography>*/}
-                            {/*}*/}
-                        {/*>*/}
-                            {/*<Slider*/}
-                                {/*style={{width: "80%"}}*/}
-                                {/*value={alpha}*/}
-                                {/*min={0.0}*/}
-                                {/*max={1.0}*/}
-                                {/*step={0.01}*/}
-                                {/*onChange={this.handleSliderChange}*/}
-                            {/*/>*/}
-                        {/*</Tooltip>*/}
-                    {/*</Grid>*/}
-                    {/*<Grid item xs={12} container justify="center">*/}
-                        {/*<Typography*/}
-                            {/*style={{*/}
-                                {/*fontFamily: this.mainFont,*/}
-                                {/*fontSize: this.mainFontSize,*/}
-                            {/*}}*/}
-                        {/*>*/}
-                            {/*Content-style trade-off*/}
-                        {/*</Typography>*/}
-                    {/*</Grid>*/}
-                {/*</Grid>*/}
                 <Grid item container justify="center" style={{paddingTop: 16}}>
                     <Grid item>
                         <Button variant="contained"
@@ -196,14 +119,82 @@ export default class Places365SceneRecognition extends React.Component {
         )
     }
 
+    renderComplete(response) {
+        let categories = response.categories.split(',').slice(0, -1);
+
+        console.log();
+        return (
+            <React.Fragment>
+                <Grid item xs={12} container justify="center">
+                    <Typography style={this.titleStyle}>Predicted Scenes</Typography>
+                </Grid>
+                <Grid item xs={12} container justify="center">
+                    <Table style={{width: "60%"}}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>
+                                    <Typography style={this.tableHeaderStyle}>
+                                        Scene
+                                    </Typography>
+                                </TableCell>
+                                <TableCell align="center">
+                                    <Typography style={this.tableHeaderStyle}>
+                                        Probability
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {categories.map(function (category) {
+                                let [prob, cat] = category.split(' -> ');
+                                return (
+                                    <TableRow key={cat}>
+                                        <TableCell component="th" scope="row">
+                                            <Typography style={this.itemStyle}>
+                                                {cat}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell component="th" scope="row" align="center">
+                                            <Typography style={this.itemStyle}>
+                                                {prob}
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            }.bind(this))}
+                        </TableBody>
+                    </Table>
+                </Grid>
+                <Grid item xs={12} container justify="center">
+                    <hr style={this.dividerStyle}/>
+                    <Typography style={this.titleStyle}>Environment Type</Typography>
+                </Grid>
+                <Grid item xs={12} container justify="center">
+                    <Typography style={this.itemStyle}>{response.io}</Typography>
+                </Grid>
+                <Grid item xs={12} container justify="center">
+                    <hr style={this.dividerStyle}/>
+                    <Typography style={this.titleStyle}>Scene Attributes</Typography>
+                </Grid>
+                <Grid item xs={12} container justify="center">
+                    <Typography style={this.itemStyle}>{response.attributes}</Typography>
+                </Grid>
+                <Grid item xs={12} container justify="center">
+                    <hr style={this.dividerStyle}/>
+                    <Typography style={this.titleStyle}>Class Activation Mapping</Typography>
+                </Grid>
+            </React.Fragment>
+        )
+    }
+
     parseResponse() {
-        const { response, isComplete } = this.props;
-        if(isComplete){
-            if(typeof response !== 'undefined') {
-                if(typeof response === 'string') {
+        const {response, isComplete} = this.props;
+        if (isComplete) {
+            if (typeof response !== 'undefined') {
+                if (typeof response === 'string') {
                     return response;
                 }
-                return response.data;
+                return JSON.parse(response.data);
             } else {
                 return null;
             }
@@ -213,8 +204,8 @@ export default class Places365SceneRecognition extends React.Component {
     }
 
     render() {
-
-        let {response} = this.parseResponse();
+        let response;
+        this.parseResponse() && (response = this.parseResponse());
 
         return (
             <div style={{flexGrow: 1}}>
@@ -326,20 +317,22 @@ export default class Places365SceneRecognition extends React.Component {
                                     </Grid>
                                 </Grid>
                             </Grid>
+                            {this.props.isComplete && this.renderComplete(response)}
                             <Grid item xs={12} container justify="center">
                                 <SNETImageUpload
                                     style={{align: "center"}}
-                                    maxImageSize={5000000}
+                                    maxImageSize={3000000}
                                     imageDataFunc={this.getImageData}
                                     imageName="Input"
                                     outputImage={response && response.cam}
-                                    outputImageName="stylizedImage"
+                                    outputTabTitle="CAM"
+                                    outputImageName="class_activation_mapping"
                                     width="90%"
                                     instantUrlFetch={true}
                                     allowURL={true}
                                 />
                             </Grid>
-                            { !this.props.isComplete && this.renderForm() }
+                            {!this.props.isComplete && this.renderForm()}
                         </Grid>
                     </MuiThemeProvider>
                 </Paper>
