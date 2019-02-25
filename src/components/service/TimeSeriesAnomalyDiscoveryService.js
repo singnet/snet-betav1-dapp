@@ -403,7 +403,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
           <br />
         </Grid>
         <Grid item xs={12} style={{ textAlign: "center" }}>
-          <Button variant="contained" color="primary" onClick={this.submitAction}>Invoke</Button>
+          <Button style={{fontSize: 15}} size="large" variant="contained" color="primary" onClick={this.submitAction}>Detect Anomalies</Button>
         </Grid>
         <Grid item xs={12} style={{ textAlign: "left", fontSize: 15, lineHeight: 2 }}>
           <br />
