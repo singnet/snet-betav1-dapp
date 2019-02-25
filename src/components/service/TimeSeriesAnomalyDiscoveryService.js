@@ -582,7 +582,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
                 See example parameters below...
                                 <br />
                 <br />
-                <strong>Time Series:</strong> https://raw.githubusercontent.com/GrammarViz2/grammarviz2_src/master/data/ecg0606_1.csv
+                <strong>Time Series:</strong> https://raw.githubusercontent.com/singnet/time-series-anomaly-discovery/master/resources/time_series/ecg0606_1.csv
                                 <br />
                 <strong>Sliding Window size:</strong> 100
                             </DialogContentText>
