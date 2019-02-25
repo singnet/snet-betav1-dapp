@@ -30,7 +30,14 @@ class TimeSeriesChart extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (window.should_render_time_series_chart_sing_net === true || nextProps.forceRender === true) {
+    if (nextProps.shouldUpdate === true || nextProps.forceRender === true || this.props.maxMinButtonEvent === true) {
+      // reset father state to avoid rerendering
+      nextProps.parent.state.should_render_time_series_chart_sing_net = false;
+
+      // reset father state to avoid rerendering
+      // (TODO:remove next state from events list after max min window event)
+      nextProps.parent.state.max_min_window_event_series_chart = false;
+
       return true;
     } else {
       return false;
@@ -38,7 +45,6 @@ class TimeSeriesChart extends React.Component {
   }
 
   render() {
-    window.should_render_time_series_chart_sing_net = false;
     return (
       <Chart
         width={'100%'}
@@ -71,7 +77,14 @@ class AnomaliesChart extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (window.should_render_anomalies_char_sing_net === true || nextProps.forceRender === true) {
+    if (nextProps.shouldUpdate === true || nextProps.forceRender === true || this.props.maxMinButtonEvent === true) {
+      // reset father state to avoid rerendering
+      nextProps.parent.state.should_render_anomalies_chart_sing_net = false;
+
+      // reset father state to avoid rerendering
+      // (TODO:remove next state from events list after max min window event)
+      nextProps.parent.state.max_min_window_event_anomalies_chart = false;
+      
       return true;
     } else {
       return false;
@@ -79,7 +92,6 @@ class AnomaliesChart extends React.Component {
   }
 
   render() {
-    window.should_render_anomalies_char_sing_net = false;
     return (
       <Chart
         width={'100%'}
@@ -94,6 +106,13 @@ class AnomaliesChart extends React.Component {
               // set the area opacity of the first data series to 0
               areaOpacity: 0.0
             }
+          },
+          vAxis: {
+            viewWindowMode: 'explicit',
+            viewWindow: {
+              max: 1.0,
+              min: 0.0
+            }
           }
         }}
         legendToggle
@@ -106,6 +125,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.submitAction = this.submitAction.bind(this);
     this.handleServiceName = this.handleServiceName.bind(this);
     this.handleChangeUrl = this.handleChangeUrl.bind(this);
@@ -114,27 +134,32 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
     this.UrlExists = this.UrlExists.bind(this);
     this.thresholdChange = this.thresholdChange.bind(this);
     this.updateRenderTimeSeries = this.updateRenderTimeSeries.bind(this);
-    this.expandedClicked = this.expandedClicked.bind(this);
+    this.resetFirstRender = this.resetFirstRender.bind(this);
     this.updateParentExansion = this.updateParentExansion.bind(this);
+    this.getThreshold = this.getThreshold.bind(this);
+    this.minMaxWindowEvent = this.minMaxWindowEvent.bind(this);
 
     this.state = {
+      timeseries: "https://raw.githubusercontent.com/singnet/time-series-anomaly-discovery/master/resources/time_series/ecg0606_1.csv",
       serviceName: "EfficientRuleDensityBasedAnomalyDetection",
       methodName: "detectAnomalies",
-
-      input_dialog: false,
-
-      timeseries: "https://raw.githubusercontent.com/singnet/time-series-anomaly-discovery/master/resources/time_series/ecg0606_1.csv",
       slidingwindowsize: "100",
       alphabet: "5",
       paasize: "10",
       debugflag: "0",
       threshold: 50,
       norm_threshold: 0.5,
-      loaded: false,
+      should_render_time_series_chart_sing_net: false,
+      should_render_anomalies_chart_sing_net: false,
+      max_min_window_event_anomalies_chart: false,
+      max_min_window_event_series_chart: false,
+      input_dialog: false,
+      min_event_set: false,
+      max_event_set: false,
+      first_render: true,
       response: undefined,
       timeSeriesJson: undefined,
       invertedDensityCurveJson: undefined,
-      first_render: true,
 
       styles: {
         details: {
@@ -147,54 +172,77 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
       }
     };
 
-    this.update_charts = false;
-    this.message = undefined;
-    this.isComplete = false;
     this.serviceMethods = [];
     this.allServices = [];
     this.methodsForAllServices = [];
-    this.parseProps(props);
-    this.slider_threshold_var = 50;
+    this.isComplete = false;
     this.to_render_time_series = undefined;
     this.to_render_anomalies = undefined;
-    window.anomalies_char_sing_net_threshold = 50;
-    window.should_render_anomalies_char_sing_net = false;
-    window.should_render_time_series_chart_sing_net = false;
-    window.min_event_set = false;
-    window.max_event_set = false;
+
+    this.parseProps(props);
   }
 
-  expandedClicked() {
-    window.should_render_anomalies_char_sing_net = true;
-    window.should_render_time_series_chart_sing_net = true;
-
-    // force render
+  thresholdChange(event, value) {
     this.setState({ threshold: value });
   }
 
+  handleClose() {
+    this.setState({ input_dialog: false });
+  };
+
+  handleChangeUrl(event) {
+    this.setState({ [event.target.name]: event.target.value });
+  };
+
+  handleChangeSlidingWindow(event) {
+    this.setState({ [event.target.name]: event.target.value });
+  };
+
+  resetFirstRender() {
+    this.state.norm_threshold = 0.5;
+    this.state.threshold = 50;
+    this.state.first_render = true;
+  }
+
+  UrlExists(url) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    return http.status != 404;
+  }
+
+  getThreshold() {
+    var cur = parseFloat(this.state.threshold).toFixed(2);
+    if (cur != NaN)
+      return cur;
+    else
+      return "";
+  }
+
+  minMaxWindowEvent() {
+    this.state.max_min_window_event_anomalies_chart = true;
+    this.state.max_min_window_event_series_chart = true;
+
+    this.setState({ update: true });
+  }
+
   updateParentExansion() {
-    // assign function to onclick property of checkbox
+    // assign function to onclick of dap buttons for better bahavior
     var expand_button = document.getElementsByClassName("fas fa-window-maximize mini-maxi-close");
     var minimize_button = document.getElementsByClassName("fas fa-window-minimize mini-maxi-close");
-    console.log(expand_button);
-    console.log(minimize_button);
-    if (expand_button[0] != undefined && window.max_event_set === false) {
-      expand_button[0].addEventListener("click", this.expandedClicked, false);
-      window.max_event_set = true;
-    } if (minimize_button[0] != undefined && window.min_event_set === false) {
-      minimize_button[0].addEventListener("click", this.expandedClicked, false);
-      window.min_event_set = true;
+
+    if (expand_button[0] != undefined && this.state.max_event_set === false) {
+      expand_button[0].addEventListener("click", this.minMaxWindowEvent, false);
+      this.state.max_event_set = true;
+    }
+    if (minimize_button[0] != undefined && this.state.min_event_set === false) {
+      minimize_button[0].addEventListener("click", this.minMaxWindowEvent, false);
+      this.state.min_event_set = true;
     }
   }
 
   updateRenderTimeSeries(event, value) {
     var columns = [
-      { type: 'number', label: 'x' },
-      { type: 'number', label: 'value' },
-      { type: 'number', label: 'value' }
-    ];
-
-    var columns_densities = [
       { type: 'number', label: 'x' },
       { type: 'number', label: 'value' },
       { type: 'number', label: 'value' }
@@ -219,17 +267,13 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
     }
 
     this.to_render_time_series = [columns, ...time_series_rows];
-    this.to_render_anomalies = [columns_densities, ...densities_series_rows];
+    this.to_render_anomalies = [columns, ...densities_series_rows];
 
-    window.should_render_anomalies_char_sing_net = true;
-    window.should_render_time_series_chart_sing_net = true;
+    this.state.should_render_anomalies_chart_sing_net = true;
+    this.state.should_render_time_series_chart_sing_net = true;
 
-    this.setState({ threshold: value });
-  }
-
-  thresholdChange(event, value) {
-    this.setState({ threshold: value });
-    window.anomalies_char_sing_net_threshold = value;
+    // force render
+    this.setState({ update: true });
   }
 
   parseProps(nextProps) {
@@ -293,15 +337,12 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
     }
   }
 
-  UrlExists(url) {
-    var http = new XMLHttpRequest();
-    http.open('HEAD', url, false);
-    http.send();
-    return http.status != 404;
-  }
-
   submitAction() {
     if (this.UrlExists(this.state.timeseries) && this.state.slidingwindowsize > 20) {
+      // need to be reset to ensure redrawing first time
+      this.resetFirstRender();
+
+      // call for service
       this.props.callApiCallback(
         this.state.serviceName,
         this.state.methodName, {
@@ -316,18 +357,6 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
       this.setState({ input_dialog: true });
     }
   }
-
-  handleClose() {
-    this.setState({ input_dialog: false });
-  };
-
-  handleChangeUrl(event) {
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
-  handleChangeSlidingWindow(event) {
-    this.setState({ [event.target.name]: event.target.value });
-  };
 
   renderForm() {
     return (
@@ -447,6 +476,9 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
           <Grid item xs={11}>
             <TimeSeriesChart
               data={this.to_render_time_series}
+              shouldUpdate={this.state.should_render_time_series_chart_sing_net}
+              maxMinButtonEvent={this.state.max_min_window_event_series_chart}
+              parent={this}
               forceRender={this.state.first_render}
             />
           </Grid>
@@ -458,13 +490,16 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
           <Grid item xs={11}>
             <AnomaliesChart
               data={this.to_render_anomalies}
+              shouldUpdate={this.state.should_render_anomalies_chart_sing_net}
+              maxMinButtonEvent={this.state.max_min_window_event_anomalies_chart}
+              parent={this}
               forceRender={this.state.first_render}
             />
           </Grid>
           <Grid item xs={1}>
             <Tooltip title={
               <React.Fragment>
-                <Typography color="inherit" style={{ fontSize: 15 }}>Threshold: {parseFloat((window.anomalies_char_sing_net_threshold / 100.0).toFixed(2))}</Typography>
+                <Typography color="inherit" style={{ fontSize: 15 }}>Threshold {this.getThreshold()}</Typography>
               </React.Fragment>
             } placement='left-start'>
               <div style={{ display: 'flex', height: '247px' }}>
