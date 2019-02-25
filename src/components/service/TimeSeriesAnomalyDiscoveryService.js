@@ -147,8 +147,8 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
       alphabet: "5",
       paasize: "10",
       debugflag: "0",
-      threshold: 50,
-      norm_threshold: 0.5,
+      threshold: 70,
+      norm_threshold: 0.7,
       should_render_time_series_chart_sing_net: false,
       should_render_anomalies_chart_sing_net: false,
       max_min_window_event_anomalies_chart: false,
@@ -199,8 +199,8 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
   };
 
   resetFirstRender() {
-    this.state.norm_threshold = 0.5;
-    this.state.threshold = 50;
+    this.state.norm_threshold = 0.7;
+    this.state.threshold = 70;
     this.state.first_render = true;
   }
 
