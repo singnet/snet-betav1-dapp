@@ -74,6 +74,7 @@
     "less-loader": "^4.1.0",
     "material-ui-flat-pagination": "^3.1.0",
     "material-ui-pagination": "^1.1.6",
+    "mini-css-extract-plugin": "^0.5.0",
     "react-circular-progressbar": "^1.0.0",
     "react-dropdown": "^1.6.2",
     "react-hot-loader": "^4.0.1",
