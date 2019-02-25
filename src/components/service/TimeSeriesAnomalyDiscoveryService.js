@@ -338,7 +338,7 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
   }
 
   submitAction() {
-    if (this.UrlExists(this.state.timeseries) && this.state.slidingwindowsize > 20) {
+    if (this.UrlExists(this.state.timeseries)) {
       // need to be reset to ensure redrawing first time
       this.resetFirstRender();
 
@@ -362,100 +362,40 @@ export default class TimeSeriesAnomalyDiscoveryService extends React.Component {
     return (
       <React.Fragment>
         <Grid item xs={12}>
-          <br />
-          <h3>Time Series Anomaly Discovery based on Grammar Compression</h3>
-          <br />
-          <TextField
-            id="standard-multiline-static"
-            label="Time Series CSV file URL"
-            style={{ width: "100%" }}
-            InputProps={{
-              style: { fontSize: 15 }
-            }}
-            InputLabelProps={{
-              style: { fontSize: 15 }
-            }}
-            value={this.state.timeseries}
-            name="timeseries"
-            onChange={this.handleChangeUrl}
-            rows="6"
-            defaultValue=""
-            margin="normal"
-          />
-          <TextField
-            id="standard-multiline-static"
-            label="Sliding Window Size"
-            style={{ width: "100%" }}
-            type="number"
-            InputProps={{
-              style: { fontSize: 15 }
-            }}
-            InputLabelProps={{
-              style: { fontSize: 15 }
-            }}
-            value={this.state.slidingwindowsize}
-            name="slidingwindowsize"
-            onChange={this.handleChangeSlidingWindow}
-            rows="6"
-            defaultValue=""
-            margin="normal"
-          />
-          <br />
+          <h5 style = {{marginBottom: "10px"}}>This service <a href="https://github.com/singnet/time-series-anomaly-discovery/blob/master/docs/usersguide.md">user's guide</a> may help to understand how this service works, its expected parameters, and how to interpret and use its output.</h5>
+          <Tooltip title={
+                <React.Fragment>
+                  <Typography color="inherit" style={{ fontSize: 15 }}>A valid CSV file may contain one number per line and no header.</Typography>
+                </React.Fragment>
+              } placement='left-start'>
+                <TextField
+                  id="standard-multiline-static"
+                  label="Time Series CSV file URL"
+                  style={{ width: "100%" }}
+                  InputProps={{
+                    style: { fontSize: 15 }
+                  }}
+                  InputLabelProps={{
+                    style: { fontSize: 15 }
+                  }}
+                  value={this.state.timeseries}
+                  name="timeseries"
+                  onChange={this.handleChangeUrl}
+                  rows="6"
+                  defaultValue=""
+                  margin="normal"
+                />
+          </Tooltip>
         </Grid>
-        <Grid item xs={12} style={{ textAlign: "center" }}>
-          <Button style={{fontSize: 15}} size="large" variant="contained" color="primary" onClick={this.submitAction}>Detect Anomalies</Button>
-        </Grid>
-        <Grid item xs={12} style={{ textAlign: "left", fontSize: 15, lineHeight: 2 }}>
-          <br />
-          <h4>
-            This service <a href="https://github.com/singnet/time-series-anomaly-discovery/blob/master/docs/usersguide.md">user's guide</a> may help to understand how this service works, expected parameters and output.
-          </h4>
-          <h4>
-            It allows to detect anomalies in time series. It follows the summarized pipeline bellow.
-          </h4>
-          <br />
-          <ul>
-            <li><b>Piecewise Aggregate approximation:</b> discretise the time series sub-sequences with a sliding window.</li>
-            <li><b>Symbolic Aggregate Approximation:</b> transform the driscretized sub-sequences symbols based on an alphabet.</li>
-            <li><b>Sequitur:</b> build a context-free grammar with all the generated symbols from the entire time series.</li>
-            <li><b>Density Curve:</b> build a density curve based on the context-free generated grammar rules.</li>
-            <li><b>Optimization and Detection:</b> detect anomalies in the density curve with a hill-climbing inspired algorithm.</li>
-          </ul>
-          <br />
-          <h4>
-            A brief explanation about the parameters:
-          </h4>
-          <ul>
-            <li><b>Time Series CSV file URL:</b> An URL containing a time series csv file.</li>
-            <li><b>Sliding Window Size:</b> Sliding window used to create the time series symbols to build the free context grammar through the Sequitur algorithm.</li>
-          </ul>
-          <br />
-          <ExpansionPanel>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography style={this.state.styles.defaultFontSize}>Time Series Input Example File</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails style={this.state.styles.details}>
-              <pre style={{
-                whiteSpace: "pre-wrap",
-                overflowX: "scroll"
-              }}>
-                https://raw.githubusercontent.com/GrammarViz2/grammarviz2_src/master/data/ecg0606_1.csv
-              </pre>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-          <ExpansionPanel>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography style={this.state.styles.defaultFontSize}>Window Size Input Example Value</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails style={this.state.styles.details}>
-              <pre style={{
-                whiteSpace: "pre-wrap",
-                overflowX: "scroll"
-              }}>
-                100
-              </pre>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
+        <Grid item xs={12} style={{ textAlign: "center", marginTop: "10px", marginBottom: "10px"}}>
+            <Tooltip title={
+                <React.Fragment>
+                  <Typography color="inherit" style={{ fontSize: 15 }}>Hit this button to call this service with the specified time 
+                  series csv file URL.</Typography>
+                </React.Fragment>
+              } placement='left-start'>
+              <Button style={{fontSize: 15}} size="large" variant="contained" color="primary" onClick={this.submitAction}>Invoke</Button>
+            </Tooltip>
         </Grid>
       </React.Fragment>
     )
