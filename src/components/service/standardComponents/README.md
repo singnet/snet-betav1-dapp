@@ -15,6 +15,8 @@ This is the documentation for the official [Material UI](https://material-ui.com
 
 ### General Functionality
 
+#### Upload Mode
+
 This component is composed of a tool bar (at the top) and a main tab below it. The top bar consists of:
  
 - The image name (that can be set by "imageName" parameter);
@@ -33,7 +35,22 @@ Once that is complete, the chosen image will be displayed on the main tab and th
 
 If the user types an invalid image URL or if the chosen image server blocks the request due to CORS policy, and error message is displayed at the bottom of the component. It can be dismissed by simply clicking away or waiting 5 seconds.
 
+#### Display Mode
+
+If the service returns an image, the `outputImage` parameter can be set to change the component to the "display mode", in which the top bar changes to:
+
+- The `displayModeTitle` (default: "Result");
+- A tab chooser composed of:
+    - Input: displays the user-uploaded input image;
+    - Output: displays the service output;
+    - Comparison: overlays both images and lets the user drag a divider that crops the top image, showing parts of each side-by-side for comparison;
+- A download button for the output image.
+
+As in the "upload mode", the service provider may choose to disable any combination of these tabs and the download button through the respective parameters. Their names may also be changed.
+
 ### Parameters
+
+#### Upload Mode
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -43,6 +60,7 @@ If the user types an invalid image URL or if the chosen image server blocks the 
 | imageName | string | "Input Image" | Image name that will be displayed on top of the component.|
 | disableUploadTab | bool | false | If `true`, does not render *Upload* tab. |
 | disableUrlTab | bool | false | If `true`, does not render *Url* tab. |
+| disableResetButton | bool | false | If `true`, does not render the image reset button. Prevents user from re-uploading an image, use to display the input image after the service is complete.|
 | returnByteArray | bool | `false` | If `true` returns Uint8Array encoded image data to `imageDataFunc()` instead of base64. |
 | allowedInputTypes | string or array | "image/*" | Specifies allowed file types for "Upload" component. Accepts a file type-string or an array of types (e.g.: "image/jpeg", \["image/jpg", "image/jpeg"]). |
 | maxImageSize | number | 10000000 | Maximum image file size for Upload tab in bytes. Default: 10mb. |
@@ -53,6 +71,23 @@ If the user types an invalid image URL or if the chosen image server blocks the 
 | galleryCols | number | 3 | Number of image columns to be displayed in gallery mode. |
 | infoTip | string | "" | An optional string to provide a tip or explanation for the service user. If not empty, will render an "Info" icon in the top bar that will display a tooltip when hovered upon. |
 | mainColor | object | blue | A material ui color object that will be the main color of the component.|
+
+#### Display Mode
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| **outputImage** | string (base64) | - | The base64-encoded output image data. The component will listen to changes on this parameter in order to update to display mode. Headers for the `<img/>` tag should not be included as they're composed using the information on `outputImageMimeType`. |
+| outputImageMimeType | string | "application/octet-stream" | The MIME type of the output image. It tells the component what's the output file format for proper rendering and download. If not specified, the component should be able to figure it out using the base64-encoded data for "image/png", "image/jpg" and "image/gif" types. For other image types, the default MIME type is "application/octet-stream" and images will be downloaded without an extension. |
+| outputImageName | string | "service-output" | The name of the output image shown when the user hovers the mouse over it. Also the image file name when it's downloaded. |
+| displayModeTitle | string | "Result" | Title shown at the top left of the component on display mode (equivalent to "imageName"). |
+| disableInputTab | bool | false | If `true`, does not render *Input* tab. |
+| disableOutputTab | bool | false | If `true`, does not render *Output* tab. |
+| disableComparisonTab | bool | false | If `true`, does not render *Comparison* tab. |
+| disableDownloadButton | bool | false | If `true`, does not render the output image download button. |
+| overlayInputImage | bool | true | If `false`, renders the input and output images using their original height and width (proportionally) on the *Comparison* tab. If `true`, the output image will be rendered using the input image's dimensions, overlaying it. |
+| inputTabTitle | string | "Input" | The title of the *Input* tab (which displays the input image). |
+| outputTabTitle | string | "Output" | The title of the *Output* tab (which displays the output image). |
+| comparisonTabTitle | string | "Comparison" | The title of the *Comparison* tab (which displays both images for comparison). |
 
 ### Returns
 
@@ -66,6 +101,9 @@ The component will return all the image data via its callback function `imageDat
 | filename | string | Image file name. Note that the image extension in this field, when present, shouldn't be trusted due to internal image conversions (to `outputFormat`). Also note that the filename extracted from used-inputted base64 image urls (in the URL tab) will usually not make sense, but that does not affect the functioning of the component.|
 
 ### Example Usage
+
+
+#### Upload Mode
 
 This is an example of the most basic usage of the component. The only required parameter is "imageDataFunc" so that the parent component receives the encoded image data.
  
@@ -107,9 +145,14 @@ const imageGallery = [
 ```
 Make sure your suggested images are not blocked by CORS policy, otherwise their miniature will be shown but clicking on them will result in an error (unless `allowURL` is set to `true`).
 
+#### Display Mode
+
+To enable the "display mode", simply add the `outputImage` parameter to the component (i.e.: `<SNETImageUpload imageDataFunc={this.getData} outputImage={this.state.response.outputImageBase64}/>`). The component will update as soon as it becomes a [truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy) value (i.e.: something other than null, undefined, "", ...).
+
+If the output image cannot be properly rendered, an error message will be shown and nothing will be displayed. In case of possible errors, make sure to check that the value of `outputImage` is a proper base64-encoded image before using it.
+
 ### Known Issues
 
-- Dropping an image on top of an already uploaded image triggers browser's default dropping behavior: loading the image file;
 - "maxImageSize" and "allowedInputTypes" parameters are only valid for "Upload" mode;
 - Output image format ("outputFormat") parameter does not work;
 - Component's heights need more attention;
