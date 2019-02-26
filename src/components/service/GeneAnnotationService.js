@@ -59,7 +59,6 @@ const availableAnnotations = [
         "cellular_component",
         "molecular_function"
       ],
-      get_entrez_id: "False",
       parents: 0
     },
     fitlerForm: (defaults, handleFilterChanged) => (
@@ -70,7 +69,7 @@ const availableAnnotations = [
     key: "gene_pathway_annotation",
     name: "Gene pathway",
     defaults: {
-      namespace: ["smpdb"],
+      namespace: [],
       include_prot: false,
       include_small_molecule: true
     },
