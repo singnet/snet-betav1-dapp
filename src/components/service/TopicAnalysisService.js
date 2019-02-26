@@ -181,7 +181,7 @@ export default class TopicAnalysisService extends React.Component {
             }
             if (parseInt(user_value['maxiter'], 10) <= 0 || parseInt(user_value['maxiter'], 10) > 500) {
                 this.setState({
-                    internal_error: Max iteration value (maxiter) should have a value greater than 0 and less than 501."
+                    internal_error: "Max iteration value (maxiter) should have a value greater than 0 and less than 501."
                 })
             }
             this.setState({
