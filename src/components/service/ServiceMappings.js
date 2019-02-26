@@ -31,13 +31,10 @@ import GeneAnnotationService from "./GeneAnnotationService";
 import TranslationService from "./TranslationService";
 import NewsSummaryService from "./NewsSummaryService";
 import StyleTransfer from "./StyleTransfer";
-<<<<<<< HEAD
-import Places365SceneRecognition from "./Places365SceneRecognition";
-=======
 import LanguageDetectionService from './LanguageDetectionService';
 import CoreferenceResolutionService from './CoreferenceResolutionService';
 import NamedEntityDisambiguation from './NamedEntityDisambiguation';
->>>>>>> master
+import Places365SceneRecognition from "./Places365SceneRecognition";
 
 import DefaultService from './DefaultService.js';
 
