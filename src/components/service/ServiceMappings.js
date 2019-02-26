@@ -37,6 +37,7 @@ import NamedEntityDisambiguation from './NamedEntityDisambiguation';
 import NetworkAnalysisBipartite from "./NetworkAnalysisBipartite";
 import NetworkAnalysisRobustness from "./NetworkAnalysisRobustness";
 import TopicAnalysis from "./TopicAnalysisService";
+import Places365SceneRecognition from "./Places365SceneRecognition";
 
 import DefaultService from './DefaultService.js';
 
@@ -81,6 +82,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-robustness")] = NetworkAnalysisRobustness;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-bipartite")] = NetworkAnalysisBipartite;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis")] = TopicAnalysis;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition")] = Places365SceneRecognition;
     }
 
     generateUniqueID(orgId,serviceId) {
