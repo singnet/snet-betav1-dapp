@@ -148,9 +148,12 @@ export default class NetworkAnalysisBipartite extends React.Component {
 
     download() {
         const link = document.createElement('a');
+	link.setAttribute("type", "hidden");
         link.setAttribute('href', "data:text/json," + JSON.stringify(this.props.response));
         link.setAttribute('download', 'result.json');
+	document.body.appendChild(link);
         link.click();
+	link.remove();
     }
 
     validateJSON(value) {
