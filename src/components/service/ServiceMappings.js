@@ -34,6 +34,9 @@ import StyleTransfer from "./StyleTransfer";
 import LanguageDetectionService from './LanguageDetectionService';
 import CoreferenceResolutionService from './CoreferenceResolutionService';
 import NamedEntityDisambiguation from './NamedEntityDisambiguation';
+import NetworkAnalysisBipartite from "./NetworkAnalysisBipartite";
+import NetworkAnalysisRobustness from "./NetworkAnalysisRobustness";
+import TopicAnalysis from "./TopicAnalysisService";
 
 import DefaultService from './DefaultService.js';
 
@@ -75,6 +78,9 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection-service")] = LanguageDetectionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service")] = CoreferenceResolutionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation")] = NamedEntityDisambiguation;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-robustness")] = NetworkAnalysisRobustness;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-bipartite")] = NetworkAnalysisBipartite;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis")] = TopicAnalysis;
     }
 
     generateUniqueID(orgId,serviceId) {
