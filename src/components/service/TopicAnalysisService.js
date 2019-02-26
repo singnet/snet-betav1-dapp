@@ -179,9 +179,9 @@ export default class TopicAnalysisService extends React.Component {
                     internal_error: "Topic divider is less than zero."
                 })
             }
-            if (parseInt(user_value['maxiter'], 10) > 20) {
+            if (parseInt(user_value['maxiter'], 10) <= 0) {
                 this.setState({
-                    internal_error: "Max iteration value(maxiter) is to big"
+                    internal_error: Max iteration value(maxiter) should be greater than zero."
                 })
             }
             this.setState({
