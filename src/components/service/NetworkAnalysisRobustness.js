@@ -138,7 +138,7 @@ export default class NetworkAnalysisRobustness extends React.Component {
                 this.state.methodName, {
                     graph: this.state.dataset['graph'],
                     source_nodes: this.state.dataset['source_nodes'],
-                    target_node: this.state.dataset['target_nodes'],
+                    target_nodes: this.state.dataset['target_nodes'],
                     Type: '',
                     normalized: this.state.dataset['normalized'] === undefined ? false : this.state.dataset['normalized'],
                     directed: this.state.dataset['directed'] === undefined ? false : this.state.dataset['directed']
@@ -148,9 +148,12 @@ export default class NetworkAnalysisRobustness extends React.Component {
 
     download() {
         const link = document.createElement('a');
+        link.setAttribute("type", "hidden");
         link.setAttribute('href', "data:text/json," + JSON.stringify(this.props.response));
         link.setAttribute('download', 'result.json');
+        document.body.appendChild(link);
         link.click();
+	link.remove();
     }
 
     validateJSON(value) {

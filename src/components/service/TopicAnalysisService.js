@@ -134,11 +134,14 @@ export default class TopicAnalysisService extends React.Component {
 
     download() {
         const link = document.createElement('a');
+        link.setAttribute("type", "hidden");
         let resp = this.props.response;
         resp['handle'] = "http://tz-services-1.snet.sh:2298/topic-analysis/api/v1.0/results?handle=" + resp['handle'];
         link.setAttribute('href', "data:text/json," + JSON.stringify(resp));
         link.setAttribute('download', 'result.json');
+        document.body.appendChild(link);
         link.click();
+	link.remove();
     }
 
     validateJSON(value) {
@@ -172,17 +175,26 @@ export default class TopicAnalysisService extends React.Component {
             if (parseInt(user_value['num_topics'], 10) < 1) {
                 this.setState({
                     internal_error: "Num topics isn't big enough for analysis."
-                })
+                });
+                return false;
             }
             if (parseInt(user_value['topic_divider'], 10) < 0) {
                 this.setState({
                     internal_error: "Topic divider is less than zero."
-                })
+                });
+                return false;
             }
             if (parseInt(user_value['maxiter'], 10) <= 0 || parseInt(user_value['maxiter'], 10) > 500) {
                 this.setState({
                     internal_error: "Max iteration value (maxiter) should have a value greater than 0 and less than 501."
-                })
+                });
+                return false;
+            }
+            if (parseFloat(user_value['beta']) <= 0 || parseFloat(user_value['beta']) > 1) {
+                this.setState({
+                    internal_error: "Beta should have a value greater than 0 and less than or equal to 1."
+                });
+                return false;
             }
             this.setState({
                 dataset: user_value

@@ -30,9 +30,12 @@ export default class EmotionVisualizer extends React.Component {
 
     download() {
         const link = document.createElement('a');
+        link.setAttribute("type", "hidden");
         link.setAttribute('href', "data:text/json," + JSON.stringify(this.props.jobResult));
         link.setAttribute('download', 'result.json');
+	document.body.appendChild(link);
         link.click();
+	link.remove();
     }
 
     download_img() {
