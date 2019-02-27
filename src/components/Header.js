@@ -4,7 +4,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { faCheckSquare, faCoffee } from '@fortawesome/free-solid-svg-icons'
 import { NETWORKS } from '../networks'
-import GetStarted from './GetStarted'
+// import GetStarted from './GetStarted'
 
 export default class Header extends React.Component {
   constructor(props) {
@@ -25,7 +25,7 @@ export default class Header extends React.Component {
 
   render() {
     const menuList = <ul>
-                      <li className="get-started"><Link to="//blog.singularitynet.io/a-beginners-guide-to-the-singularitynet-beta-74d523902958" target="_blank">Get Started</Link></li>
+                      <li className="get-started"><Link to="/GetStarted" target="_blank">Get Started</Link></li>
                       <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
                       <li><Link to="/Account">Account</Link></li>
                       <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>

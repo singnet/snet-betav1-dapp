@@ -2040,6 +2040,19 @@ i {
 .channel-detail-header { display: none; }
 .MuiCollapse-wrapperInner-198 .MuiExpansionPanelDetails-root-199 { padding: 10px 24px; }
 
+/* get started */
+.get-started-page {
+  width: 80%;
+  margin: 20px auto;
+}
+
+.get-started-page div { margin-bottom: 20px; }
+
+.get-started-page span {
+  font-weight: bold;
+}
+
+/*Media Queries*/
 @media(max-width: 991px) {
   .hamburger-menu { 
     display: block;
