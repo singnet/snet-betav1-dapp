@@ -2047,6 +2047,7 @@ i {
 }
 
 .get-started-page div { margin-bottom: 20px; }
+.get-started-page img { width: 100%; }
 
 .get-started-page span {
   font-weight: bold;
