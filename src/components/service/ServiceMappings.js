@@ -30,6 +30,14 @@ import ImageRetrievalService from "./ImageRetrievalService";
 import GeneAnnotationService from "./GeneAnnotationService";
 import TranslationService from "./TranslationService";
 import NewsSummaryService from "./NewsSummaryService";
+import StyleTransfer from "./StyleTransfer";
+import LanguageDetectionService from './LanguageDetectionService';
+import CoreferenceResolutionService from './CoreferenceResolutionService';
+import NamedEntityDisambiguation from './NamedEntityDisambiguation';
+import NetworkAnalysisBipartite from "./NetworkAnalysisBipartite";
+import NetworkAnalysisRobustness from "./NetworkAnalysisRobustness";
+import TopicAnalysis from "./TopicAnalysisService";
+import Places365SceneRecognition from "./Places365SceneRecognition";
 
 import DefaultService from './DefaultService.js';
 
@@ -67,10 +75,18 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "gene-annotation-service")] = GeneAnnotationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation")] = TranslationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary")] = NewsSummaryService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "style-transfer")] = StyleTransfer;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection-service")] = LanguageDetectionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service")] = CoreferenceResolutionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation")] = NamedEntityDisambiguation;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-robustness")] = NetworkAnalysisRobustness;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-bipartite")] = NetworkAnalysisBipartite;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis")] = TopicAnalysis;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition")] = Places365SceneRecognition;
     }
 
     generateUniqueID(orgId,serviceId) {
-        return orgId + "__$%^^%$__" + serviceId; 
+        return orgId + "__$%^^%$__" + serviceId;
     }
 
     getComponent(orgId, serviceId) {

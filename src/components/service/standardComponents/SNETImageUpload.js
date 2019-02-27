@@ -16,6 +16,8 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import InfoIcon from "@material-ui/icons/Info";
 import ErrorIcon from "@material-ui/icons/Error"
 import {CloudUpload} from "@material-ui/icons";
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import UnfoldMoreIcon from '@material-ui/icons/UnfoldMore';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -53,9 +55,10 @@ const dropzoneBackgroundGrey = grey[200];
 const snetBackgroundGrey = grey[100];
 const snetRed = red[500];
 const snetBackgroundRed = red[100];
+
 // Definitions
 const spacingUnit = 8;
-const snetFont = "Roboto";
+const snetFont = "Muli";
 const minimumWidth = "400px";
 const minimumTabHeight = 160;
 
@@ -73,23 +76,30 @@ export default class SNETImageUpload extends React.Component {
 
         this.state = {
             // Component's flow of execution
-            mainState: "initial", // initial, loading, uploaded
+            mainState: "initial", // initial, loading, uploaded, display
             value: this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
-                    (this.props.disableUploadTab + this.props.disableUrlTab)
-                    :
-                    0,
+                (this.props.disableUploadTab + this.props.disableUrlTab)
+                :
+                0,
             searchText: null,
             errorMessage: null,
             displayError: false,
             displayImageName: false,
             // Selected image data (sent via callback function)
-            imageData: null,    // encoded image data. NOT ALWAYS THE SAME DATA SENT VIA CALLBACK
+            inputImageData: null,    // encoded image data. NOT ALWAYS THE SAME DATA SENT VIA CALLBACK
             mimeType: null,     // "jpeg", "png", etc
             encoding: null,     // "byteArray", "base64", "url"
             filename: null,     // image filename
             // Image data readers
             base64Reader: undefined,
             byteReader: undefined,
+
+            // Output display mode
+            imageXPosition: undefined, // arbitrary, will be set properly
+            dividerXPosition: this.props.width / 2,
+            displayModeTitle: this.props.displayModeTitle,
+            outputImage: this.props.outputImage,
+            outputImageName: this.props.outputImageName,
         };
         this.tabStyle = {
             position: 'relative',
@@ -97,20 +107,12 @@ export default class SNETImageUpload extends React.Component {
             padding: spacingUnit,
             height: this.tabHeight + "px",
         };
-        this.textStyle = {
-            fontFamily: snetFont,
-            fontVariantCaps: "normal",
-            textTransform: 'initial',
-        };
+
         this.tabLabelStyle = {
             fontFamily: snetFont,
             fontVariantCaps: "normal",
             textTransform: 'initial',
             fontSize: 14,
-        };
-        this.iconStyle = {
-            fontSize: 24,
-            size: "large",
         };
 
         // Color Palette
@@ -127,11 +129,120 @@ export default class SNETImageUpload extends React.Component {
         this.urlErrorMessage = "Incorrect URL or permission denied by server.";
         this.fileSizeError = "File size exceeds limits (" + this.props.maxImageSize / 1000000 + "mb).";
         this.fileTypeError = "File type not accepted. Allowed: " + this.props.allowedInputTypes + ".";
+        this.inputImageErrorMessage = "Input image could not be rendered.";
+        this.outputImageErrorMessage = "Output image could not be rendered.";
+
+        // Refs
+        this.imageDiv = React.createRef();
+        this.inputImage = React.createRef();
+        this.outputImage = React.createRef();
 
         // Function binding
+        this.handleMouseMove = this.handleMouseMove.bind(this);
         this.urlCallback = this.urlCallback.bind(this);
         this.sendData = this.sendData.bind(this);
+        this.setInputImageDimensions = this.setInputImageDimensions.bind(this);
+        this.setInitialImageXPosition = this.setInitialImageXPosition.bind(this);
+    }
 
+    // When props.outputImage changes, the component changes to the display mode.
+    componentWillReceiveProps(nextProps, nextContent) {
+        let mimeType;
+
+        //"data:" + this.state.outputImageMimeType + ";base64," +
+        if (nextProps.outputImage) {
+            if(nextProps.outputImage !== this.props.outputImage){
+                // Extracts base64-encoded image's mime type
+                if(nextProps.outputImageMimeType === undefined){
+                    if(nextProps.outputImage.charAt(0) === '/'){
+                        mimeType = "image/jpeg";
+                    }else if(nextProps.outputImage.charAt(0) === 'R'){
+                        mimeType = "image/gif";
+                    }else if(nextProps.outputImage.charAt(0) === 'i'){
+                        mimeType = "image/png";
+                    }else{
+                        mimeType = "application/octet-stream"
+                    }
+                } else {
+                    mimeType = nextProps.outputImageMimeType;
+                }
+
+                this.setState({
+                    displayModeTitle: nextProps.displayModeTitle,
+                    outputImage: "data:" + mimeType + ";base64," + nextProps.outputImage,
+                    outputImageMimeType: mimeType,
+                    outputImageName: nextProps.outputImageName,
+                    mainState: "display",
+                    value: nextProps.disableOutputTab?
+                        nextProps.disableComparisonTab?
+                            3
+                            :
+                            5
+                        :
+                        4,
+                });
+            }
+        } else { // Resets component if outputImage is empty again
+            if (this.props.outputImage){
+                this.setState({
+                    // Component's flow of execution
+                    mainState: "initial", // initial, loading, uploaded, display
+                    value: this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
+                        (this.props.disableUploadTab + this.props.disableUrlTab)
+                        :
+                        0,
+                    searchText: null,
+                    errorMessage: null,
+                    displayError: false,
+                    displayImageName: false,
+                    // Selected image data (sent via callback function)
+                    inputImageData: null,    // encoded image data. NOT ALWAYS THE SAME DATA SENT VIA CALLBACK
+                    mimeType: null,     // "jpeg", "png", etc
+                    encoding: null,     // "byteArray", "base64", "url"
+                    filename: null,     // image filename
+                    // Image data readers
+                    base64Reader: undefined,
+                    byteReader: undefined,
+
+                    // Output display mode
+                    imageXPosition: undefined, // arbitrary, will be set properly
+                    dividerXPosition: this.props.width / 2,
+                    displayModeTitle: this.props.displayModeTitle,
+                    outputImage: this.props.outputImage,
+                    outputImageName: this.props.outputImageName,
+                }, () => this.sendData(this.state.inputImageData));
+            }
+        }
+
+        // Resets the component if disableResetButton is false:
+        this.props.disableResetButton && !nextProps.disableResetButton &&
+        this.setState({
+            // Component's flow of execution
+            mainState: "initial", // initial, loading, uploaded, display
+            value: this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
+                (this.props.disableUploadTab + this.props.disableUrlTab)
+                :
+                0,
+            searchText: null,
+            errorMessage: null,
+            displayError: false,
+            displayImageName: false,
+            // Selected image data (sent via callback function)
+            inputImageData: null,    // encoded image data. NOT ALWAYS THE SAME DATA SENT VIA CALLBACK
+            mimeType: null,     // "jpeg", "png", etc
+            encoding: null,     // "byteArray", "base64", "url"
+            filename: null,     // image filename
+            // Image data readers
+            base64Reader: undefined,
+            byteReader: undefined,
+
+            // Output display mode
+            imageXPosition: undefined, // arbitrary, will be set properly
+            dividerXPosition: this.props.width / 2,
+            displayModeTitle: this.props.displayModeTitle,
+            outputImage: this.props.outputImage,
+            outputImageName: this.props.outputImageName,
+        }, () => this.sendData(this.state.inputImageData));
     }
 
     setLoadingState() {
@@ -152,10 +263,10 @@ export default class SNETImageUpload extends React.Component {
         this.setState({
                 mainState: "uploaded", // initial, loading, uploaded
                 searchText: null,
-                imageData: data,
+                inputImageData: data,
                 encoding: "base64",
             }, function () {
-                this.sendData(this.state.imageData.split(",")[1])
+                this.sendData(this.state.inputImageData.split(",")[1])
             }.bind(this)
         );
     }
@@ -167,7 +278,7 @@ export default class SNETImageUpload extends React.Component {
             this.setState({
                 mainState: "uploaded", // initial, loading, uploaded
                 searchText: null,
-                imageData: reader.result,
+                inputImageData: reader.result,
                 displayError: false,
                 errorMessage: null,
             }, this.sendData(new Uint8Array(this.state.byteReader.result)))
@@ -185,7 +296,7 @@ export default class SNETImageUpload extends React.Component {
             this.setState({
                 mainState: "initial",
                 searchText: null,
-                imageData: null,
+                inputImageData: null,
                 mimeType: null,
                 encoding: null,
                 filename: null,
@@ -202,9 +313,9 @@ export default class SNETImageUpload extends React.Component {
                 this.setState({
                     mainState: "initial",
                     searchText: null,
-                    imageData: null,
-                    mimeType:null,
-                    encoding:null,
+                    inputImageData: null,
+                    mimeType: null,
+                    encoding: null,
                     filename: null,
                     errorMessage: this.fileTypeError + "Got: " + fileType + ".",
                     displayError: true,
@@ -216,7 +327,7 @@ export default class SNETImageUpload extends React.Component {
                 this.setState({
                     mainState: "initial",
                     searchText: null,
-                    imageData: null,
+                    inputImageData: null,
                     mimeType: null,
                     encoding: null,
                     filename: null,
@@ -233,7 +344,8 @@ export default class SNETImageUpload extends React.Component {
             this.setState({
                 filename: file.name,
                 mimeType: file.type,
-                base64Reader: reader});
+                base64Reader: reader
+            });
             this.readerOnLoadEnd(this.state.base64Reader.result)
         }.bind(this);
 
@@ -353,14 +465,14 @@ export default class SNETImageUpload extends React.Component {
         this.setState({
             mainState: "uploaded",
 
-            imageData: url,
+            inputImageData: url,
             mimeType: null,
             encoding: "url",
             filename: filename,
 
             searchText: null,
         }, function () {
-            this.sendData(this.state.imageData)
+            this.sendData(this.state.inputImageData)
         }.bind(this));
     }
 
@@ -368,21 +480,21 @@ export default class SNETImageUpload extends React.Component {
         this.setState({
             mainState: "uploaded",
 
-            imageData: data,
+            inputImageData: data,
             mimeType: outputFormat,
             encoding: "base64",
             filename: filename,
 
             searchText: null,
         }, function () {
-            this.sendData(this.state.imageData.split(",")[1])
+            this.sendData(this.state.inputImageData.split(",")[1])
         }.bind(this));
     };
 
     urlByteReaderOnLoadEnd(dataURL, filename) {
         this.setState({
             mainState: "uploaded",
-            imageData: dataURL,
+            inputImageData: dataURL,
             mimeType: this.props.outputFormat,
             encoding: "byteArray",
             filename: filename,
@@ -411,7 +523,7 @@ export default class SNETImageUpload extends React.Component {
             this.setState({
                 mainState: "initial",
                 searchText: null,
-                imageData: null,
+                inputImageData: null,
                 mimeType: null,
                 encoding: null,
                 filename: null,
@@ -421,7 +533,7 @@ export default class SNETImageUpload extends React.Component {
         }.bind(this);
 
         if (this.props.returnByteArray) {
-            img.outputFormat = this.props.outputFormat;
+            img.outputFormat = this.props.outputFormat; // intentionally added prop to img tag to access it later
             img.onload = function () {
                 const canvas = document.createElement("canvas"),
                     context = canvas.getContext('2d');
@@ -456,7 +568,9 @@ export default class SNETImageUpload extends React.Component {
     searchTextUpdate(event) {
         this.setState({
             searchText: event.target.value,
-        }, this.props.instantUrlFetch ? this.handleSearchSubmit.bind(this) : function(){return 0});
+        }, this.props.instantUrlFetch ? this.handleSearchSubmit.bind(this) : function () {
+            return 0
+        });
     };
 
     handleSearchSubmit() {
@@ -615,14 +729,14 @@ export default class SNETImageUpload extends React.Component {
         this.setState({
             mainState: "initial", // initial, search, gallery, loading, uploaded, error
             searchText: null,
-            imageData: null,
+            inputImageData: null,
             mimeType: null,
             encoding: null,
             filename: null,
             displayError: false,
             errorMessage: null,
             displayImageName: false,
-        }, () => this.sendData(this.state.imageData));
+        }, () => this.sendData(this.state.inputImageData));
     };
 
     renderUploadedState() {
@@ -642,11 +756,11 @@ export default class SNETImageUpload extends React.Component {
                 >
                     <img
                         alt="Service input"
-                        src={this.state.imageData}
+                        src={this.state.inputImageData}
                         onError={() => this.setState({
                             mainState: "initial",
                             searchText: null,
-                            imageData: null,
+                            inputImageData: null,
                             filename: null,
                             errorMessage: this.urlErrorMessage,
                             displayError: true,
@@ -663,10 +777,10 @@ export default class SNETImageUpload extends React.Component {
                     />
                     <Fade in={this.state.displayImageName}>
                         <GridListTileBar
-                            style={{}}
                             title={<Typography
                                 style={{
-                                    alignText: 'center',
+                                    display: 'flex',
+                                    justifyContent: 'center',
                                     fontFamily: snetFont,
                                     fontVariantCaps: "normal",
                                     textTransform: 'initial',
@@ -685,20 +799,9 @@ export default class SNETImageUpload extends React.Component {
     *  -----------------*/
 
     handleTabChange(event, value) {
-        if(this.state.imageData === null){ // If no image has been selected, simply changes tab
-            this.setState({
-                value: value,
-            });
-        } else {
-            this.setState({ // If an image had been uploaded, resets it and sends "null" to parent component
-                value: value,
-                mainState: "initial",
-                imageData: null,
-                mimeType: null,
-                encoding: null,
-                filename: null,
-            }, () => this.sendData(this.state.imageData));
-        }
+        this.setState({
+            value: value,
+        });
     };
 
     renderTabs() {
@@ -716,6 +819,15 @@ export default class SNETImageUpload extends React.Component {
                     </div>
                     <div>
                         {this.renderGalleryTab()}
+                    </div>
+                    <div>
+                        {(this.state.mainState === "display") && !(this.props.disableInputTab) && this.renderInputImage()}
+                    </div>
+                    <div>
+                        {(this.state.mainState === "display") && !(this.props.disableOutputTab) && this.renderOutputImage()}
+                    </div>
+                    <div>
+                        {(this.state.mainState === "display") && !(this.props.disableComparisonTab) && this.renderComparison()}
                     </div>
                 </SwipeableViews>
                 <ClickAwayListener onClickAway={() => this.setState({displayError: false})}>
@@ -775,6 +887,249 @@ export default class SNETImageUpload extends React.Component {
         );
     };
 
+    /* -----------------
+       - DISPLAY STATE -
+    *  -----------------*/
+
+    renderInputImage() {
+        return (
+            <Fade in={this.state.mainState === "display"}>
+                <div style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    padding: spacingUnit,
+                    height: this.tabHeight + "px",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-around'
+                }}
+                     onMouseOver={() => this.setState({displayImageName: true})}
+                     onMouseLeave={() => this.setState({displayImageName: false})}
+                >
+                    <img
+                        alt="Service input"
+                        src={this.state.inputImageData}
+                        onError={() => this.setState({
+                            mainState: "initial",
+                            searchText: null,
+                            inputImageData: null,
+                            filename: null,
+                            errorMessage: this.inputImageErrorMessage,
+                            displayError: true,
+                        })}
+                        id="loadedImage"
+                        // crossOrigin="anonymous"
+                        style={this.props.displayProportionalImage ? {
+                            maxHeight: this.tabHeight + "px",
+                            maxWidth: "100%",
+                        } : {
+                            height: this.tabHeight + "px",
+                            width: "100%",
+                        }}
+                    />
+                    <Fade in={this.state.displayImageName}>
+                        <GridListTileBar
+                            style={{}}
+                            title={<Typography
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignText: 'center',
+                                    fontFamily: snetFont,
+                                    fontVariantCaps: "normal",
+                                    textTransform: 'initial',
+                                    color: snetBackgroundGrey,
+                                    fontSize: 14,
+                                }}> {this.state.filename} </Typography>}
+                        />
+                    </Fade>
+                </div>
+            </Fade>
+        )
+    }
+
+    renderOutputImage() {
+        return (
+            <Fade in={this.state.mainState === "display"}>
+                <div style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    padding: spacingUnit,
+                    height: this.tabHeight + "px",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-around'
+                }}
+                     onMouseOver={() => this.setState({displayImageName: true})}
+                     onMouseLeave={() => this.setState({displayImageName: false})}
+                >
+                    <img
+                        alt="Service output"
+                        src={this.state.outputImage}
+                        onError={() => this.setState({
+                            mainState: "display",
+                            searchText: null,
+                            inputImageData: null,
+                            filename: null,
+                            errorMessage: this.outputImageErrorMessage,
+                            displayError: true,
+                        })}
+                        id="loadedImage"
+                        // crossOrigin="anonymous"
+                        style={this.props.displayProportionalImage ? {
+                            maxHeight: this.tabHeight + "px",
+                            maxWidth: "100%",
+                        } : {
+                            height: this.tabHeight + "px",
+                            width: "100%",
+                        }}
+                    />
+                    {this.state.outputImageName !== null ?
+                        <Fade in={this.state.displayImageName}>
+                            <GridListTileBar
+                                style={{}}
+                                title={<Typography
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignText: 'center',
+                                        fontFamily: snetFont,
+                                        fontVariantCaps: "normal",
+                                        textTransform: 'initial',
+                                        color: snetBackgroundGrey,
+                                        fontSize: 14,
+                                    }}> {this.state.outputImageName} </Typography>}
+                            />
+                        </Fade>
+                        :
+                        <React.Fragment/>
+                    }
+                </div>
+            </Fade>
+        )
+    }
+
+    handleMouseMove(event) {
+        let offsetLeft = this.imageDiv.current.getBoundingClientRect().left;
+        let offsetImageLeft = this.outputImage.current.getBoundingClientRect().left;
+        let imageHalfHeight = this.imageDiv.current.clientHeight / 2;
+        this.setState({
+            imageXPosition: event.clientX - offsetImageLeft,
+            dividerXPosition: event.clientX - offsetLeft,
+            imageHalfHeight: imageHalfHeight,
+        })
+    }
+
+    setInputImageDimensions() {
+        this.setState({
+            inputImageHeight: this.inputImage.current.clientHeight,
+            inputImageWidth: this.inputImage.current.clientWidth,
+        })
+    }
+
+    setInitialImageXPosition(){
+        this.setState({
+            imageXPosition: this.outputImage.current.clientWidth / 2,
+        })
+    }
+
+    renderComparison() {
+        return (
+            <Fade in={this.state.mainState === "display"}>
+                <div
+                    ref={this.imageDiv}
+                    id="imageDiv"
+                    style={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        padding: spacingUnit,
+                        width: "100%",
+                        height: this.tabHeight + "px",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: "ew-resize",
+                    }}
+                    onMouseMove={this.handleMouseMove}
+                >
+                    <img
+                        ref={this.inputImage}
+                        style={this.props.displayProportionalImage ? {
+                            maxHeight: this.tabHeight + "px",
+                            maxWidth: "100%",
+                            align: "center",
+                            position: "relative",
+                        } : {
+                            height: this.tabHeight + "px",
+                            width: "100%",
+                            align: "center",
+                            position: "relative",
+                        }}
+                        alt="Service response..."
+                        src={this.state.inputImageData}
+                        onLoad={this.setInputImageDimensions}
+                    />
+                    <img
+                        ref={this.outputImage}
+                        style={
+                            this.props.displayProportionalImage ?
+                                {
+                                    maxHeight: this.tabHeight + "px",
+                                    maxWidth: "100%",
+                                    align: "center",
+                                    position: "absolute",
+                                    clip: "rect(0px," + this.state.imageXPosition + "px,10000px,0px)"
+                                }
+                                :
+                                {
+                                    height: this.tabHeight + "px",
+                                    width: "100%",
+                                    align: "center",
+                                    position: "absolute",
+                                    clip: "rect(0px," + this.state.imageXPosition + "px,10000px,0px)"
+                                }
+                        }
+                        onLoad={this.setInitialImageXPosition}
+                        height={this.props.overlayInputImage && this.state.inputImageHeight}
+                        width={this.props.overlayInputImage && this.state.inputImageWidth}
+                        alt="Service response..."
+                        src={this.state.outputImage}
+                    />
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: this.state.dividerXPosition - 1.5 + "px",
+                            borderLeft: "3px solid white",
+                            height: this.tabHeight,
+                        }}>
+                    </div>
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: this.state.dividerXPosition - 15 + "px",
+                            top: this.tabHeight / 2 - 15 + "px",
+                            width: "30px",
+                            height: "30px",
+                            borderRadius: "15px",
+                            backgroundColor: "white",
+                        }}>
+                    </div>
+                    <UnfoldMoreIcon
+                        style={{
+                            color: this.mainColor,
+                            width: "30px",
+                            height: "30px",
+                            position: "absolute",
+                            left: this.state.dividerXPosition - 15 + "px",
+                            top: this.tabHeight / 2 - 15 + "px",
+                            transform: "rotate(90deg)",
+                        }}
+                    />
+                </div>
+            </Fade>
+        )
+    }
+
     render() {
         return (
             <div
@@ -806,14 +1161,14 @@ export default class SNETImageUpload extends React.Component {
                                 <Typography
                                     color="inherit"
                                     noWrap
-                                    variant="title"
+                                    variant="h6"
                                     style={{
                                         fontSize: 18,
                                         fontFamily: snetFont,
                                         padding: spacingUnit / 2,
                                     }}
                                 >
-                                    {this.props.imageName}
+                                    {this.state.mainState === "display" ? this.props.displayModeTitle : this.props.imageName}
                                 </Typography>
                             </Grid>
                             <Grid item xs={7}>
@@ -823,20 +1178,30 @@ export default class SNETImageUpload extends React.Component {
                                         onChange={this.handleTabChange.bind(this)}
                                         indicatorColor="primary"
                                         textColor="primary"
-                                        // scrollButtons="on"
-                                        // centered
                                         variant="fullWidth"
                                         style={{
                                             color: snetGrey,
                                         }}
-                                        // TabIndicatorProps={{ style: { backgroundColor: this.mainColor } }}
                                     >
-                                        {!this.props.disableUploadTab &&
-                                        <Tab style={{minWidth: '5%'}} value={0} label={<span style={this.tabLabelStyle}>Upload</span>}/>}
-                                        {!this.props.disableUrlTab &&
-                                            <Tab style={{minWidth: '5%'}} value={1} label={<span style={this.tabLabelStyle}>URL</span>}/>}
-                                        {this.props.imageGallery.length > 0 &&
-                                        <Tab style={{minWidth: '5%'}} value={2} label={<span style={this.tabLabelStyle}>Gallery</span>}/>}
+                                        {(this.state.mainState !== "uploaded") && !(this.state.mainState === "display") && !this.props.disableUploadTab &&
+                                        <Tab style={{minWidth: '5%'}} value={0}
+                                             label={<span style={this.tabLabelStyle}>Upload</span>}/>}
+                                        {(this.state.mainState !== "uploaded") && !(this.state.mainState === "display") && !this.props.disableUrlTab &&
+                                        <Tab style={{minWidth: '5%'}} value={1}
+                                             label={<span style={this.tabLabelStyle}>URL</span>}/>}
+                                        {(this.state.mainState !== "uploaded") && !(this.state.mainState === "display") && this.props.imageGallery.length > 0 &&
+                                        <Tab style={{minWidth: '5%'}} value={2}
+                                             label={<span style={this.tabLabelStyle}>Gallery</span>}/>}
+                                        {(this.state.mainState === "display") && !(this.props.disableInputTab) &&
+                                        <Tab style={{minWidth: '5%'}} value={3}
+                                             label={<span style={this.tabLabelStyle}>{this.props.inputTabTitle}</span>}/>}
+                                        {(this.state.mainState === "display") && (!this.props.disableOutputTab) &&
+                                        <Tab style={{minWidth: '5%'}} value={4}
+                                             label={<span
+                                                 style={this.tabLabelStyle}>{this.props.outputTabTitle}</span>}/>}
+                                        {this.state.mainState === "display" && !this.props.disableComparisonTab &&
+                                        <Tab style={{minWidth: '5%'}} value={5}
+                                             label={<span style={this.tabLabelStyle}>{this.props.comparisonTabTitle}</span>}/>}
                                     </Tabs>
                                 </MuiThemeProvider>
                             </Grid>
@@ -865,7 +1230,7 @@ export default class SNETImageUpload extends React.Component {
                                 justifyContent: 'center',
                                 alignItems: "center"
                             }}>
-                                {this.state.mainState === "uploaded" &&
+                                {this.state.mainState === "uploaded" && !this.props.disableResetButton &&
                                 <Fade in={this.state.mainState === "uploaded"}>
                                     <Tooltip title={
                                         <Typography style={{fontFamily: snetFont, fontSize: 12, color: "white"}}>
@@ -881,12 +1246,33 @@ export default class SNETImageUpload extends React.Component {
                                     </Tooltip>
                                 </Fade>
                                 }
+                                {(this.state.mainState === "display") && !this.props.disableDownloadButton &&
+                                <Fade in={(this.state.mainState === "display")}>
+                                    <Tooltip title={
+                                        <Typography style={{fontFamily: snetFont, fontSize: 12, color: "white"}}>
+                                            Download output image
+                                        </Typography>
+                                    }>
+                                        <a
+                                            href={this.state.outputImage}
+                                            download={this.state.outputImageName}
+                                        >
+                                            <IconButton>
+                                                <CloudDownloadIcon style={{
+                                                    fontSize: 20,
+                                                    color: this.mainColor
+                                                }}/>
+                                            </IconButton>
+                                        </a>
+                                    </Tooltip>
+                                </Fade>
+                                }
                             </Grid>
                         </Grid>
                     </Grid>
                     <Grid item xs={12} style={{backgroundColor: snetBackgroundGrey}}>
                         {
-                            (this.state.mainState === "initial" && this.renderTabs()) ||
+                            ((this.state.mainState === "initial" || this.state.mainState === "display") && this.renderTabs()) ||
                             (this.state.mainState === "loading" && this.renderLoadingState()) ||
                             (this.state.mainState === "uploaded" && this.renderUploadedState())
                         }
@@ -898,12 +1284,14 @@ export default class SNETImageUpload extends React.Component {
 }
 
 SNETImageUpload.propTypes = {
+
     width: PropTypes.string, // e.g.: "500px", "50%" (of parent component width)
     tabHeight: PropTypes.number, // a number without units
     imageDataFunc: PropTypes.func.isRequired,
     imageName: PropTypes.string,
     disableUploadTab: PropTypes.bool, // If true disables upload tab
     disableUrlTab: PropTypes.bool, // If true disables url tab
+    disableResetButton: PropTypes.bool, // If true disables image reset button
     returnByteArray: PropTypes.bool, // whether to return base64 or byteArray image data
     outputFormat: PropTypes.oneOf(["image/png", "image/jpg", "image/jpeg"]),
     allowedInputTypes: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
@@ -915,14 +1303,30 @@ SNETImageUpload.propTypes = {
     galleryCols: PropTypes.number,
     infoTip: PropTypes.string,
     mainColor: PropTypes.object,
+
+    // Output mode props
+    displayModeTitle: PropTypes.string,
+    outputImage: PropTypes.string,
+    outputImageMimeType: PropTypes.oneOf(["application/octet-stream", "image/png", "image/jpg", "image/jpeg", "image/gif"]),
+    outputImageName: PropTypes.string,
+    disableInputTab: PropTypes.bool,
+    disableOutputTab: PropTypes.bool,
+    disableComparisonTab: PropTypes.bool,
+    disableDownloadButton: PropTypes.bool,
+    overlayInputImage: PropTypes.bool,
+    inputTabTitle: PropTypes.string,
+    outputTabTitle: PropTypes.string,
+    comparisonTabTitle: PropTypes.string,
 };
 
 SNETImageUpload.defaultProps = {
+
     width: "500px",
     tabHeight: 300,
     imageName: "Input Image",
     disableUploadTab: false, // If true disables upload tab
     disableUrlTab: false, // If true disables url tab
+    disableResetButton: false,
     returnByteArray: false,
     outputFormat: "image/png",
     allowedInputTypes: "image/*",
@@ -934,4 +1338,18 @@ SNETImageUpload.defaultProps = {
     galleryCols: 3,
     infoTip: "",
     mainColor: blue,
+
+    // Output mode props
+    displayModeTitle: "Result",
+    outputImage: "",
+    outputImageMimeType: undefined,
+    outputImageName: "service-output",
+    disableInputTab: false,
+    disableOutputTab: false,
+    disableComparisonTab: false,
+    disableDownloadButton: false,
+    overlayInputImage: true,
+    inputTabTitle: "Input",
+    outputTabTitle: "Output",
+    comparisonTabTitle: "Comparison"
 };
