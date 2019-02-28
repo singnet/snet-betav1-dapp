@@ -11,9 +11,12 @@ export class ImageGridViewer extends React.Component {
 
     downloadImage(image) {
         const link = document.createElement('a');
+        link.setAttribute("type", "hidden");
         link.setAttribute('href', image);
         link.setAttribute('download', 'result-image');
+        document.body.appendChild(link);
         link.click();
+	link.remove();
     }
 
     renderContent(response, key) {
