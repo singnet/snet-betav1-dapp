@@ -9,6 +9,10 @@ import connectwallet from "./components/ConnectWallet.js";
 import GetStarted from "./components/GetStarted.js";
 import Footer from './components/Footer.js';
 
+require('./css/style.css');
+require('./css/background.css');
+require('./css/profile.css');
+
 ReactDOM.render(
   <BrowserRouter>
   <div>
