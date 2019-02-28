@@ -33,7 +33,7 @@ export default class Footer extends React.Component {
             null:
             <div className="footer">
               <p>By continuing to browse the site you agree to our storing of cookies on your browser to enhance site navigation as well agree to our <a href="https://public.singularitynet.io/Beta-TOS.html" target="_blank">Terms and conditions</a></p>
-              <button className="btn btn-primary" onClick={this.handleShowMessage}>Accept</button>
+              <button className="btn btn-primary" onClick={this.handleAcceptedTOC}>Accept</button>
             </div>}
       </React.Fragment>
     );
