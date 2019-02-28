@@ -207,7 +207,7 @@ export default class SuperResolution extends React.Component {
                                 </MenuItem>
                                 {this.state.model === "proSR" && <MenuItem value={2}>2</MenuItem>}
                                 <MenuItem value={4}>4</MenuItem>
-                                <MenuItem value={8}>8</MenuItem>
+                                {/*<MenuItem value={8}>8</MenuItem>*/}
                             </Select>
                         </FormControl>
                     </Grid>
@@ -234,8 +234,10 @@ export default class SuperResolution extends React.Component {
         if (isComplete) {
             if (typeof response !== 'undefined') {
                 if (typeof response === 'string') {
+                    console.log("returning response");
                     return response;
                 }
+                console.log("returning data");
                 return response.data;
             } else {
                 return null;
@@ -361,8 +363,13 @@ export default class SuperResolution extends React.Component {
                                     imageDataFunc={this.getImageData}
                                     outputImage={this.parseResponse()}
                                     width="90%"
-                                    instantUrlFetch={true}
-                                    allowURL={true}
+                                    infoTip="Warning 1: Due to high GPU memory usage the maximum input image size has been greatly limited. We're working to define more flexible file size limits.
+
+                                            Warning 2: Due to the original implementation, PNG image transparency turns to black."
+                                    maxImageSize={300000}
+                                    disableUrlTab={true}
+                                    // instantUrlFetch={true}
+                                    // allowURL={true}
                                 />
                             </Grid>
                             {!this.props.isComplete && this.renderForm()}
