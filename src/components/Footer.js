@@ -11,7 +11,6 @@ export default class Footer extends React.Component {
   }
 
   hasAcceptedTOC() {
-    console.log("hasAccepted " + window.localStorage.getItem(tosKey));
     return window.localStorage.getItem(tosKey) || false;
   }
   
