@@ -81,7 +81,7 @@
     "react-hot-loader": "^4.0.1",
     "react-router-dom": "^4.3.1",
     "recursive-readdir": "^2.2.2",
-    "singularitynet-platform-contracts": "^0.2.6",
+    "singularitynet-platform-contracts": "^0.3.0",
     "singularitynet-token-contracts": "^2.0.1",
     "style-loader": "^0.20.3",
     "uglifyjs-webpack-plugin": "^1.2.5",
