@@ -13,6 +13,30 @@ body {
   position: relative;
 }
 
+.content-area { margin-bottom: 30px; }
+
+.footer {
+width: 100%;
+padding: 10px 10px;
+position: fixed;
+bottom: 0;
+color: #fff;
+background-color: #65c4fd;
+text-align: center;
+}
+
+.footer p {
+margin-bottom: 0;
+display: inline-block;
+font-size: 16px;
+}
+
+.footer button { 
+padding: 6px 14px;
+margin-left: 10px; 
+font-size: 14px;
+}
+
 body.modal-open { padding-right: 0 !important; }
 body.modal-open .modal { padding-right: 0 !important; }
 body.modal-open .modal .close { font-size: 2.5rem; }

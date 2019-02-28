@@ -14,6 +14,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import BlockchainHelper from "./BlockchainHelper.js"
 import {ProfileTabContainer} from './ReactStyles.js';
 import DAppModal from './DAppModal.js'
+import Footer from "./Footer.js";
 
 export class Account extends Component {
   constructor(props) {
@@ -502,7 +503,7 @@ export class Account extends Component {
                             <DAppModal open={this.state.showModal} message={this.chainMessage} showProgress={true}/>
                         </div>
                         <div className="manage-account channel-details">
-                        <h3>Channel Details</h3>
+                        <h3>Expired Channel Details</h3>
                         </div>
                         <div className="col-xs-12 col-sm-16 col-md-16 col-lg-16 channel-info ">
                             <div className="row channel-header">
@@ -566,6 +567,7 @@ export class Account extends Component {
                         </div>
                     </div>
                 </div>
+              <Footer/>
             </React.Fragment>
     )
   }

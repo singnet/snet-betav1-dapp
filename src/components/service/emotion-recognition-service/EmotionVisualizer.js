@@ -43,9 +43,12 @@ export default class EmotionVisualizer extends React.Component {
         let cnvs = this.refs.outsideWrap;
         html2canvas(cnvs, {}).then((canvas) => {
             const link = document.createElement('a');
+            link.setAttribute("type", "hidden");
             link.setAttribute('href', canvas.toDataURL(this.props.inputImageType));
             link.setAttribute('download', 'result.' + this.props.inputImageType.split('/')[1]);
+            document.body.appendChild(link);
             link.click();
+	    link.remove();
         })
     }
 
