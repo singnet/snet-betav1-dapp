@@ -2,6 +2,7 @@ var path = require('path');
 var webpack = require('webpack');
 
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+var MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 var paths = require('./paths.js')
 
@@ -39,9 +40,10 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [
+        use:  [
           'style-loader',
-          'css-loader',
+          MiniCssExtractPlugin.loader,
+          'css-loader'
         ]
       },
       {
@@ -85,6 +87,6 @@ module.exports = {
         minifyCSS: true,
         minifyURLs: true,
       },
-    }),
+    })
   ]
 };
