@@ -8,7 +8,6 @@ export default class Footer extends React.Component {
       acceptedTOC: this.hasAcceptedTOC()
     }
     this.handleAcceptedTOC = this.handleAcceptedTOC.bind(this);
-    console.log("Footer " + this.state.acceptedTOC)
   }
 
   hasAcceptedTOC() {
@@ -18,7 +17,6 @@ export default class Footer extends React.Component {
   
   acceptTOC() {
     window.localStorage.setItem(tosKey, true);
-    // close/hide notification
   }
 
   handleAcceptedTOC(){
