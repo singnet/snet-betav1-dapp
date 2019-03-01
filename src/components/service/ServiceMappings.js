@@ -76,7 +76,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation")] = TranslationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary")] = NewsSummaryService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "style-transfer")] = StyleTransfer;
-        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection-service")] = LanguageDetectionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection")] = LanguageDetectionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service")] = CoreferenceResolutionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation")] = NamedEntityDisambiguation;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-robustness")] = NetworkAnalysisRobustness;
