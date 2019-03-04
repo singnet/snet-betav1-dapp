@@ -1,5 +1,8 @@
 dist/bundle.*
 dist/index.html
+dist/css
+dist/css/*
+dist/src
 
 # Logs
 logs

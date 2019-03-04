@@ -7,6 +7,11 @@ import SampleServices from './components/Services';
 import Landingpage from "./components/Landing.js";
 import connectwallet from "./components/ConnectWallet.js";
 import GetStarted from "./components/GetStarted.js";
+import Footer from './components/Footer.js';
+
+require('./css/style.css');
+require('./css/background.css');
+require('./css/profile.css');
 
 ReactDOM.render(
   <BrowserRouter>
@@ -14,6 +19,7 @@ ReactDOM.render(
    <Switch>
    <Route path="/" component={Landingpage} exact />
     <Route path="/Header" component ={Header}/>
+    <Route path="/Footer" component = {Footer}/>
     <Route path="/sampleservices" component={SampleServices}></Route>
     <Route path="/Account" component={Account}></Route>
     <Route path="/connectwallet" component={connectwallet}/>

@@ -603,7 +603,10 @@ export  class Jobdetails extends React.Component {
                                     <button type="button" className="btn-primary" onClick={()=> this.startjob()}>Start Job</button>
                                     :
                                         <div className="job-details-unavailable">
-                                            Service is currently unavailable. Please try later.
+                                            {(typeof web3 === 'undefined') ?
+                                              "Please install Metamask to invoke the API":
+                                              "Service is currently unavailable. Please try later."
+                                            }
                                         </div>
                                     }
                                 </div>
