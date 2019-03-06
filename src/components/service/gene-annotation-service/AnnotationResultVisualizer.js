@@ -171,12 +171,17 @@ export default class AnnotationResultVisualizer extends React.Component {
 
   downloadGraphJSON() {
     const json = `data:text/json;charset=utf-8, ${encodeURIComponent(
-      JSON.stringify(this.props.graph)
+      JSON.stringify({
+        data: { name: "Gene annotation graph" },
+        elements: this.props.graph
+      })
     )}`;
     const link = document.createElement("a");
     link.setAttribute("href", json);
     link.setAttribute("download", "annotation-graph.json");
+    document.body.append(link);
     link.click();
+    link.remove();
   }
 
   toggleAnnotationVisibility(annotation, show) {
