@@ -2,6 +2,7 @@ var webpack = require('webpack');
 var merge = require('webpack-merge');
 var UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 var CompressionPlugin = require('compression-webpack-plugin');
+var MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 var common = require('./webpack.common.js');
 
@@ -23,6 +24,9 @@ module.exports = merge(common, {
       filename (asset) {
         return asset.replace('.gz', '')
       }
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].[hash].css'
     })
   ]
 });

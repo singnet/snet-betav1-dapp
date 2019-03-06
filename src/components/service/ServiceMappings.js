@@ -38,6 +38,7 @@ import NetworkAnalysisBipartite from "./NetworkAnalysisBipartite";
 import NetworkAnalysisRobustness from "./NetworkAnalysisRobustness";
 import TopicAnalysis from "./TopicAnalysisService";
 import Places365SceneRecognition from "./Places365SceneRecognition";
+import SuperResolution from "./SuperResolution";
 
 import DefaultService from './DefaultService.js';
 
@@ -76,13 +77,14 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation")] = TranslationService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary")] = NewsSummaryService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "style-transfer")] = StyleTransfer;
-        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection-service")] = LanguageDetectionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection")] = LanguageDetectionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service")] = CoreferenceResolutionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation")] = NamedEntityDisambiguation;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-robustness")] = NetworkAnalysisRobustness;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-bipartite")] = NetworkAnalysisBipartite;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis")] = TopicAnalysis;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition")] = Places365SceneRecognition;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "super-resolution")] = SuperResolution;
     }
 
     generateUniqueID(orgId,serviceId) {

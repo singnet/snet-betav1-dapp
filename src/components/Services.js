@@ -10,6 +10,7 @@ import BlockchainHelper from "./BlockchainHelper.js"
 import {Jobdetails} from './JobDetails.js';
 import {theme} from './ReactStyles.js';
 import Header from "./Header.js";
+import Footer from "./Footer.js";
 
 class SampleServices extends React.Component {
   constructor(props) {
@@ -383,6 +384,7 @@ class SampleServices extends React.Component {
                             network={this.network}/>
                 </div>
             </main>
+            <Footer/>
             </React.Fragment>
      );
   }

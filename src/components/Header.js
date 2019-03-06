@@ -29,7 +29,9 @@ export default class Header extends React.Component {
                       <li><Link to={(typeof web3 !== 'undefined')? "/SampleServices" : "/"}>Home</Link></li>
                       <li><Link to="/Account">Account</Link></li>
                       <li><Link to="//blog.singularitynet.io" target="_blank">Blog</Link></li>
-                      <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
+                      {(typeof this.props.chainId !== 'undefined' && this.props.chainId !== "1") ?
+                        <li><Link to="//faucet.singularitynet.io" target="_blank">AGI Faucet</Link></li>
+                       : null} 
                     </ul>
 
     const networkName = (typeof NETWORKS[this.props.chainId] !== 'undefined' && typeof NETWORKS[this.props.chainId].name !== 'undefned') ?
