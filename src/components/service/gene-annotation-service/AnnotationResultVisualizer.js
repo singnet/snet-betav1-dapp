@@ -20,7 +20,8 @@ import {
   HelpOutline,
   Share,
   ExpandMore,
-  ChangeHistory
+  ChangeHistory,
+  Brightness1Outlined
 } from "@material-ui/icons";
 
 const AnnotationColorsLight = [
@@ -59,6 +60,12 @@ export default class AnnotationResultVisualizer extends React.Component {
   breadthFirstLayout() {
     if (this.layout) this.layout.stop();
     this.layout = this.cy.layout({ name: "breadthfirst" });
+    this.layout.run();
+  }
+
+  concentericLayout() {
+    if (this.layout) this.layout.stop();
+    this.layout = this.cy.layout({ name: "concentric" });
     this.layout.run();
   }
 
@@ -252,6 +259,11 @@ export default class AnnotationResultVisualizer extends React.Component {
               <Tooltip placement="right" title="Breadth-first layout">
                 <IconButton onClick={e => this.breadthFirstLayout()}>
                   <ChangeHistory />
+                </IconButton>
+              </Tooltip>
+              <Tooltip placement="right" title="Concentric layout">
+                <IconButton onClick={e => this.concentericLayout()}>
+                  <Brightness1Outlined />
                 </IconButton>
               </Tooltip>
               <Tooltip placement="right" title="Save screenshot">
