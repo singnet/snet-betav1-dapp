@@ -3,15 +3,13 @@ import { relative } from "path";
 import Dropzone from "react-dropzone";
 import classNames from "classnames";
 import { CloudUpload, Check } from "@material-ui/icons";
-import { showNotification } from "./utils";
 import fileSize from "filesize";
 
 export default class DatasetUpload extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      fileError: false,
-      notification: null
+      fileError: false
     };
   }
   componentDidUpdate() {
@@ -31,10 +29,6 @@ export default class DatasetUpload extends React.Component {
 
     return (
       <div className="datasetUploadWrapper" style={{ width: "100%" }}>
-        {this.state.notification &&
-          showNotification(this.state.notification, () => {
-            this.setState({ notification: null });
-          })}
         <Dropzone
           {...props}
           style={{ marginBottom: "15px" }}
