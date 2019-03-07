@@ -1,7 +1,51 @@
 import React from "react";
-import { showNotification } from "./moses-service/utils";
 import MosesServiceForm from "./moses-service/MosesServiceForm";
 import MosesServiceResult from "./moses-service/MosesServiceResult";
+import { Snackbar, SnackbarContent, CircularProgress } from "@material-ui/core";
+import { withStyles } from "@material-ui/core/styles";
+import red from "@material-ui/core/colors/red";
+
+const ErrorSnackbarContent = withStyles({
+  root: { background: red[600] },
+  message: { color: "#fff" }
+})(SnackbarContent);
+
+const showNotification = ({ message, busy }, callBack) => {
+  return (
+    <Snackbar
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right"
+      }}
+      style={{
+        position: "fixed",
+        bottom: "15px",
+        right: "15px",
+        margin: "15px"
+      }}
+      open
+      autoHideDuration={null}
+      onClose={callBack}
+    >
+      {busy ? (
+        <SnackbarContent
+          message={
+            <span style={{ display: "flex", alignItems: "center" }}>
+              <CircularProgress
+                size={24}
+                color="secondary"
+                style={{ marginRight: "15px" }}
+              />
+              {message}
+            </span>
+          }
+        />
+      ) : (
+        <ErrorSnackbarContent message={<span>{message}</span>} />
+      )}
+    </Snackbar>
+  );
+};
 
 export default class MosesService extends React.Component {
   constructor(props) {

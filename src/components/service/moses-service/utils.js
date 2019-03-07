@@ -1,37 +1,3 @@
-import React from "react";
-import { Snackbar, SnackbarContent, CircularProgress } from "@material-ui/core";
-import { withStyles } from "@material-ui/core/styles";
-import red from "@material-ui/core/colors/red";
-
-// Parse moses options from options string to JSON
-export function parseMosesOptions(options) {
-  const splitString = options.split(" ");
-  const mosesOptions = {};
-  const additionalParameters = {};
-
-  for (let i = 0; i < splitString.length; i = i + 2) {
-    const mapping = MosesOptionsMapping.find(m => m[1] === splitString[i]);
-    // check if the string is a numeric value, if so convert it to number
-    // if not, assign original value
-    let value = isNaN(splitString[i + 1])
-      ? splitString[i + 1]
-      : +splitString[i + 1];
-    // check if the string is a boolean value and if so convert it to boolean
-    // if not, assign the original value
-    value = value === "true" || (value === "false" ? false : value);
-    // check if the option is included in moses options, if so use the long moses option name, if not add it to additional parameters
-    if (mapping) {
-      mosesOptions[mapping[0]] = value;
-    } else {
-      additionalParameters[splitString[i]] = value;
-    }
-  }
-  return {
-    mosesOptions: mosesOptions,
-    additionalParameters: additionalParameters
-  };
-}
-
 // convert moses options and additional parameters objects to an option string
 export function stringifyMosesOptions(mosesOptions, additionalParameters) {
   const options = Object.assign({}, mosesOptions);
@@ -106,48 +72,6 @@ export const checkDuplicate = (value, array) => {
         helperText: `"${value}" already exists.`
       }
     : null;
-};
-
-const ErrorSnackbarContent = withStyles({
-  root: { background: red[600] },
-  message: { color: "#fff" }
-})(SnackbarContent);
-
-export const showNotification = ({ message, busy }, callBack) => {
-  return (
-    <Snackbar
-      anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "right"
-      }}
-      style={{
-        position: "fixed",
-        bottom: "15px",
-        right: "15px",
-        margin: "15px"
-      }}
-      open
-      autoHideDuration={null}
-      onClose={callBack}
-    >
-      {busy ? (
-        <SnackbarContent
-          message={
-            <span style={{ display: "flex", alignItems: "center" }}>
-              <CircularProgress
-                size={24}
-                color="secondary"
-                style={{ marginRight: "15px" }}
-              />
-              {message}
-            </span>
-          }
-        />
-      ) : (
-        <ErrorSnackbarContent message={<span>{message}</span>} />
-      )}
-    </Snackbar>
-  );
 };
 
 export const MosesOptionsMapping = [
