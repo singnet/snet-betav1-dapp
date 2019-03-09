@@ -382,8 +382,8 @@ export default class AnnotationResultVisualizer extends React.Component {
           <div
             style={{
               position: "absolute",
-              top: `${this.state.selectedNode.position.y}px`,
-              left: `${this.state.selectedNode.position.x}px`,
+              bottom: "90px",
+              left: "75px",
               width: "350px",
               backgroundColor: "#c9e1f9",
               border: "solid 1px #87BEF5",
