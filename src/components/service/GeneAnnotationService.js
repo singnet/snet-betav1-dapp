@@ -114,12 +114,16 @@ export default class GeneAnnotationService extends React.Component {
 
   parseResponse() {
     const { response } = this.props;
-    if (typeof response !== "undefined") {
-      const r = {
-        graph: JSON.parse(response.graph),
-        schemeFile: response.scm
-      };
-      return r;
+    if (response.graph !== "" && response.scm !== "") {
+      if (typeof response !== "undefined") {
+        const r = {
+          graph: JSON.parse(response.graph),
+          schemeFile: response.scm
+        };
+        return r;
+      }
+    } else {
+      return;
     }
   }
 
@@ -301,20 +305,28 @@ export default class GeneAnnotationService extends React.Component {
   }
 
   renderComplete() {
+    const response = this.parseResponse();
     return (
       <React.Fragment>
-        {this.parseResponse().graph.nodes.length < MAXIMUM_GRAPH_SIZE ? (
-          <AnnotationResultVisualizer
-            notification={this.state.notification}
-            annotations={this.state.selectedAnnotations.map(a => a.name)}
-            graph={this.parseResponse().graph}
-            downloadSchemeFile={this.downloadSchemeFile}
-            sliderWidth={this.props.sliderWidth}
-          />
+        {response ? (
+          response.graph.nodes.length < MAXIMUM_GRAPH_SIZE ? (
+            <AnnotationResultVisualizer
+              notification={this.state.notification}
+              annotations={this.state.selectedAnnotations.map(a => a.name)}
+              graph={this.parseResponse().graph}
+              downloadSchemeFile={this.downloadSchemeFile}
+              sliderWidth={this.props.sliderWidth}
+            />
+          ) : (
+            <AnnotationResultDownload
+              downloadSchemeFile={this.downloadSchemeFile}
+            />
+          )
         ) : (
-          <AnnotationResultDownload
-            downloadSchemeFile={this.downloadSchemeFile}
-          />
+          <p>
+            You may have provided invalid gene names. Please make sure you input
+            valid gene names and try again.
+          </p>
         )}
       </React.Fragment>
     );
