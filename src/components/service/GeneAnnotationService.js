@@ -225,7 +225,7 @@ export default class GeneAnnotationService extends React.Component {
 
   downloadSchemeFile() {
     const json = `data:application/txt, ${encodeURIComponent(
-      this.parseResponse().schemeFile
+      atob(this.parseResponse().schemeFile)
     )}`;
     const link = document.createElement("a");
     link.setAttribute("href", json);

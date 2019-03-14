@@ -7,7 +7,7 @@ export default class AnnotationResultDownload extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <Grid containe style={{ paddingTop: "30px" }}>
+        <Grid container style={{ paddingTop: "30px" }}>
           <Grid item style={{ textAlign: "center" }}>
             <img alt="MOZI globe logo" src={logo} style={{ width: "100px" }} />
             <Typography variant="h3" gutterBottom>
