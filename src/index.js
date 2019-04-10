@@ -8,10 +8,14 @@ import Landingpage from "./components/Landing.js";
 import connectwallet from "./components/ConnectWallet.js";
 import GetStarted from "./components/GetStarted.js";
 import Footer from './components/Footer.js';
+import GDPR from './js/gdpr';
+
 
 require('./css/style.css');
 require('./css/background.css');
 require('./css/profile.css');
+
+GDPR();
 
 ReactDOM.render(
   <BrowserRouter>

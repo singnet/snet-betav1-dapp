@@ -2118,3 +2118,9 @@ i {
 
 @media(max-width:360px) { .header-menu { top: 31px; } }
 /*# sourceMappingURL=style.css.map */
+
+/* gdpr styling starts */
+.qc-cmp-persistent-link {
+  display: none !important;
+}
+/* gdpr styling ends */
