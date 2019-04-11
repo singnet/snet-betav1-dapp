@@ -89,7 +89,6 @@ export  class Jobdetails extends React.Component {
       }
     }  
 
-
     nextJobStep() {
       this.onCloseModal()
       this.setState({valueTab:(this.state.valueTab + 1)})
@@ -105,13 +104,12 @@ export  class Jobdetails extends React.Component {
                           '&org_id='+this.serviceState["org_id"];
       return this.channelHelper.reInitialize(channelInfoUrl);
     }
-    initExpBlockDate(setMinExpDate=false){
 
+    initExpBlockDate(setMinExpDate=false){
       let expBlockNumber =  this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET;
       let expDays = Math.ceil(expBlockNumber *15/(24 * 3600));
       let expDate = new Date();
       expDate.setDate(expDate.getDate()+expDays);
-
       let selectedDate = formatDate(expDate);
       if(setMinExpDate){
         let minExpDate = formatDate(expDate);
@@ -119,9 +117,8 @@ export  class Jobdetails extends React.Component {
         return;
       }
       this.setState({selectedDate});
-
-
     }
+
     fetchServiceSpec() {
       var caller = this;
       let _urlservicebuf = getProtobufjsURL(this.props.chainId) + this.serviceState["org_id"] + "/" + this.serviceState["service_id"];
@@ -581,12 +578,9 @@ export  class Jobdetails extends React.Component {
 
   handleDateChange(e){
     let selectedDate = e.target.value;
-    
     let diff = new Date(selectedDate) - new Date();
     diff = Math.ceil(diff / (1000  * 15));
-    
     let ocexpiration = (this.currentBlockNumber + diff).toFixed(0);
- 
     this.setState({selectedDate, ocexpiration});
   }
   
