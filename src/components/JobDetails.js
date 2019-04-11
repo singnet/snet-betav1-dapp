@@ -364,8 +364,8 @@ export  class Jobdetails extends React.Component {
           this.onOpenEscrowBalanceAlert()
         } else {
           const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
-          if(this.state.ocexpiration < threshold) {
-            this.processChannelErrors("Block number provided should be greater than " + threshold + " for the service to accept the request");
+          if(new Date(this.state.selectedDate) < new Date(this.state.minExpDate)) {
+            this.processChannelErrors("The selected date provided should be greater than " + this.state.minExpDate + " for the service to accept the request");
             return;
           }
         
@@ -676,7 +676,7 @@ export  class Jobdetails extends React.Component {
                                         <div className="col-xs-12 col-md-12 no-padding"> 
                                           <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Date:
                                             <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
-                                                Expiry in terms of Ethereum block number. The channel becomes eligible for you to reclaim funds once the Ethereum block number exceeds the provided number. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current block number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number. </span>} >
+                                                The channel becomes eligible for you to reclaim funds after this date. In general agents will accept your request only if the expiry date is in the future. </span>} >
                                                 <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
                                             </Tooltip>       
                                           </div>            
@@ -696,7 +696,7 @@ export  class Jobdetails extends React.Component {
                                         <div className="col-xs-12 col-md-12 no-padding"> 
                                           <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Blocknumber:
                                             <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
-                                                Expiry in terms of Ethereum block number. The channel becomes eligible for you to reclaim funds once the Ethereum block number exceeds the provided number. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current block number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number. </span>} >
+                                                Expiry in terms of Ethereum block number.</span>} >
                                                 <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
                                             </Tooltip>       
                                           </div>            
