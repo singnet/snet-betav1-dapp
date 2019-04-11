@@ -103,7 +103,6 @@ export default class SNETImageUpload extends React.Component {
         // Setting minimum tab height
         this.tabHeight = Math.max(minimumTabHeight, this.props.tabHeight);
         this.dropzoneHeightOffset = 14;
-        this.handleDropzoneUpload = this.handleDropzoneUpload.bind(this);
 
         this.state = {
             // Component's flow of execution
@@ -180,11 +179,14 @@ export default class SNETImageUpload extends React.Component {
         this.outputImage = React.createRef();
 
         // Function binding
+        this.handleDropzoneUpload = this.handleDropzoneUpload.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.urlCallback = this.urlCallback.bind(this);
         this.sendData = this.sendData.bind(this);
         this.setInputImageDimensions = this.setInputImageDimensions.bind(this);
         this.setInitialImageXPosition = this.setInitialImageXPosition.bind(this);
+        this.setLoadingState = this.setLoadingState.bind(this);
+        this.setUploadedState = this.setUploadedState.bind(this);
     }
 
     // When props.outputImage changes, the component changes to the display mode.
@@ -284,47 +286,64 @@ export default class SNETImageUpload extends React.Component {
         })
     };
 
+    sendData(data = this.state.inputImageData, mimeType = this.state.mimeType, encoding = this.state.encoding, filename = this.state.filename) {
+        this.props.imageDataFunc(data, mimeType, encoding, filename);
+    };
+
+    setUploadedState(imageData, sendData, encoding) {
+        this.setState({
+            mainState: "uploaded", // initial, loading, uploaded
+            searchText: null,
+            inputImageData: data,
+            encoding: encoding,
+            displayError: false,
+            errorMessage: null,
+        }, function () {
+            this.sendData(data = sendData)
+        }.bind(this))
+    };
+
     /* ----------------
        - IMAGE UPLOAD -
     *  ----------------*/
-
-    sendData(data) {
-        this.props.imageDataFunc(data, this.state.mimeType, this.state.encoding, this.state.filename);
-    }
+    // sendData(data) {
+    //     this.props.imageDataFunc(data, this.state.mimeType, this.state.encoding, this.state.filename);
+    // }
 
     readerOnLoadEnd(data) {
-        this.setState({
-                mainState: "uploaded", // initial, loading, uploaded
-                searchText: null,
-                inputImageData: data,
-                encoding: "base64",
-            }, function () {
-                this.sendData(this.state.inputImageData.split(",")[1])
-            }.bind(this)
-        );
+        this.setUploadedState(data, data.split(",")[1],"base64");
+        // this.setState({
+        //         mainState: "uploaded", // initial, loading, uploaded
+        //         searchText: null,
+        //         inputImageData: data,
+        //         encoding: "base64",
+        //     }, function () {
+        //         this.sendData(this.state.inputImageData.split(",")[1])
+        //     }.bind(this)
+        // );
     }
 
     byteReaderOnLoadEnd(file) {
         let reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onloadend = function () {
-            this.setState({
-                mainState: "uploaded", // initial, loading, uploaded
-                searchText: null,
-                inputImageData: reader.result,
-                displayError: false,
-                errorMessage: null,
-            }, this.sendData(new Uint8Array(this.state.byteReader.result)))
-        }.bind(this);
+        reader.onloadend = function() {this.setUploadedState(reader.result, new Uint8Array(this.state.byteReader.result), "byteArray")}.bind(this);
+        // reader.onloadend = function () {
+        //     this.setState({
+        //         mainState: "uploaded", // initial, loading, uploaded
+        //         searchText: null,
+        //         inputImageData: reader.result,
+        //         displayError: false,
+        //         errorMessage: null,
+        //     }, this.sendData(data = new Uint8Array(this.state.byteReader.result)))
+        // }.bind(this);
     }
 
     handleImageUpload(files) {
-        this.setState({
-            mainState: "loading",
-        });
+        this.setLoadingState();
+
+        const file = files[0];
 
         // Checks file size
-        const file = files[0];
         if (file.size > this.props.maxImageSize) {
             this.setState({
                 mainState: "initial",
@@ -487,14 +506,14 @@ export default class SNETImageUpload extends React.Component {
         );
     }
 
-    //<label htmlFor='myInput' >
-
     /* --------------------
        - URL IMAGE SEARCH -
     *  --------------------*/
 
     sendImageURL(url) {
         const filename = url.substring(url.lastIndexOf("/") + 1);
+
+        this.setUploadedState(url, url, "url", mimeType, filename);
         this.setState({
             mainState: "uploaded",
 
@@ -1331,6 +1350,8 @@ SNETImageUpload.propTypes = {
     outputFormat: PropTypes.oneOf(["image/png", "image/jpg", "image/jpeg"]),
     allowedInputTypes: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
     maxImageSize: PropTypes.number, // 10 mb
+    maxImageWidth: PropTypes.number,
+    maxImageHeight: PropTypes.number,
     displayProportionalImage: PropTypes.bool,
     allowURL: PropTypes.bool,
     instantUrlFetch: PropTypes.bool,
