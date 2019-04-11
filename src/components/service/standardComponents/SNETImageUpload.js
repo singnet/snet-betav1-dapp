@@ -64,6 +64,37 @@ const minimumTabHeight = 160;
 
 export default class SNETImageUpload extends React.Component {
 
+    static getBase64ImageType(base64img){
+        // Extracts base64-encoded image's mime type
+
+        let mimeType;
+
+        if (base64img.charAt(0) === '/') {
+            mimeType = "image/jpeg";
+        } else if (base64img.charAt(0) === 'R') {
+            mimeType = "image/gif";
+        } else if (base64img.charAt(0) === 'i') {
+            mimeType = "image/png";
+        } else {
+            mimeType = "application/octet-stream"
+        }
+
+        return mimeType
+    }
+
+    static addBase64Header(mimeType, rawBase64){
+        //Adds headers to raw base64 encoded images so they can be displayed in an img tag
+
+        return "data:" + mimeType + ";base64," + rawBase64
+    }
+
+    static prepareBase64Image(base64img){
+        // Extracts image type and adds headers
+
+        let mimeType = SNETImageUpload.getBase64ImageType(base64img);
+        return SNETImageUpload.addBase64Header(mimeType, base64img)
+    }
+
     constructor(props) {
         super(props);
         // It is the same thing, only difference is Component where we do the binding.
@@ -76,11 +107,21 @@ export default class SNETImageUpload extends React.Component {
 
         this.state = {
             // Component's flow of execution
-            mainState: "initial", // initial, loading, uploaded, display
-            value: this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
-                (this.props.disableUploadTab + this.props.disableUrlTab)
-                :
-                0,
+            mainState: this.props.outputImage ? "display" : "initial", // initial, loading, uploaded, display
+            value:
+                this.props.outputImage ?
+                    this.props.disableOutputTab ?
+                        this.props.disableComparisonTab ?
+                            3
+                            :
+                            5
+                        :
+                        4
+                    :
+                    this.props.disableUploadTab ? // Logic for defining the initial tab depending on which are available
+                        (this.props.disableUploadTab + this.props.disableUrlTab)
+                        :
+                        0,
             searchText: null,
             errorMessage: null,
             displayError: false,
@@ -98,9 +139,10 @@ export default class SNETImageUpload extends React.Component {
             imageXPosition: undefined, // arbitrary, will be set properly
             dividerXPosition: this.props.width / 2,
             displayModeTitle: this.props.displayModeTitle,
-            outputImage: this.props.outputImage,
+            outputImage: this.props.outputImage && SNETImageUpload.prepareBase64Image(this.props.outputImage),
             outputImageName: this.props.outputImageName,
         };
+
         this.tabStyle = {
             position: 'relative',
             overflow: 'hidden',
@@ -151,30 +193,21 @@ export default class SNETImageUpload extends React.Component {
 
         //"data:" + this.state.outputImageMimeType + ";base64," +
         if (nextProps.outputImage) {
-            if(nextProps.outputImage !== this.props.outputImage){
-                // Extracts base64-encoded image's mime type
-                if(nextProps.outputImageMimeType === undefined){
-                    if(nextProps.outputImage.charAt(0) === '/'){
-                        mimeType = "image/jpeg";
-                    }else if(nextProps.outputImage.charAt(0) === 'R'){
-                        mimeType = "image/gif";
-                    }else if(nextProps.outputImage.charAt(0) === 'i'){
-                        mimeType = "image/png";
-                    }else{
-                        mimeType = "application/octet-stream"
-                    }
+            if (nextProps.outputImage !== this.props.outputImage) {
+                if (nextProps.outputImageMimeType === undefined) {
+                    mimeType = SNETImageUpload.getBase64ImageType(nextProps.outputImage);
                 } else {
                     mimeType = nextProps.outputImageMimeType;
                 }
 
                 this.setState({
                     displayModeTitle: nextProps.displayModeTitle,
-                    outputImage: "data:" + mimeType + ";base64," + nextProps.outputImage,
+                    outputImage: SNETImageUpload.addBase64Header(mimeType, nextProps.outputImage),
                     outputImageMimeType: mimeType,
                     outputImageName: nextProps.outputImageName,
                     mainState: "display",
-                    value: nextProps.disableOutputTab?
-                        nextProps.disableComparisonTab?
+                    value: nextProps.disableOutputTab ?
+                        nextProps.disableComparisonTab ?
                             3
                             :
                             5
@@ -183,7 +216,7 @@ export default class SNETImageUpload extends React.Component {
                 });
             }
         } else { // Resets component if outputImage is empty again
-            if (this.props.outputImage){
+            if (this.props.outputImage) {
                 this.setState({
                     // Component's flow of execution
                     mainState: "initial", // initial, loading, uploaded, display
@@ -1027,7 +1060,7 @@ export default class SNETImageUpload extends React.Component {
         })
     }
 
-    setInitialImageXPosition(){
+    setInitialImageXPosition() {
         this.setState({
             imageXPosition: this.outputImage.current.clientWidth / 2,
         })
@@ -1194,14 +1227,16 @@ export default class SNETImageUpload extends React.Component {
                                              label={<span style={this.tabLabelStyle}>Gallery</span>}/>}
                                         {(this.state.mainState === "display") && !(this.props.disableInputTab) &&
                                         <Tab style={{minWidth: '5%'}} value={3}
-                                             label={<span style={this.tabLabelStyle}>{this.props.inputTabTitle}</span>}/>}
+                                             label={<span
+                                                 style={this.tabLabelStyle}>{this.props.inputTabTitle}</span>}/>}
                                         {(this.state.mainState === "display") && (!this.props.disableOutputTab) &&
                                         <Tab style={{minWidth: '5%'}} value={4}
                                              label={<span
                                                  style={this.tabLabelStyle}>{this.props.outputTabTitle}</span>}/>}
                                         {this.state.mainState === "display" && !this.props.disableComparisonTab &&
                                         <Tab style={{minWidth: '5%'}} value={5}
-                                             label={<span style={this.tabLabelStyle}>{this.props.comparisonTabTitle}</span>}/>}
+                                             label={<span
+                                                 style={this.tabLabelStyle}>{this.props.comparisonTabTitle}</span>}/>}
                                     </Tabs>
                                 </MuiThemeProvider>
                             </Grid>
