@@ -1730,7 +1730,7 @@ i {
   .hamburger-menu { display: block; }
   .navigation { display: none; }
   .agent-detail { height: auto; }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media only screen and (max-width: 768px) {
@@ -1859,7 +1859,7 @@ i {
     margin-top: 25px;
     padding:15px!important;
   }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media only screen and (max-width: 667px) {
@@ -2009,7 +2009,7 @@ i {
     border-top: 1px solid #8dbbf0;
     width: 50%
   }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 /* Hamburger stying */
@@ -2076,7 +2076,7 @@ i {
   .navigation { display: none; }
 
   .agent-detail { height: auto; }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width: 564px){
@@ -2087,7 +2087,7 @@ i {
 
   .service-agents { font-size: 16px; }
   .search-bar input { width: 100%; }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width: 535px){
@@ -2102,18 +2102,18 @@ i {
     text-align: left;
     display: block; 
   }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media screen and (max-height: 450px) {
   .sidenav { padding-top: 1.5rem; }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width: 399px){
   .header-menu { width: 100%; }
   .header-menu .get-started { float: right !important; }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width: 380px){
@@ -2122,23 +2122,18 @@ i {
   .expiry-block-data,
   .data-on-expand,
   .claim-channel-btn span {font-size: 12px !important; }
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width:360px) { 
   .header-menu { top: 31px; } 
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
 }
 /*# sourceMappingURL=style.css.map */
 
 /* Expiry Date picker starts  */
-  .MuiInputBase-input-308,
-  .MuiInput-input-293,
-  .MuiInputBase-disabled-301,
-  .MuiInput-disabled-288,
-  .MuiInputBase-inputType-311,
-  .MuiInput-inputType-296,
-  .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,
+  .MuiInputBase-input-360, .MuiInput-input-345, .MuiInputBase-inputType-363, .MuiInput-inputType-348,   .MuiInputBase-input-308,   .MuiInput-input-293,   .MuiInputBase-disabled-301,   .MuiInput-disabled-288,   .MuiInputBase-inputType-311,   .MuiInput-inputType-296,   .MuiInputBase-root-191{font-size: 14px !important;}
   input[type=date]::-webkit-clear-button {
   display: none;
 }

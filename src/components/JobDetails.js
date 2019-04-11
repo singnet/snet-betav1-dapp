@@ -687,8 +687,11 @@ export  class Jobdetails extends React.Component {
                                               value={this.state.selectedDate}
                                               onChange={this.handleDateChange}
                                               disabled={!this.state.fundTabEnabled}
+                                              className="datepicker-textfield"
                                               inputProps={{
-                                                min:this.state.minExpDate
+                                                id:"datepicker-input",
+                                                min:this.state.minExpDate,
+                                                onKeyDown:(e)=>{e.preventDefault();},
                                               }}
                                             />
                                           </div>
