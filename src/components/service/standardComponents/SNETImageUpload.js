@@ -290,12 +290,14 @@ export default class SNETImageUpload extends React.Component {
         this.props.imageDataFunc(data, mimeType, encoding, filename);
     };
 
-    setUploadedState(imageData, sendData, encoding) {
+    setUploadedState(imageData, sendData, encoding, mimeType, filename) {
         this.setState({
             mainState: "uploaded", // initial, loading, uploaded
             searchText: null,
             inputImageData: data,
+            mimeType: mimeType,
             encoding: encoding,
+            filename : filename,
             displayError: false,
             errorMessage: null,
         }, function () {
@@ -326,7 +328,7 @@ export default class SNETImageUpload extends React.Component {
     byteReaderOnLoadEnd(file) {
         let reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onloadend = function() {this.setUploadedState(reader.result, new Uint8Array(this.state.byteReader.result), "byteArray")}.bind(this);
+        reader.onloadend = function() {this.setUploadedState(reader.result, new Uint8Array(this.state.byteReader.result), "byteArray", file.type, file.name)}.bind(this);
         // reader.onloadend = function () {
         //     this.setState({
         //         mainState: "uploaded", // initial, loading, uploaded
@@ -394,20 +396,21 @@ export default class SNETImageUpload extends React.Component {
         let reader = new FileReader();
         reader.onloadend = function () {
             this.setState({
-                filename: file.name,
-                mimeType: file.type,
+                // filename: file.name,
+                // mimeType: file.type,
                 base64Reader: reader
             });
-            this.readerOnLoadEnd(this.state.base64Reader.result)
+            this.setUploadedState(data, data.split(",")[1], "base64", file.type, file.name)
+            // this.readerOnLoadEnd(this.state.base64Reader.result)
         }.bind(this);
 
         let byteReader = new FileReader();
         byteReader.onloadend = function () {
             this.setState({
                 byteReader: byteReader,
-                mimeType: file.type,
-                encoding: "byteArray",
-                filename: file.name,
+                // mimeType: file.type,
+                // encoding: "byteArray",
+                // filename: file.name,
             });
             this.byteReaderOnLoadEnd(file)
         }.bind(this);
@@ -513,49 +516,52 @@ export default class SNETImageUpload extends React.Component {
     sendImageURL(url) {
         const filename = url.substring(url.lastIndexOf("/") + 1);
 
-        this.setUploadedState(url, url, "url", mimeType, filename);
-        this.setState({
-            mainState: "uploaded",
-
-            inputImageData: url,
-            mimeType: null,
-            encoding: "url",
-            filename: filename,
-
-            searchText: null,
-        }, function () {
-            this.sendData(this.state.inputImageData)
-        }.bind(this));
+        this.setUploadedState(url, url, "url", null, filename);
+        // this.setState({
+        //     mainState: "uploaded",
+        //
+        //     inputImageData: url,
+        //     mimeType: null,
+        //     encoding: "url",
+        //     filename: filename,
+        //
+        //     searchText: null,
+        // }, function () {
+        //     this.sendData(this.state.inputImageData)
+        // }.bind(this));
     }
 
     urlCallback(data, outputFormat, filename) {
-        this.setState({
-            mainState: "uploaded",
-
-            inputImageData: data,
-            mimeType: outputFormat,
-            encoding: "base64",
-            filename: filename,
-
-            searchText: null,
-        }, function () {
-            this.sendData(this.state.inputImageData.split(",")[1])
-        }.bind(this));
+        this.setUploadedState(data, data.split(",")[1], "base64", outputFormat, filename);
+        // this.setState({
+        //     mainState: "uploaded",
+        //
+        //     inputImageData: data,
+        //     mimeType: outputFormat,
+        //     encoding: "base64",
+        //     filename: filename,
+        //
+        //     searchText: null,
+        // }, function () {
+        //     this.sendData(this.state.inputImageData.split(",")[1])
+        // }.bind(this));
     };
 
     urlByteReaderOnLoadEnd(dataURL, filename) {
-        this.setState({
-            mainState: "uploaded",
-            inputImageData: dataURL,
-            mimeType: this.props.outputFormat,
-            encoding: "byteArray",
-            filename: filename,
-            searchText: null,
-            displayError: false,
-            errorMessage: null,
-        }, function () {
-            this.sendData(new Uint8Array(this.state.byteReader.result))
-        }.bind(this));
+        const sendData = new Uint8Array(this.state.byteReader.result);
+        this.setUploadedState(dataURL, sendData, "byteArray", this.props.outputFormat, filename);
+        // this.setState({
+        //     mainState: "uploaded",
+        //     inputImageData: dataURL,
+        //     mimeType: this.props.outputFormat,
+        //     encoding: "byteArray",
+        //     filename: filename,
+        //     searchText: null,
+        //     displayError: false,
+        //     errorMessage: null,
+        // }, function () {
+        //     this.sendData(new Uint8Array(this.state.byteReader.result))
+        // }.bind(this));
     }
 
     toDataUrl(src, callback, outputFormat) {
