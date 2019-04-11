@@ -2137,7 +2137,9 @@ i {
 
 /* Expiry Date picker starts  */
 
-  
+#datepicker-input{
+  font-size: 14px;
+}  
 input[type=date]::-webkit-clear-button {
   display: none;
 }
