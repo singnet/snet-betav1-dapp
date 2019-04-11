@@ -2132,6 +2132,9 @@ i {
 .qc-cmp-persistent-link {
   display: none !important;
 }
+
+/* gdpr styling ends */
+
 /* Expiry Date picker starts  */
 
   
@@ -2147,4 +2150,3 @@ input[type=date]::-webkit-clear-button {
 }
 /* Expiry Date picker ends  */
 
-/* gdpr styling ends */
