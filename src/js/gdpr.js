@@ -1,4 +1,4 @@
-export default   function(){console.log('gdpr scripts starts');
+export default   function(){
     var elem = document.createElement('script');
     elem.src = 'https://quantcast.mgr.consensu.org/cmp.js';
     elem.async = true;
@@ -86,5 +86,5 @@ export default   function(){console.log('gdpr scripts starts');
 		'Publisher Purpose IDs': [1,2,3,4,5],
 		'No Option': false,
     });
-    console.log('gdpr scripts ends');}
+    }
 

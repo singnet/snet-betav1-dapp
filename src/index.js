@@ -10,7 +10,6 @@ import GetStarted from "./components/GetStarted.js";
 import Footer from './components/Footer.js';
 import GDPR from './js/gdpr';
 
-
 require('./css/style.css');
 require('./css/background.css');
 require('./css/profile.css');
