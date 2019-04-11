@@ -2135,9 +2135,11 @@ i {
 input[type=date]::-webkit-clear-button {
   display: none;
 }
-input[type=date]::-webkit-calendar-picker-indicator,
+input[type=date]::-webkit-calendar-picker-indicator{
+  opacity: 1;
+}
 input[type=date]::-webkit-inner-spin-button,
 input[type=date]::-webkit-outer-spin-button {
-   opacity: 1;
+   display: none;
 }
 /* Expiry Date picker ends  */
