@@ -18,7 +18,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 import {serviceStateJSON} from '../service_state'
 import GRPCProtoV3Spec from "../models/GRPCProtoV3Spec";
 import { TextField } from '@material-ui/core/es';
-import { DatePicker } from "material-ui-pickers";
 
 const minSliderWidth='550px';
 const maxSliderWidth ='100%';
