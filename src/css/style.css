@@ -2132,17 +2132,12 @@ i {
 
 /* Expiry Date picker starts  */
 .MuiInputBase-root-191{font-size: 14px !important;}
-input[type="date"]::-webkit-clear-button {
+input[type=date]::-webkit-clear-button {
   display: none;
 }
-/* clears the 'X' from Internet Explorer
-input[type=date]::-ms-clear {  display: none; width : 0; height: 0; }
-input[type=date]::-ms-reveal {  display: none; width : 0; height: 0; }
-
-/* clears the 'X' from Chrome */
-/* input[type="date"]::-webkit-search-decoration,
-input[type="date"]::-webkit-search-cancel-button,
-input[type="date"]::-webkit-search-results-button,
-input[type="date"]::-webkit-search-results-decoration { display: none; } */ 
-
+input[type=date]::-webkit-calendar-picker-indicator,
+input[type=date]::-webkit-inner-spin-button,
+input[type=date]::-webkit-outer-spin-button {
+   opacity: 1;
+}
 /* Expiry Date picker ends  */
