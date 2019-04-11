@@ -1730,6 +1730,7 @@ i {
   .hamburger-menu { display: block; }
   .navigation { display: none; }
   .agent-detail { height: auto; }
+  .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media only screen and (max-width: 768px) {
@@ -1858,6 +1859,7 @@ i {
     margin-top: 25px;
     padding:15px!important;
   }
+  .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media only screen and (max-width: 667px) {
@@ -2073,6 +2075,7 @@ i {
   .navigation { display: none; }
 
   .agent-detail { height: auto; }
+  .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width: 564px){
@@ -2083,6 +2086,7 @@ i {
 
   .service-agents { font-size: 16px; }
   .search-bar input { width: 100%; }
+  .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width: 535px){
@@ -2097,15 +2101,18 @@ i {
     text-align: left;
     display: block; 
   }
+  .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media screen and (max-height: 450px) {
   .sidenav { padding-top: 1.5rem; }
+  .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width: 399px){
   .header-menu { width: 100%; }
   .header-menu .get-started { float: right !important; }
+  .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
 @media(max-width: 380px){
@@ -2114,7 +2121,28 @@ i {
   .expiry-block-data,
   .data-on-expand,
   .claim-channel-btn span {font-size: 12px !important; }
+  .MuiInputBase-root-191{font-size: 14px !important;}
 }
 
-@media(max-width:360px) { .header-menu { top: 31px; } }
+@media(max-width:360px) { 
+  .header-menu { top: 31px; } 
+  .MuiInputBase-root-191{font-size: 14px !important;}
+}
 /*# sourceMappingURL=style.css.map */
+
+/* Expiry Date picker starts  */
+.MuiInputBase-root-191{font-size: 14px !important;}
+input[type="date"]::-webkit-clear-button {
+  display: none;
+}
+/* clears the 'X' from Internet Explorer
+input[type=date]::-ms-clear {  display: none; width : 0; height: 0; }
+input[type=date]::-ms-reveal {  display: none; width : 0; height: 0; }
+
+/* clears the 'X' from Chrome */
+/* input[type="date"]::-webkit-search-decoration,
+input[type="date"]::-webkit-search-cancel-button,
+input[type="date"]::-webkit-search-results-button,
+input[type="date"]::-webkit-search-results-decoration { display: none; } */ 
+
+/* Expiry Date picker ends  */

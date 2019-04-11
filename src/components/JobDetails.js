@@ -17,9 +17,18 @@ import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
 import {serviceStateJSON} from '../service_state'
 import GRPCProtoV3Spec from "../models/GRPCProtoV3Spec";
+import { TextField } from '@material-ui/core/es';
+import { DatePicker } from "material-ui-pickers";
 
 const minSliderWidth='550px';
 const maxSliderWidth ='100%';
+
+const formatDate = date =>{
+  let year = date.getFullYear();
+  let month = date.getMonth() < 10 ? `0${date.getMonth()+1}`:date.getMonth();
+  let day = date.getDate() <10 ? `0${date.getDate()}`:date.getDate();
+  return `${year}-${month}-${day}`
+}
 
 export  class Jobdetails extends React.Component {
     constructor() {
@@ -39,6 +48,8 @@ export  class Jobdetails extends React.Component {
         showModal:false,
         sliderWidth:minSliderWidth,
         showEscrowBalanceAlert:false,
+        selectedDate: formatDate(new Date()),
+        minExpDate:formatDate(new Date())
       };
 
       this.chainMessage = "";
@@ -54,6 +65,7 @@ export  class Jobdetails extends React.Component {
       this.onResizeJobDetailsSlider = this.onResizeJobDetailsSlider.bind(this);
       this.changeocvalue = this.changeocvalue.bind(this);
       this.changeocexpiration = this.changeocexpiration.bind(this);
+      this.initExpBlockDate = this.initExpBlockDate.bind(this);
       this.openchannelhandler = this.openchannelhandler.bind(this);
       this.handleJobInvocation = this.handleJobInvocation.bind(this);
       this.startjob = this.startjob.bind(this);
@@ -62,6 +74,7 @@ export  class Jobdetails extends React.Component {
       this.onShowModal = this.onShowModal.bind(this)
       this.onCloseModal = this.onCloseModal.bind(this)  
       this.watchBlocknumberTimer = undefined;
+      this.handleDateChange = this.handleDateChange.bind(this);
     }
 
     watchBlocknumber() {
@@ -76,6 +89,7 @@ export  class Jobdetails extends React.Component {
         clearInterval(this.watchBlocknumberTimer);
       }
     }  
+
 
     nextJobStep() {
       this.onCloseModal()
@@ -92,7 +106,23 @@ export  class Jobdetails extends React.Component {
                           '&org_id='+this.serviceState["org_id"];
       return this.channelHelper.reInitialize(channelInfoUrl);
     }
+    initExpBlockDate(setMinExpDate=false){
 
+      let expBlockNumber =  this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET;
+      let expDays = Math.ceil(expBlockNumber *15/(24 * 3600));
+      let expDate = new Date();
+      expDate.setDate(expDate.getDate()+expDays);
+
+      let selectedDate = formatDate(expDate);
+      if(setMinExpDate){
+        let minExpDate = formatDate(expDate);
+        this.setState({selectedDate,minExpDate});
+        return;
+      }
+      this.setState({selectedDate});
+
+
+    }
     fetchServiceSpec() {
       var caller = this;
       let _urlservicebuf = getProtobufjsURL(this.props.chainId) + this.serviceState["org_id"] + "/" + this.serviceState["service_id"];
@@ -518,6 +548,7 @@ export  class Jobdetails extends React.Component {
     onOpenJobDetails(data) {
       (data.hasOwnProperty('tags'))?this.setState({tagsall:data["tags"]}):this.setState({tagsall:[]})
       this.serviceState = data;
+      this.initExpBlockDate(true);
       this.setState({jobDetailsSliderOpen: true });
       this.seedDefaultValues(false,0);
             
@@ -547,6 +578,17 @@ export  class Jobdetails extends React.Component {
     this.setState({showEscrowBalanceAlert: false})
     this.onCloseJobDetailsSlider()
     this.props.history.push("/Account")
+  }
+
+  handleDateChange(e){
+    let selectedDate = e.target.value;
+    
+    let diff = new Date(selectedDate) - new Date();
+    diff = Math.ceil(diff / (1000  * 15));
+    
+    let ocexpiration = (this.currentBlockNumber + diff).toFixed(0);
+ 
+    this.setState({selectedDate, ocexpiration});
   }
   
     render()
@@ -639,6 +681,26 @@ export  class Jobdetails extends React.Component {
                                           </div>
                                         </div>
                                         <div className="col-xs-12 col-md-12 no-padding"> 
+                                          <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Date:
+                                            <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
+                                                Expiry in terms of Ethereum block number. The channel becomes eligible for you to reclaim funds once the Ethereum block number exceeds the provided number. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current block number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number. </span>} >
+                                                <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                            </Tooltip>       
+                                          </div>            
+                                          <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
+                                          <TextField
+                                              id="date"
+                                              type="date"
+                                              value={this.state.selectedDate}
+                                              onChange={this.handleDateChange}
+                                              disabled={!this.state.fundTabEnabled}
+                                              inputProps={{
+                                                min:this.state.minExpDate
+                                              }}
+                                            />
+                                          </div>
+                                        </div>
+                                        <div className="col-xs-12 col-md-12 no-padding"> 
                                           <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Blocknumber:
                                             <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
                                                 Expiry in terms of Ethereum block number. The channel becomes eligible for you to reclaim funds once the Ethereum block number exceeds the provided number. Do note that for agents to accept your channel the expiry block number should be sufficiently ahead of the current block number. In general agents will only accept your request if the expiry block number is atleast a full day ahead of the current block number. </span>} >
@@ -646,7 +708,7 @@ export  class Jobdetails extends React.Component {
                                             </Tooltip>       
                                           </div>            
                                           <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
-                                            <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled={!this.state.fundTabEnabled}/>
+                                            <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled/>
                                           </div>
                                         </div>
                                         <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
