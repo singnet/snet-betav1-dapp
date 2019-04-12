@@ -64,7 +64,7 @@ const minimumTabHeight = 160;
 
 export default class SNETImageUpload extends React.Component {
 
-    static getBase64ImageType(base64img){
+    static getBase64ImageType(base64img) {
         // Extracts base64-encoded image's mime type
 
         let mimeType;
@@ -82,13 +82,13 @@ export default class SNETImageUpload extends React.Component {
         return mimeType
     }
 
-    static addBase64Header(mimeType, rawBase64){
+    static addBase64Header(mimeType, rawBase64) {
         //Adds headers to raw base64 encoded images so they can be displayed in an img tag
 
         return "data:" + mimeType + ";base64," + rawBase64
     }
 
-    static prepareBase64Image(base64img){
+    static prepareBase64Image(base64img) {
         // Extracts image type and adds headers
 
         let mimeType = SNETImageUpload.getBase64ImageType(base64img);
@@ -179,14 +179,17 @@ export default class SNETImageUpload extends React.Component {
         this.outputImage = React.createRef();
 
         // Function binding
-        this.handleDropzoneUpload = this.handleDropzoneUpload.bind(this);
+        // this.handleDropzoneUpload = this.handleDropzoneUpload.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
-        this.urlCallback = this.urlCallback.bind(this);
+        this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
+        // this.urlCallback = this.urlCallback.bind(this);
         this.sendData = this.sendData.bind(this);
         this.setInputImageDimensions = this.setInputImageDimensions.bind(this);
         this.setInitialImageXPosition = this.setInitialImageXPosition.bind(this);
         this.setLoadingState = this.setLoadingState.bind(this);
         this.setUploadedState = this.setUploadedState.bind(this);
+        this.toDataUrl = this.toDataUrl.bind(this);
+        this.searchTextUpdate = this.searchTextUpdate.bind(this)
     }
 
     // When props.outputImage changes, the component changes to the display mode.
@@ -288,20 +291,22 @@ export default class SNETImageUpload extends React.Component {
 
     sendData(data = this.state.inputImageData, mimeType = this.state.mimeType, encoding = this.state.encoding, filename = this.state.filename) {
         this.props.imageDataFunc(data, mimeType, encoding, filename);
+        console.log("Sent:\n" + data)
     };
 
     setUploadedState(imageData, sendData, encoding, mimeType, filename) {
+        console.log("setUploadedState received: " + imageData);
         this.setState({
             mainState: "uploaded", // initial, loading, uploaded
             searchText: null,
-            inputImageData: data,
+            inputImageData: imageData,
             mimeType: mimeType,
             encoding: encoding,
-            filename : filename,
+            filename: filename,
             displayError: false,
             errorMessage: null,
         }, function () {
-            this.sendData(data = sendData)
+            this.sendData(sendData)
         }.bind(this))
     };
 
@@ -312,23 +317,25 @@ export default class SNETImageUpload extends React.Component {
     //     this.props.imageDataFunc(data, this.state.mimeType, this.state.encoding, this.state.filename);
     // }
 
-    readerOnLoadEnd(data) {
-        this.setUploadedState(data, data.split(",")[1],"base64");
-        // this.setState({
-        //         mainState: "uploaded", // initial, loading, uploaded
-        //         searchText: null,
-        //         inputImageData: data,
-        //         encoding: "base64",
-        //     }, function () {
-        //         this.sendData(this.state.inputImageData.split(",")[1])
-        //     }.bind(this)
-        // );
-    }
+    // readerOnLoadEnd(data) {
+    //     this.setUploadedState(data, data.split(",")[1],"base64");
+    // this.setState({
+    //         mainState: "uploaded", // initial, loading, uploaded
+    //         searchText: null,
+    //         inputImageData: data,
+    //         encoding: "base64",
+    //     }, function () {
+    //         this.sendData(this.state.inputImageData.split(",")[1])
+    //     }.bind(this)
+    // );
+    // }
 
     byteReaderOnLoadEnd(file) {
         let reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onloadend = function() {this.setUploadedState(reader.result, new Uint8Array(this.state.byteReader.result), "byteArray", file.type, file.name)}.bind(this);
+        reader.onloadend = function () {
+            this.setUploadedState(reader.result, new Uint8Array(this.state.byteReader.result), "byteArray", file.type, file.name)
+        }.bind(this);
         // reader.onloadend = function () {
         //     this.setState({
         //         mainState: "uploaded", // initial, loading, uploaded
@@ -340,7 +347,9 @@ export default class SNETImageUpload extends React.Component {
         // }.bind(this);
     }
 
-    handleImageUpload(files) {
+    handleImageUpload(files, event) {
+        event.preventDefault();
+        event.stopPropagation();
         this.setLoadingState();
 
         const file = files[0];
@@ -399,8 +408,9 @@ export default class SNETImageUpload extends React.Component {
                 // filename: file.name,
                 // mimeType: file.type,
                 base64Reader: reader
-            });
-            this.setUploadedState(data, data.split(",")[1], "base64", file.type, file.name)
+            }, function () {
+                this.setUploadedState(this.state.base64Reader.result, this.state.base64Reader.result.split(",")[1], "base64", file.type, file.name)
+            }.bind(this))
             // this.readerOnLoadEnd(this.state.base64Reader.result)
         }.bind(this);
 
@@ -422,12 +432,12 @@ export default class SNETImageUpload extends React.Component {
         }
     }
 
-    handleDropzoneUpload(files, event) {
-        // To prevent default behavior (browser navigating to the dropped file)
-        event.preventDefault();
-        event.stopPropagation();
-        this.handleImageUpload(files);
-    };
+    // handleDropzoneUpload(files, event) {
+    //     // To prevent default behavior (browser navigating to the dropped file)
+    //     event.preventDefault();
+    //     event.stopPropagation();
+    //     this.handleImageUpload(files);
+    // };
 
     renderUploadTab() {
 
@@ -437,12 +447,12 @@ export default class SNETImageUpload extends React.Component {
                 item
                 xs={12}
             >
-                <FileDrop onDrop={(files, event) => this.handleDropzoneUpload(files, event)}>
+                <FileDrop onDrop={(files, event) => this.handleImageUpload(files, event)}>
                     <input id="myInput"
                            type="file"
                            style={{display: 'none'}}
                            accept={this.props.allowedInputTypes}
-                           onChange={(e) => this.handleImageUpload(e.target.files)}
+                           onChange={(e) => this.handleImageUpload(e.target.files, e)}
                            ref={input => this.inputElement = input}
                     />
                     <div
@@ -513,67 +523,70 @@ export default class SNETImageUpload extends React.Component {
        - URL IMAGE SEARCH -
     *  --------------------*/
 
-    sendImageURL(url) {
-        const filename = url.substring(url.lastIndexOf("/") + 1);
+    // sendImageURL(url) {
+    //     const filename = url.substring(url.lastIndexOf("/") + 1);
+    //
+    //     this.setUploadedState(url, url, "url", null, filename);
+    // this.setState({
+    //     mainState: "uploaded",
+    //
+    //     inputImageData: url,
+    //     mimeType: null,
+    //     encoding: "url",
+    //     filename: filename,
+    //
+    //     searchText: null,
+    // }, function () {
+    //     this.sendData(this.state.inputImageData)
+    // }.bind(this));
+    // }
 
-        this.setUploadedState(url, url, "url", null, filename);
-        // this.setState({
-        //     mainState: "uploaded",
-        //
-        //     inputImageData: url,
-        //     mimeType: null,
-        //     encoding: "url",
-        //     filename: filename,
-        //
-        //     searchText: null,
-        // }, function () {
-        //     this.sendData(this.state.inputImageData)
-        // }.bind(this));
-    }
+    // urlCallback(data, outputFormat, filename) {
+    //     this.setUploadedState(data, data.split(",")[1], "base64", outputFormat, filename);
+    // this.setState({
+    //     mainState: "uploaded",
+    //
+    //     inputImageData: data,
+    //     mimeType: outputFormat,
+    //     encoding: "base64",
+    //     filename: filename,
+    //
+    //     searchText: null,
+    // }, function () {
+    //     this.sendData(this.state.inputImageData.split(",")[1])
+    // }.bind(this));
+    // };
 
-    urlCallback(data, outputFormat, filename) {
-        this.setUploadedState(data, data.split(",")[1], "base64", outputFormat, filename);
-        // this.setState({
-        //     mainState: "uploaded",
-        //
-        //     inputImageData: data,
-        //     mimeType: outputFormat,
-        //     encoding: "base64",
-        //     filename: filename,
-        //
-        //     searchText: null,
-        // }, function () {
-        //     this.sendData(this.state.inputImageData.split(",")[1])
-        // }.bind(this));
-    };
+    // urlByteReaderOnLoadEnd(dataURL, filename) {
+    //     const sendData = new Uint8Array(this.state.byteReader.result);
+    //     this.setUploadedState(dataURL, sendData, "byteArray", this.props.outputFormat, filename);
+    //
+    //     // this.setState({
+    //     //     mainState: "uploaded",
+    //     //     inputImageData: dataURL,
+    //     //     mimeType: this.props.outputFormat,
+    //     //     encoding: "byteArray",
+    //     //     filename: filename,
+    //     //     searchText: null,
+    //     //     displayError: false,
+    //     //     errorMessage: null,
+    //     // }, function () {
+    //     //     this.sendData(new Uint8Array(this.state.byteReader.result))
+    //     // }.bind(this));
+    // }
 
-    urlByteReaderOnLoadEnd(dataURL, filename) {
-        const sendData = new Uint8Array(this.state.byteReader.result);
-        this.setUploadedState(dataURL, sendData, "byteArray", this.props.outputFormat, filename);
-        // this.setState({
-        //     mainState: "uploaded",
-        //     inputImageData: dataURL,
-        //     mimeType: this.props.outputFormat,
-        //     encoding: "byteArray",
-        //     filename: filename,
-        //     searchText: null,
-        //     displayError: false,
-        //     errorMessage: null,
-        // }, function () {
-        //     this.sendData(new Uint8Array(this.state.byteReader.result))
-        // }.bind(this));
-    }
-
-    toDataUrl(src, callback, outputFormat) {
+    toDataUrl(src, outputFormat) {
         const filename = src.substring(src.lastIndexOf("/") + 1);
         const img = new Image();
+        const callback = this.setUploadedState;
         let dataURL;
 
         // Only triggered if returnByteArray === true
         let byteReader = new FileReader();
         byteReader.onloadend = function () {
             this.setState({byteReader: byteReader});
-            this.urlByteReaderOnLoadEnd(dataURL, filename)
+            this.setUploadedState(dataURL, new Uint8Array(this.state.byteReader.result), "byteArray", this.props.outputFormat, filename)
+            // this.urlByteReaderOnLoadEnd(dataURL, filename)
         }.bind(this);
 
         img.crossOrigin = 'anonymous';
@@ -613,7 +626,7 @@ export default class SNETImageUpload extends React.Component {
                 canvas.width = this.naturalWidth;
                 context.drawImage(this, 0, 0);
                 dataURL = canvas.toDataURL(outputFormat);
-                callback(dataURL, outputFormat, filename);
+                callback(dataURL, dataURL.split(",")[1], "base64", outputFormat, filename);
             };
         }
         img.src = src;
@@ -623,24 +636,41 @@ export default class SNETImageUpload extends React.Component {
         }
     };
 
+    // urlCallback(data, outputFormat, filename) {
+    //     this.setUploadedState(data, data.split(",")[1], "base64", outputFormat, filename);
+
+
     searchTextUpdate(event) {
+        console.log("InstantURL Fetch: " + this.props.instantUrlFetch + "\nCondition: " +( this.props.instantUrlFetch && (this.state.searchText !== null)));
         this.setState({
-            searchText: event.target.value,
-        }, this.props.instantUrlFetch ? this.handleSearchSubmit.bind(this) : function () {
-            return 0
-        });
+                searchText: event.target.value,
+            }, this.props.instantUrlFetch ?
+            this.handleSearchSubmit : () => {console.log("Identified false condition. Search text: " + this.state.searchText)}
+        );
     };
 
-    handleSearchSubmit() {
-        // Does nothing if input is null
-        if (this.state.searchText !== null) {
-            this.setLoadingState();
-            const url = this.state.searchText;
-            // Directly sends data URL if allowed. Else, tries to convert image to base64
-            this.props.allowURL ?
-                this.sendImageURL(url) : this.toDataUrl(url, this.urlCallback, this.props.outputFormat)
+    handleSearchSubmit(image = null) {
+        console.log("Still called handle seach submit");
+        this.setLoadingState();
+
+        let url;
+        if (image) { // Gallery mode
+            url = image.url;
+        } else { // URL mode
+            if (this.state.searchText !== null){
+                url = this.state.searchText;
+            } else {
+                return
+            }
         }
+        // Directly sends data URL if allowed. Else, tries to convert image to base64
+        this.props.allowURL ?
+            this.setUploadedState(url, url, "url", null, url.substring(url.lastIndexOf("/") + 1))
+            :
+            // this.toDataUrl(url, this.urlCallback, this.props.outputFormat)
+            this.toDataUrl(url, this.props.outputFormat)
     };
+
 
     renderUrlTab() {
 
@@ -670,7 +700,7 @@ export default class SNETImageUpload extends React.Component {
                             variant="outlined"
                             type="text"
                             label={<span style={{fontWeight: 'normal', fontSize: 12}}>Image URL</span>}
-                            onChange={this.searchTextUpdate.bind(this)}
+                            onChange={this.searchTextUpdate}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -679,7 +709,10 @@ export default class SNETImageUpload extends React.Component {
                                                 color: this.mainColor,
 
                                             }}
-                                            onClick={this.handleSearchSubmit.bind(this)}
+                                            onClick={
+                                                this.state.searchText !== null ?
+                                                    () => this.handleSearchSubmit(null) : undefined
+                                            }
                                         >
                                             <SearchIcon/>
                                         </IconButton>
@@ -697,13 +730,15 @@ export default class SNETImageUpload extends React.Component {
        - IMAGE GALLERY -
     *  -----------------*/
 
-    handleGalleryImageClick(image) {
-        this.setLoadingState();
-        const url = image.url;
-        // Directly sends data URL if allowed. Else, tries to convert image to base64
-        this.props.allowURL ?
-            this.sendImageURL(url) : this.toDataUrl(url, this.urlCallback, this.props.outputFormat)
-    };
+    // handleGalleryImageClick(image) {
+    //     this.setLoadingState();
+    //     const url = image.url;
+    //     // Directly sends data URL if allowed. Else, tries to convert image to base64
+    //     this.props.allowURL ?
+    //         this.setUploadedState(url, url, "url", null, url.substring(url.lastIndexOf("/") + 1))
+    //         :
+    //         this.toDataUrl(url, this.urlCallback, this.props.outputFormat)
+    // };
 
     renderGalleryTab() {
 
@@ -733,7 +768,8 @@ export default class SNETImageUpload extends React.Component {
                                 <img
                                     src={url}
                                     alt={"Gallery Image " + i}
-                                    onClick={() => this.handleGalleryImageClick({url})}
+                                    // onClick={() => this.handleGalleryImageClick({url})}
+                                    onClick={() => this.handleSearchSubmit({url})}
                                 />
                             </GridListTile>
                         </Grow>
@@ -742,6 +778,10 @@ export default class SNETImageUpload extends React.Component {
             </div>
         );
     };
+
+    /* -----------------
+       - LOADING STATE -
+    *  -----------------*/
 
     renderLoadingState() {
         return (
@@ -780,7 +820,7 @@ export default class SNETImageUpload extends React.Component {
     };
 
     /* ------------------
-       - IMAGE UPLOADED -
+       - UPLOADED STATE -
     *  ------------------*/
 
     handleImageReset() {
@@ -1070,11 +1110,9 @@ export default class SNETImageUpload extends React.Component {
     handleMouseMove(event) {
         let offsetLeft = this.imageDiv.current.getBoundingClientRect().left;
         let offsetImageLeft = this.outputImage.current.getBoundingClientRect().left;
-        let imageHalfHeight = this.imageDiv.current.clientHeight / 2;
         this.setState({
             imageXPosition: event.clientX - offsetImageLeft,
             dividerXPosition: event.clientX - offsetLeft,
-            imageHalfHeight: imageHalfHeight,
         })
     }
 
