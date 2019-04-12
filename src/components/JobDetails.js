@@ -364,8 +364,8 @@ export  class Jobdetails extends React.Component {
           this.onOpenEscrowBalanceAlert()
         } else {
           const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
-          if(new Date(this.state.selectedDate) < new Date(this.state.minExpDate)) {
-            this.processChannelErrors("The selected date provided should be greater than " + this.state.minExpDate + " for the service to accept the request");
+          if(this.state.ocexpiration < threshold) {
+            this.processChannelErrors("The date selected should be greater than " + this.state.minExpDate + " for the service to accept the request");
             return;
           }
         
