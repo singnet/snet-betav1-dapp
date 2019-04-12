@@ -5,7 +5,7 @@ import Modal from '@material-ui/core/Modal'
 import Slide from '@material-ui/core/Slide'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
-import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET, MESSAGES } from '../util'
+import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET, MESSAGES,BLOCK_TIME_SECONDS } from '../util'
 import {TabContainer} from './ReactStyles.js';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
