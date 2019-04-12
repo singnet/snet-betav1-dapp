@@ -2139,7 +2139,11 @@ i {
 
 #datepicker-input{
   font-size: 14px;
+  color: #0066ff;
 }  
+#datepicker-input:disabled{
+  color: #757577;
+}
 input[type=date]::-webkit-clear-button {
   display: none;
 }
