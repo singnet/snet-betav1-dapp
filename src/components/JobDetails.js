@@ -107,7 +107,7 @@ export  class Jobdetails extends React.Component {
 
     initExpBlockDate(setMinExpDate=false){
       let expBlockNumber =  this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET;
-      let expDays = Math.ceil(expBlockNumber *15/(24 * 3600));
+      let expDays = Math.ceil(expBlockNumber *BLOCK_VAL_SEC/(24 * 3600));
       let expDate = new Date();
       expDate.setDate(expDate.getDate()+expDays);
       let selectedDate = formatDate(expDate);
@@ -579,7 +579,7 @@ export  class Jobdetails extends React.Component {
   handleDateChange(e){
     let selectedDate = e.target.value;
     let diff = new Date(selectedDate) - new Date();
-    diff = Math.ceil(diff / (1000  * 15));
+    diff = Math.ceil(diff / (1000  * BLOCK_VAL_SEC));
     let ocexpiration = (this.currentBlockNumber + diff).toFixed(0);
     this.setState({selectedDate, ocexpiration});
   }
