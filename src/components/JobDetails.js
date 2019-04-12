@@ -587,7 +587,7 @@ export  class Jobdetails extends React.Component {
     render()
     {
       const {valueTab} = this.state;
-      let CallComponent = this.serviceMappings.getComponent(this.serviceState["org_id"], this.serviceState["service_id"]);
+      let CallComponent = this.serviceMappings.getComponent(this.serviceState["org_id"], this.serviceState["service_id"],this.props.chainId);
         return(
             <React.Fragment>
             <div>
