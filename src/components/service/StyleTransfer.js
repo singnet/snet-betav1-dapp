@@ -372,6 +372,8 @@ export default class StyleTransfer extends React.Component {
                                 <SNETImageUpload
                                     style={{align: "center"}}
                                     maxImageSize={3000000}
+                                    maxImageWidth={2400}
+                                    maxImageHeight={1800}
                                     imageDataFunc={this.getContentImageData}
                                     imageName="Input"
                                     outputImage={this.parseResponse()}
@@ -386,6 +388,8 @@ export default class StyleTransfer extends React.Component {
                                     imageDataFunc={this.getStyleImageData}
                                     imageName="Style"
                                     maxImageSize={3000000}
+                                    maxImageWidth={2400}
+                                    maxImageHeight={1800}
                                     disableResetButton={this.props.isComplete}
                                     width="90%"
                                     instantUrlFetch={true}
