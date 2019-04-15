@@ -41,67 +41,70 @@ import Places365SceneRecognition from "./Places365SceneRecognition";
 import SuperResolution from "./SuperResolution";
 
 import DefaultService from './DefaultService.js';
-import {NETWORKS} from '../../networks';
+
+const defaultChainId = -1;
 
 export default class SampleServices {
     constructor() {
         this.serviceOrgIDToComponent = [];
-        Object.keys(NETWORKS).map(chainId=>{
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "example-service",chainId)] = ExampleService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "cntk-image-recon",chainId)] = CNTKImageRecognition;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "cntk-next-day-trend",chainId)] = CNTKNextDayTrend;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "cntk-lstm-forecast",chainId)] = CNTKLSTMForecast;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "cntk-language-understanding",chainId)] = CNTKLanguageUnderstanding;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "i3d-video-action-recognition",chainId)] = I3DActionRecognition;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "opennmt-romance-translator",chainId)] = OpenNMTRomanceTranslator;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "s2vt-video-captioning",chainId)] = S2VTVideoCaptioning;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "yolov3-object-detection",chainId)] = YOLOv3ObjectDetection;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "zeta36-chess-alpha-zero",chainId)] = Zeta36ChessAlphaZero;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "speech-recognition",chainId)] = AutomaticSpeechRecognition;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "speech-synthesis",chainId)] = NeuralSpeechSynthesis;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-long-seq",chainId)] = LongQuestionAsnswering;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-short-seq",chainId)] = ShortQuestionAnswering;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-similarity-binary",chainId)] = BinarySemanticSimilarity;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "opencog-vqa",chainId)] = VisualQAOpencog;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition",chainId)] = NamedEntityRecognitionService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis",chainId)] = SentimentAnalysisService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery",chainId)] = TimeSeriesAnomalyDiscoveryService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "moses-service",chainId)] = MosesService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-segmentation",chainId)] = SemanticSegmentationService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-detect",chainId)] = FaceDetectService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-landmarks",chainId)] = FaceLandmarksService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-align",chainId)] = FaceAlignService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-identity",chainId)] = FaceIdentityService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "emotion-recognition-service",chainId)] = EmotionRecognitionService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "holistic-edge-detection-service",chainId)] = HolisticEdgeDetectionService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "image-retrieval-service",chainId)] = ImageRetrievalService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "gene-annotation-service",chainId)] = GeneAnnotationService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation",chainId)] = TranslationService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary",chainId)] = NewsSummaryService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "style-transfer",chainId)] = StyleTransfer;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection",chainId)] = LanguageDetectionService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service",chainId)] = CoreferenceResolutionService;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation",chainId)] = NamedEntityDisambiguation;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-robustness",chainId)] = NetworkAnalysisRobustness;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-bipartite",chainId)] = NetworkAnalysisBipartite;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis",chainId)] = TopicAnalysis;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition",chainId)] = Places365SceneRecognition;
-            this.serviceOrgIDToComponent[this.generateUniqueID("snet", "super-resolution",chainId)] = SuperResolution;
-        })
-       
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "example-service", defaultChainId)] = ExampleService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "cntk-image-recon", defaultChainId)] = CNTKImageRecognition;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "cntk-next-day-trend", defaultChainId)] = CNTKNextDayTrend;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "cntk-lstm-forecast", defaultChainId)] = CNTKLSTMForecast;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "cntk-language-understanding", defaultChainId)] = CNTKLanguageUnderstanding;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "i3d-video-action-recognition", defaultChainId)] = I3DActionRecognition;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "opennmt-romance-translator", defaultChainId)] = OpenNMTRomanceTranslator;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "s2vt-video-captioning", defaultChainId)] = S2VTVideoCaptioning;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "yolov3-object-detection", defaultChainId)] = YOLOv3ObjectDetection;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "zeta36-chess-alpha-zero", defaultChainId)] = Zeta36ChessAlphaZero;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "speech-recognition", defaultChainId)] = AutomaticSpeechRecognition;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "speech-synthesis", defaultChainId)] = NeuralSpeechSynthesis;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-long-seq", defaultChainId)] = LongQuestionAsnswering;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-short-seq", defaultChainId)] = ShortQuestionAnswering;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-similarity-binary", defaultChainId)] = BinarySemanticSimilarity;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "opencog-vqa", defaultChainId)] = VisualQAOpencog;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition", defaultChainId)] = NamedEntityRecognitionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis", defaultChainId)] = SentimentAnalysisService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "time-series-anomaly-discovery", defaultChainId)] = TimeSeriesAnomalyDiscoveryService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "moses-service", defaultChainId)] = MosesService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-segmentation", defaultChainId)] = SemanticSegmentationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-detect", defaultChainId)] = FaceDetectService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-landmarks", defaultChainId)] = FaceLandmarksService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-align", defaultChainId)] = FaceAlignService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "face-identity", defaultChainId)] = FaceIdentityService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "emotion-recognition-service", defaultChainId)] = EmotionRecognitionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "holistic-edge-detection-service", defaultChainId)] = HolisticEdgeDetectionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "image-retrieval-service", defaultChainId)] = ImageRetrievalService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "gene-annotation-service", defaultChainId)] = GeneAnnotationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "translation", defaultChainId)] = TranslationService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "news-summary", defaultChainId)] = NewsSummaryService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "style-transfer", defaultChainId)] = StyleTransfer;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "language-detection", defaultChainId)] = LanguageDetectionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service", defaultChainId)] = CoreferenceResolutionService;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation", defaultChainId)] = NamedEntityDisambiguation;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-robustness", defaultChainId)] = NetworkAnalysisRobustness;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-bipartite", defaultChainId)] = NetworkAnalysisBipartite;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis", defaultChainId)] = TopicAnalysis;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition", defaultChainId)] = Places365SceneRecognition;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "super-resolution", defaultChainId)] = SuperResolution;
+
     }
 
-    generateUniqueID(orgId,serviceId, chainId) {
-        return orgId + "__$%^^%$__" + serviceId +  "__$%^^%$__" + chainId;
+    generateUniqueID(orgId, serviceId, chainId) {
+        return orgId + "__$%^^%$__" + serviceId + "__$%^^%$__" + chainId;
     }
 
     getComponent(orgId, serviceId, chainId) {
+        console.log('getComponent');
         let component = this.serviceOrgIDToComponent[this.generateUniqueID(orgId, serviceId, chainId)];
-        if(typeof component === 'undefined') {
-            component = DefaultService;
+        if (typeof component === 'undefined') {
+            component = this.serviceOrgIDToComponent[this.generateUniqueID(orgId, serviceId, defaultChainId)];
+            if (typeof component === 'undefined') {
+                component = DefaultService;
+            }
         }
 
-
+        console.log({component});
         return component;
     }
 }
