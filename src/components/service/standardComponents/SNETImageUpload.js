@@ -308,6 +308,8 @@ export default class SNETImageUpload extends React.Component {
     };
 
     verifyAndUpload(imageData, sendData, encoding, mimeType, filename) {
+        // imageData: base64 encoded image
+        // sendData: might be base64, bytes or url
         // Verifies image data against allowed types, max size, width and height and uploads the image if its within the
         // specifications.
 
@@ -316,7 +318,7 @@ export default class SNETImageUpload extends React.Component {
         } else {
 
             // Checks file size
-            const byteLength = parseInt((imageData).replace(/=/g,"").length * 0.75);
+            const byteLength = (imageData).replace(/=/g,"").length * 0.75;
             if (byteLength > this.props.maxImageSize){
                 this.displayErrorMessage(this.fileSizeError);
                 return
