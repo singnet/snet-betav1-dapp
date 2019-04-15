@@ -66,7 +66,6 @@ export default class SNETImageUpload extends React.Component {
 
     static getBase64ImageType(base64img) {
         // Extracts base64-encoded image's mime type
-
         let mimeType;
 
         if (base64img.charAt(0) === '/') {
@@ -84,13 +83,11 @@ export default class SNETImageUpload extends React.Component {
 
     static addBase64Header(mimeType, rawBase64) {
         //Adds headers to raw base64 encoded images so they can be displayed in an img tag
-
         return "data:" + mimeType + ";base64," + rawBase64
     }
 
     static prepareBase64Image(base64img) {
         // Extracts image type and adds headers
-
         let mimeType = SNETImageUpload.getBase64ImageType(base64img);
         return SNETImageUpload.addBase64Header(mimeType, base64img)
     }
@@ -179,17 +176,18 @@ export default class SNETImageUpload extends React.Component {
         this.outputImage = React.createRef();
 
         // Function binding
-        // this.handleDropzoneUpload = this.handleDropzoneUpload.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
-        // this.urlCallback = this.urlCallback.bind(this);
+        this.handleTabChange = this.handleTabChange.bind(this);
         this.sendData = this.sendData.bind(this);
         this.setInputImageDimensions = this.setInputImageDimensions.bind(this);
         this.setInitialImageXPosition = this.setInitialImageXPosition.bind(this);
         this.setLoadingState = this.setLoadingState.bind(this);
-        this.setUploadedState = this.setUploadedState.bind(this);
+        this.verifyAndUpload = this.verifyAndUpload.bind(this);
         this.toDataUrl = this.toDataUrl.bind(this);
-        this.searchTextUpdate = this.searchTextUpdate.bind(this)
+        this.searchTextUpdate = this.searchTextUpdate.bind(this);
+        this.displayErrorMessage = this.displayErrorMessage.bind(this);
+        this.setUploadedState = this.setUploadedState.bind(this);
     }
 
     // When props.outputImage changes, the component changes to the display mode.
@@ -294,8 +292,9 @@ export default class SNETImageUpload extends React.Component {
         console.log("Sent:\n" + data)
     };
 
-    setUploadedState(imageData, sendData, encoding, mimeType, filename) {
-        console.log("setUploadedState received: " + imageData);
+    setUploadedState(imageData, sendData, encoding, mimeType, filename){
+        console.log(this.state.mainState);
+        // If the image follows the specifications, sets state to uploaded
         this.setState({
             mainState: "uploaded", // initial, loading, uploaded
             searchText: null,
@@ -310,41 +309,96 @@ export default class SNETImageUpload extends React.Component {
         }.bind(this))
     };
 
+    verifyAndUpload(imageData, sendData, encoding, mimeType, filename) {
+        // Verifies image data against allowed types, max size, width and height and uploads the image if its within the
+        // specifications.
+
+        if(encoding === "url") {
+            this.setUploadedState(imageData, sendData, encoding, mimeType, filename)
+        } else {
+
+            // Checks file size
+            const byteLength = parseInt((imageData).replace(/=/g,"").length * 0.75);
+            if (byteLength > this.props.maxImageSize){
+                this.displayErrorMessage(this.fileSizeError);
+                return
+            }
+
+            // Checks file type
+            console.log("IMAGE MIMETYPE: " + mimeType);
+            if (this.props.allowedInputTypes.includes("image/*")) { // if we accept all image types
+                if (mimeType.indexOf("image") === -1) { // if received file is not an image
+                    console.log("INSIDE CONDITION ONE: " + mimeType);
+                    this.displayErrorMessage(this.fileTypeError + "Got: " + mimeType + ".");
+                    return
+                }
+            } else { // verify input type against each allowed input type
+                if (!this.props.allowedInputTypes.includes(mimeType)) {
+                    console.log("INSIDE CONDITION TWO: " + mimeType);
+                    this.displayErrorMessage(this.fileTypeError + "Got: " + mimeType + ".");
+                    return
+                }
+            }
+
+            // Checks image dimensions if they have been defined
+            if(this.props.maxImageHeight || this.props.maxImageWidth){
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.setUploadedState = this.setUploadedState;
+                img.displayErrorMessage = this.displayErrorMessage;
+                img.imageData = imageData;
+                img.sendData = sendData;
+                img.encoding = encoding;
+                img.mimeType = mimeType;
+                img.filename = filename;
+                img.maxImageWidth = this.props.maxImageWidth;
+                img.maxImageHeight = this.props.maxImageHeight;
+                img.onload = function () {
+                    if(this.maxImageHeight){
+                        if (this.naturalHeight > this.maxImageHeight){
+                            this.displayErrorMessage("Maximum image height (" + this.maxImageHeight + "px) exceeded.  Got: " + this.naturalHeight + "px.");
+                            return
+                        }
+                    }
+                    if(this.maxImageWidth){
+                        if (this.naturalWidth > this.maxImageWidth){
+                            this.displayErrorMessage("Maximum image width (" + this.maxImageWidth + "px) exceeded.  Got: " + this.naturalWidth + "px.");
+                            return
+                        }
+                    }
+                    this.setUploadedState(this.imageData, this.sendData, this.encoding, this.mimeType, this.filename);
+                };
+                img.src = imageData;
+            } else {
+                // Goes to uploaded state.
+                this.setUploadedState(imageData, sendData, encoding, mimeType, filename);
+            }
+        }
+    };
+
+    displayErrorMessage(errorMessage, state = "initial"){
+        this.setState({
+            mainState: state,
+            searchText: null,
+            inputImageData: null,
+            mimeType: null,
+            encoding: null,
+            filename: null,
+            errorMessage: errorMessage,
+            displayError: true,
+        });
+    };
+
     /* ----------------
        - IMAGE UPLOAD -
     *  ----------------*/
-    // sendData(data) {
-    //     this.props.imageDataFunc(data, this.state.mimeType, this.state.encoding, this.state.filename);
-    // }
-
-    // readerOnLoadEnd(data) {
-    //     this.setUploadedState(data, data.split(",")[1],"base64");
-    // this.setState({
-    //         mainState: "uploaded", // initial, loading, uploaded
-    //         searchText: null,
-    //         inputImageData: data,
-    //         encoding: "base64",
-    //     }, function () {
-    //         this.sendData(this.state.inputImageData.split(",")[1])
-    //     }.bind(this)
-    // );
-    // }
 
     byteReaderOnLoadEnd(file) {
         let reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onloadend = function () {
-            this.setUploadedState(reader.result, new Uint8Array(this.state.byteReader.result), "byteArray", file.type, file.name)
+            this.verifyAndUpload(reader.result, new Uint8Array(this.state.byteReader.result), "byteArray", file.type, file.name)
         }.bind(this);
-        // reader.onloadend = function () {
-        //     this.setState({
-        //         mainState: "uploaded", // initial, loading, uploaded
-        //         searchText: null,
-        //         inputImageData: reader.result,
-        //         displayError: false,
-        //         errorMessage: null,
-        //     }, this.sendData(data = new Uint8Array(this.state.byteReader.result)))
-        // }.bind(this);
     }
 
     handleImageUpload(files, event) {
@@ -354,73 +408,70 @@ export default class SNETImageUpload extends React.Component {
 
         const file = files[0];
 
-        // Checks file size
-        if (file.size > this.props.maxImageSize) {
-            this.setState({
-                mainState: "initial",
-                searchText: null,
-                inputImageData: null,
-                mimeType: null,
-                encoding: null,
-                filename: null,
-                errorMessage: this.fileSizeError,
-                displayError: true,
-            });
-            return
-        }
-
-        // Checks file type
-        let fileType = file.type;
-        if (this.props.allowedInputTypes.includes("image/*")) { // if we accept all image types
-            if (fileType.indexOf("image") === -1) { // if received file is not an image
-                this.setState({
-                    mainState: "initial",
-                    searchText: null,
-                    inputImageData: null,
-                    mimeType: null,
-                    encoding: null,
-                    filename: null,
-                    errorMessage: this.fileTypeError + "Got: " + fileType + ".",
-                    displayError: true,
-                });
-                return
-            }
-        } else { // verify input type against each allowed input type
-            if (!this.props.allowedInputTypes.includes(fileType)) {
-                this.setState({
-                    mainState: "initial",
-                    searchText: null,
-                    inputImageData: null,
-                    mimeType: null,
-                    encoding: null,
-                    filename: null,
-                    errorMessage: this.fileTypeError + "Got: " + fileType + ".",
-                    displayError: true,
-                });
-                return
-            }
-        }
+        // // Checks file size
+        // if (file.size > this.props.maxImageSize) {
+        //     this.displayErrorMessage(this.fileSizeError);
+        //     // this.setState({
+        //     //     mainState: "initial",
+        //     //     searchText: null,
+        //     //     inputImageData: null,
+        //     //     mimeType: null,
+        //     //     encoding: null,
+        //     //     filename: null,
+        //     //     errorMessage: this.fileSizeError,
+        //     //     displayError: true,
+        //     // });
+        //     return
+        // }
+        //
+        // // Checks file type
+        // let fileType = file.type;
+        // if (this.props.allowedInputTypes.includes("image/*")) { // if we accept all image types
+        //     if (fileType.indexOf("image") === -1) { // if received file is not an image
+        //         this.displayErrorMessage(this.fileTypeError + "Got: " + fileType + ".");
+        //         // this.setState({
+        //         //     mainState: "initial",
+        //         //     searchText: null,
+        //         //     inputImageData: null,
+        //         //     mimeType: null,
+        //         //     encoding: null,
+        //         //     filename: null,
+        //         //     errorMessage: this.fileTypeError + "Got: " + fileType + ".",
+        //         //     displayError: true,
+        //         // });
+        //         return
+        //     }
+        // } else { // verify input type against each allowed input type
+        //     if (!this.props.allowedInputTypes.includes(fileType)) {
+        //         this.displayErrorMessage(this.fileTypeError + "Got: " + fileType + ".");
+        //         // this.setState({
+        //         //     mainState: "initial",
+        //         //     searchText: null,
+        //         //     inputImageData: null,
+        //         //     mimeType: null,
+        //         //     encoding: null,
+        //         //     filename: null,
+        //         //     errorMessage: this.fileTypeError + "Got: " + fileType + ".",
+        //         //     displayError: true,
+        //         // });
+        //         return
+        //     }
+        // }
 
         // Is always used
         let reader = new FileReader();
         reader.onloadend = function () {
             this.setState({
-                // filename: file.name,
-                // mimeType: file.type,
                 base64Reader: reader
             }, function () {
-                this.setUploadedState(this.state.base64Reader.result, this.state.base64Reader.result.split(",")[1], "base64", file.type, file.name)
+                this.verifyAndUpload(this.state.base64Reader.result, this.state.base64Reader.result.split(",")[1], "base64", file.type, file.name)
             }.bind(this))
-            // this.readerOnLoadEnd(this.state.base64Reader.result)
         }.bind(this);
 
         let byteReader = new FileReader();
         byteReader.onloadend = function () {
             this.setState({
                 byteReader: byteReader,
-                // mimeType: file.type,
-                // encoding: "byteArray",
-                // filename: file.name,
             });
             this.byteReaderOnLoadEnd(file)
         }.bind(this);
@@ -431,13 +482,6 @@ export default class SNETImageUpload extends React.Component {
             reader.readAsDataURL(file);
         }
     }
-
-    // handleDropzoneUpload(files, event) {
-    //     // To prevent default behavior (browser navigating to the dropped file)
-    //     event.preventDefault();
-    //     event.stopPropagation();
-    //     this.handleImageUpload(files);
-    // };
 
     renderUploadTab() {
 
@@ -523,84 +567,32 @@ export default class SNETImageUpload extends React.Component {
        - URL IMAGE SEARCH -
     *  --------------------*/
 
-    // sendImageURL(url) {
-    //     const filename = url.substring(url.lastIndexOf("/") + 1);
-    //
-    //     this.setUploadedState(url, url, "url", null, filename);
-    // this.setState({
-    //     mainState: "uploaded",
-    //
-    //     inputImageData: url,
-    //     mimeType: null,
-    //     encoding: "url",
-    //     filename: filename,
-    //
-    //     searchText: null,
-    // }, function () {
-    //     this.sendData(this.state.inputImageData)
-    // }.bind(this));
-    // }
-
-    // urlCallback(data, outputFormat, filename) {
-    //     this.setUploadedState(data, data.split(",")[1], "base64", outputFormat, filename);
-    // this.setState({
-    //     mainState: "uploaded",
-    //
-    //     inputImageData: data,
-    //     mimeType: outputFormat,
-    //     encoding: "base64",
-    //     filename: filename,
-    //
-    //     searchText: null,
-    // }, function () {
-    //     this.sendData(this.state.inputImageData.split(",")[1])
-    // }.bind(this));
-    // };
-
-    // urlByteReaderOnLoadEnd(dataURL, filename) {
-    //     const sendData = new Uint8Array(this.state.byteReader.result);
-    //     this.setUploadedState(dataURL, sendData, "byteArray", this.props.outputFormat, filename);
-    //
-    //     // this.setState({
-    //     //     mainState: "uploaded",
-    //     //     inputImageData: dataURL,
-    //     //     mimeType: this.props.outputFormat,
-    //     //     encoding: "byteArray",
-    //     //     filename: filename,
-    //     //     searchText: null,
-    //     //     displayError: false,
-    //     //     errorMessage: null,
-    //     // }, function () {
-    //     //     this.sendData(new Uint8Array(this.state.byteReader.result))
-    //     // }.bind(this));
-    // }
-
     toDataUrl(src, outputFormat) {
         const filename = src.substring(src.lastIndexOf("/") + 1);
         const img = new Image();
-        const callback = this.setUploadedState;
+        const callback = this.verifyAndUpload;
         let dataURL;
 
         // Only triggered if returnByteArray === true
         let byteReader = new FileReader();
         byteReader.onloadend = function () {
             this.setState({byteReader: byteReader});
-            this.setUploadedState(dataURL, new Uint8Array(this.state.byteReader.result), "byteArray", this.props.outputFormat, filename)
-            // this.urlByteReaderOnLoadEnd(dataURL, filename)
+            this.verifyAndUpload(dataURL, new Uint8Array(this.state.byteReader.result), "byteArray", this.props.outputFormat, filename);
         }.bind(this);
 
         img.crossOrigin = 'anonymous';
         img.onerror = function () {
-            this.setState({
-                mainState: "initial",
-                searchText: null,
-                inputImageData: null,
-                mimeType: null,
-                encoding: null,
-                filename: null,
-                errorMessage: this.urlErrorMessage,
-                displayError: true,
-            })
+            this.displayErrorMessage(this.urlErrorMessage);
+            // this.setState({
+            //     mainState: "initial",
+            //     searchText: null,
+            //     inputImageData: null,
+            //     mimeType: null,
+            //     encoding: null,
+            //     filename: null,
+            //     errorMessage: this.urlErrorMessage,
+            //     displayError: true,
+            // })
         }.bind(this);
 
         if (this.props.returnByteArray) {
@@ -630,15 +622,11 @@ export default class SNETImageUpload extends React.Component {
             };
         }
         img.src = src;
-        if (img.complete || img.complete === undefined) {
-            img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-            img.src = src;
-        }
+        // if (img.complete || img.complete === undefined) {
+        //     img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+        //     img.src = src;
+        // }
     };
-
-    // urlCallback(data, outputFormat, filename) {
-    //     this.setUploadedState(data, data.split(",")[1], "base64", outputFormat, filename);
-
 
     searchTextUpdate(event) {
         console.log("InstantURL Fetch: " + this.props.instantUrlFetch + "\nCondition: " +( this.props.instantUrlFetch && (this.state.searchText !== null)));
@@ -665,9 +653,8 @@ export default class SNETImageUpload extends React.Component {
         }
         // Directly sends data URL if allowed. Else, tries to convert image to base64
         this.props.allowURL ?
-            this.setUploadedState(url, url, "url", null, url.substring(url.lastIndexOf("/") + 1))
+            this.verifyAndUpload(url, url, "url", null, url.substring(url.lastIndexOf("/") + 1))
             :
-            // this.toDataUrl(url, this.urlCallback, this.props.outputFormat)
             this.toDataUrl(url, this.props.outputFormat)
     };
 
@@ -730,16 +717,6 @@ export default class SNETImageUpload extends React.Component {
        - IMAGE GALLERY -
     *  -----------------*/
 
-    // handleGalleryImageClick(image) {
-    //     this.setLoadingState();
-    //     const url = image.url;
-    //     // Directly sends data URL if allowed. Else, tries to convert image to base64
-    //     this.props.allowURL ?
-    //         this.setUploadedState(url, url, "url", null, url.substring(url.lastIndexOf("/") + 1))
-    //         :
-    //         this.toDataUrl(url, this.urlCallback, this.props.outputFormat)
-    // };
-
     renderGalleryTab() {
 
         return (
@@ -768,7 +745,6 @@ export default class SNETImageUpload extends React.Component {
                                 <img
                                     src={url}
                                     alt={"Gallery Image " + i}
-                                    // onClick={() => this.handleGalleryImageClick({url})}
                                     onClick={() => this.handleSearchSubmit({url})}
                                 />
                             </GridListTile>
@@ -855,14 +831,15 @@ export default class SNETImageUpload extends React.Component {
                     <img
                         alt="Service input"
                         src={this.state.inputImageData}
-                        onError={() => this.setState({
-                            mainState: "initial",
-                            searchText: null,
-                            inputImageData: null,
-                            filename: null,
-                            errorMessage: this.urlErrorMessage,
-                            displayError: true,
-                        })}
+                        onError={() => this.displayErrorMessage(this.urlErrorMessage)}
+                            // this.setState({
+                            // mainState: "initial",
+                            // searchText: null,
+                            // inputImageData: null,
+                            // filename: null,
+                            // errorMessage: this.urlErrorMessage,
+                            // displayError: true,
+                            // })}
                         id="loadedImage"
                         // crossOrigin="anonymous"
                         style={this.props.displayProportionalImage ? {
@@ -1007,14 +984,15 @@ export default class SNETImageUpload extends React.Component {
                     <img
                         alt="Service input"
                         src={this.state.inputImageData}
-                        onError={() => this.setState({
-                            mainState: "initial",
-                            searchText: null,
-                            inputImageData: null,
-                            filename: null,
-                            errorMessage: this.inputImageErrorMessage,
-                            displayError: true,
-                        })}
+                        onError={() => this.displayErrorMessage(this.inputImageErrorMessage, "display")}
+                            // this.setState({
+                            // mainState: "initial",
+                            // searchText: null,
+                            // inputImageData: null,
+                            // filename: null,
+                            // errorMessage: this.inputImageErrorMessage,
+                            // displayError: true,
+                            // })}
                         id="loadedImage"
                         // crossOrigin="anonymous"
                         style={this.props.displayProportionalImage ? {
@@ -1064,14 +1042,15 @@ export default class SNETImageUpload extends React.Component {
                     <img
                         alt="Service output"
                         src={this.state.outputImage}
-                        onError={() => this.setState({
-                            mainState: "display",
-                            searchText: null,
-                            inputImageData: null,
-                            filename: null,
-                            errorMessage: this.outputImageErrorMessage,
-                            displayError: true,
-                        })}
+                        onError={() => this.displayErrorMessage(this.outputImageErrorMessage, "display")}
+                            // this.setState({
+                            // mainState: "display",
+                            // searchText: null,
+                            // inputImageData: null,
+                            // filename: null,
+                            // errorMessage: this.outputImageErrorMessage,
+                            // displayError: true,
+                            // })}
                         id="loadedImage"
                         // crossOrigin="anonymous"
                         style={this.props.displayProportionalImage ? {
@@ -1271,7 +1250,7 @@ export default class SNETImageUpload extends React.Component {
                                 <MuiThemeProvider theme={this.theme}>
                                     <Tabs
                                         value={this.state.value}
-                                        onChange={this.handleTabChange.bind(this)}
+                                        onChange={this.handleTabChange}
                                         indicatorColor="primary"
                                         textColor="primary"
                                         variant="fullWidth"
@@ -1431,6 +1410,8 @@ SNETImageUpload.defaultProps = {
     outputFormat: "image/png",
     allowedInputTypes: "image/*",
     maxImageSize: 10000000, // 10 mb
+    maxImageWidth: null,
+    maxImageHeight: null,
     displayProportionalImage: true, // if true, keeps uploaded image proportions. Else stretches it
     allowURL: false, // sends image URL instead of image data for both URL and Gallery modes. Might still send base64 if the user uploads an image
     instantUrlFetch: false,
