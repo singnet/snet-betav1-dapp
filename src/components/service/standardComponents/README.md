@@ -21,7 +21,7 @@ This component is composed of a tool bar (at the top) and a main tab below it. T
  
 - The image name (that can be set by "imageName" parameter);
 - A tab chooser composed of:
-    - Upload: a dropzone that allows the user to upload an image from their computer by clicking or dragging and dropping a file. Will display a "file rejected" message if the user tries to drop a file that exceeds "maxImageSize" or an image type that is not listed under "allowedInputTypes";
+    - Upload: a dropzone that allows the user to upload an image from their computer by clicking or dragging and dropping a file. Will display an error message if the user tries to drop a file that exceeds "maxImageSize", "maxImageWidth", "maxImageHeight" or an image type that is not listed under "allowedInputTypes";
     - URL: allows users to select images using their URL;
     - Gallery: an optional tab that can be used if the service provider would like to suggest example images. Will be rendered if the "imageGallery" parameter (a list of image URLs) is provided. 
 - An optional info tip that will be rendered if the "infoTip" parameter is not empty. It is an "Info" icon that displays a tooltip with the specified string when hovered upon.
@@ -62,8 +62,11 @@ As in the "upload mode", the service provider may choose to disable any combinat
 | disableUrlTab | bool | false | If `true`, does not render *Url* tab. |
 | disableResetButton | bool | false | If `true`, does not render the image reset button. Prevents user from re-uploading an image, use to display the input image after the service is complete.|
 | returnByteArray | bool | `false` | If `true` returns Uint8Array encoded image data to `imageDataFunc()` instead of base64. |
-| allowedInputTypes | string or array | "image/*" | Specifies allowed file types for "Upload" component. Accepts a file type-string or an array of types (e.g.: "image/jpeg", \["image/jpg", "image/jpeg"]). |
-| maxImageSize | number | 10000000 | Maximum image file size for Upload tab in bytes. Default: 10mb. |
+| outputFormat | string | "image/png" | Sets the output format for images chosen via URL or Gallery modes. Accepts "image/png", "image/jpg" or "image/jpeg". |
+| allowedInputTypes | string or array | "image/*" | Specifies allowed file types. Accepts a file type-string or an array of types (e.g.: "image/jpeg", \["image/jpg", "image/jpeg"]). Note: this parameter should allow the file type defined by `outputFormat` (defaults to `image/png`) otherwise images chosen via URL / Gallery will be rejected (since they are converted to `outputFormat`).|
+| maxImageSize | number | 10000000 | Maximum image file size in bytes. Default: 10mb. |
+| maxImageWidth | number | `null` | Maximum image width in pixels. |
+| maxImageHeight | number | `null`| Maximum image height in pixels. |
 | displayProportionalImage | bool | `true` | Whether to keep uploaded image proportions when displaying it or to ajust to it to tab's height and width. |
 | imageGallery | list | - | Optional list of image URLs that will be rendered in a Gallery tab. This should be used if the service provider would like to suggest images for the user. If this argument is empty, the Gallery tab will not be rendered. |
 | instantUrlFetch | bool | `false` | If `true`, any string pasted or typed on the "URL" tab's TextField will instantly be treated as the complete image URL (i.e.: actual fetch happens "onChange" instead of when clicking the button). |
@@ -153,7 +156,6 @@ If the output image cannot be properly rendered, an error message will be shown 
 
 ### Known Issues
 
-- "maxImageSize" and "allowedInputTypes" parameters are only valid for "Upload" mode;
 - Output image format ("outputFormat") parameter does not work;
 - Component's heights need more attention;
 
