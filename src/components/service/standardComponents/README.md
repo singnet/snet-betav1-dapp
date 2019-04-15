@@ -63,14 +63,14 @@ As in the "upload mode", the service provider may choose to disable any combinat
 | disableResetButton | bool | false | If `true`, does not render the image reset button. Prevents user from re-uploading an image, use to display the input image after the service is complete.|
 | returnByteArray | bool | `false` | If `true` returns Uint8Array encoded image data to `imageDataFunc()` instead of base64. |
 | outputFormat | string | "image/png" | Sets the output format for images chosen via URL or Gallery modes. Accepts "image/png", "image/jpg" or "image/jpeg". |
-| allowedInputTypes | string or array | "image/*" | Specifies allowed file types. Accepts a file type-string or an array of types (e.g.: "image/jpeg", \["image/jpg", "image/jpeg"]). Note: this parameter should allow the file type defined by `outputFormat` (defaults to `image/png`) otherwise images chosen via URL / Gallery will be rejected (since they are converted to `outputFormat`).|
+| allowedInputTypes | string or array | ["image/png","image/jpeg", "image/jpg"] | Specifies allowed file types. Accepts a file type-string or an array of types (e.g.: "image/jpeg", \["image/jpg", "image/jpeg"]). Note: this parameter should allow the file type defined by `outputFormat` (which defaults to `image/png`) otherwise images chosen via URL / Gallery will be rejected (since they are converted to `outputFormat`).|
 | maxImageSize | number | 10000000 | Maximum image file size in bytes. Default: 10mb. |
 | maxImageWidth | number | `null` | Maximum image width in pixels. |
 | maxImageHeight | number | `null`| Maximum image height in pixels. |
 | displayProportionalImage | bool | `true` | Whether to keep uploaded image proportions when displaying it or to ajust to it to tab's height and width. |
 | imageGallery | list | - | Optional list of image URLs that will be rendered in a Gallery tab. This should be used if the service provider would like to suggest images for the user. If this argument is empty, the Gallery tab will not be rendered. |
 | instantUrlFetch | bool | `false` | If `true`, any string pasted or typed on the "URL" tab's TextField will instantly be treated as the complete image URL (i.e.: actual fetch happens "onChange" instead of when clicking the button). |
-| allowURL | bool | `false` | Allows sending image URLs for "URL" and "Gallery" tabs. Mainly used to avoid CORS error. |
+| allowURL | bool | `false` | Allows sending image URLs for "URL" and "Gallery" tabs. Mainly used to avoid CORS error. Note: setting this parameter to `true` bypasses all file size, height, width and type checks because it will simply render the chosen image and send its URL to the service. |
 | galleryCols | number | 3 | Number of image columns to be displayed in gallery mode. |
 | infoTip | string | "" | An optional string to provide a tip or explanation for the service user. If not empty, will render an "Info" icon in the top bar that will display a tooltip when hovered upon. |
 | mainColor | object | blue | A material ui color object that will be the main color of the component.|
@@ -156,7 +156,6 @@ If the output image cannot be properly rendered, an error message will be shown 
 
 ### Known Issues
 
-- Output image format ("outputFormat") parameter does not work;
 - Component's heights need more attention;
 
 ### Future Improvements

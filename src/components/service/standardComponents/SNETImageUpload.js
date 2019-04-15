@@ -288,7 +288,7 @@ export default class SNETImageUpload extends React.Component {
 
     sendData(data = this.state.inputImageData, mimeType = this.state.mimeType, encoding = this.state.encoding, filename = this.state.filename) {
         this.props.imageDataFunc(data, mimeType, encoding, filename);
-        console.log("Sent:\n" + data)
+        console.log("Sent: \nMIME type: " + mimeType + "\nEncoding: " + encoding + "\nFilename: " + filename + "\nImage data: " + data)
     };
 
     setUploadedState(imageData, sendData, encoding, mimeType, filename){
@@ -541,7 +541,7 @@ export default class SNETImageUpload extends React.Component {
                 canvas.height = this.naturalHeight;
                 canvas.width = this.naturalWidth;
                 context.drawImage(this, 0, 0);
-                dataURL = canvas.toDataURL(outputFormat);
+                dataURL = canvas.toDataURL(this.outputFormat);
                 canvas.toBlob(function (blob) {
                     byteReader.readAsArrayBuffer(blob);
                 }, this.outputFormat)
@@ -554,15 +554,14 @@ export default class SNETImageUpload extends React.Component {
                 canvas.height = this.naturalHeight;
                 canvas.width = this.naturalWidth;
                 context.drawImage(this, 0, 0);
-                dataURL = canvas.toDataURL(outputFormat);
-                callback(dataURL, dataURL.split(",")[1], "base64", outputFormat, filename);
+                dataURL = canvas.toDataURL(this.outputFormat);
+                callback(dataURL, dataURL.split(",")[1], "base64", this.outputFormat, filename);
             };
         }
         img.src = src;
     };
 
     searchTextUpdate(event) {
-        console.log("InstantURL Fetch: " + this.props.instantUrlFetch + "\nCondition: " +( this.props.instantUrlFetch && (this.state.searchText !== null)));
         this.setState({
                 searchText: event.target.value,
             }, this.props.instantUrlFetch ? this.handleSearchSubmit : null
@@ -570,7 +569,6 @@ export default class SNETImageUpload extends React.Component {
     };
 
     handleSearchSubmit(image = null) {
-        console.log("Still called handle search submit");
         this.setLoadingState();
 
         let url;
@@ -1316,7 +1314,7 @@ SNETImageUpload.defaultProps = {
     disableResetButton: false,
     returnByteArray: false,
     outputFormat: "image/png",
-    allowedInputTypes: "image/*",
+    allowedInputTypes: ["image/png","image/jpeg", "image/jpg"],
     maxImageSize: 10000000, // 10 mb
     maxImageWidth: null,
     maxImageHeight: null,
