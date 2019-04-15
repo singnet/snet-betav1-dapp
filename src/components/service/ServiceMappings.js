@@ -95,7 +95,6 @@ export default class SampleServices {
     }
 
     getComponent(orgId, serviceId, chainId) {
-        console.log('getComponent');
         let component = this.serviceOrgIDToComponent[this.generateUniqueID(orgId, serviceId, chainId)];
         if (typeof component === 'undefined') {
             component = this.serviceOrgIDToComponent[this.generateUniqueID(orgId, serviceId, defaultChainId)];
@@ -103,8 +102,6 @@ export default class SampleServices {
                 component = DefaultService;
             }
         }
-
-        console.log({component});
         return component;
     }
 }
