@@ -39,6 +39,7 @@ import NetworkAnalysisRobustness from "./NetworkAnalysisRobustness";
 import TopicAnalysis from "./TopicAnalysisService";
 import Places365SceneRecognition from "./Places365SceneRecognition";
 import SuperResolution from "./SuperResolution";
+import SemanticSegmentationAerial from "./SemanticSegmentationAerial"
 
 import DefaultService from './DefaultService.js';
 
@@ -85,6 +86,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis")] = TopicAnalysis;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition")] = Places365SceneRecognition;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "super-resolution")] = SuperResolution;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-segmentation-aerial")] = SemanticSegmentationAerial;
     }
 
     generateUniqueID(orgId,serviceId) {
