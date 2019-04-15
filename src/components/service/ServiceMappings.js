@@ -87,7 +87,6 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis", defaultChainId)] = TopicAnalysis;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition", defaultChainId)] = Places365SceneRecognition;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "super-resolution", defaultChainId)] = SuperResolution;
-
     }
 
     generateUniqueID(orgId, serviceId, chainId) {
