@@ -239,7 +239,6 @@ export default class SNETImageUpload extends React.Component {
                     // Image data readers
                     base64Reader: undefined,
                     byteReader: undefined,
-
                     // Output display mode
                     imageXPosition: undefined, // arbitrary, will be set properly
                     dividerXPosition: this.props.width / 2,
@@ -293,7 +292,6 @@ export default class SNETImageUpload extends React.Component {
     };
 
     setUploadedState(imageData, sendData, encoding, mimeType, filename){
-        console.log(this.state.mainState);
         // If the image follows the specifications, sets state to uploaded
         this.setState({
             mainState: "uploaded", // initial, loading, uploaded
@@ -325,16 +323,13 @@ export default class SNETImageUpload extends React.Component {
             }
 
             // Checks file type
-            console.log("IMAGE MIMETYPE: " + mimeType);
             if (this.props.allowedInputTypes.includes("image/*")) { // if we accept all image types
                 if (mimeType.indexOf("image") === -1) { // if received file is not an image
-                    console.log("INSIDE CONDITION ONE: " + mimeType);
                     this.displayErrorMessage(this.fileTypeError + "Got: " + mimeType + ".");
                     return
                 }
-            } else { // verify input type against each allowed input type
+            } else { // verifies input type against each allowed input type
                 if (!this.props.allowedInputTypes.includes(mimeType)) {
-                    console.log("INSIDE CONDITION TWO: " + mimeType);
                     this.displayErrorMessage(this.fileTypeError + "Got: " + mimeType + ".");
                     return
                 }
@@ -407,56 +402,6 @@ export default class SNETImageUpload extends React.Component {
         this.setLoadingState();
 
         const file = files[0];
-
-        // // Checks file size
-        // if (file.size > this.props.maxImageSize) {
-        //     this.displayErrorMessage(this.fileSizeError);
-        //     // this.setState({
-        //     //     mainState: "initial",
-        //     //     searchText: null,
-        //     //     inputImageData: null,
-        //     //     mimeType: null,
-        //     //     encoding: null,
-        //     //     filename: null,
-        //     //     errorMessage: this.fileSizeError,
-        //     //     displayError: true,
-        //     // });
-        //     return
-        // }
-        //
-        // // Checks file type
-        // let fileType = file.type;
-        // if (this.props.allowedInputTypes.includes("image/*")) { // if we accept all image types
-        //     if (fileType.indexOf("image") === -1) { // if received file is not an image
-        //         this.displayErrorMessage(this.fileTypeError + "Got: " + fileType + ".");
-        //         // this.setState({
-        //         //     mainState: "initial",
-        //         //     searchText: null,
-        //         //     inputImageData: null,
-        //         //     mimeType: null,
-        //         //     encoding: null,
-        //         //     filename: null,
-        //         //     errorMessage: this.fileTypeError + "Got: " + fileType + ".",
-        //         //     displayError: true,
-        //         // });
-        //         return
-        //     }
-        // } else { // verify input type against each allowed input type
-        //     if (!this.props.allowedInputTypes.includes(fileType)) {
-        //         this.displayErrorMessage(this.fileTypeError + "Got: " + fileType + ".");
-        //         // this.setState({
-        //         //     mainState: "initial",
-        //         //     searchText: null,
-        //         //     inputImageData: null,
-        //         //     mimeType: null,
-        //         //     encoding: null,
-        //         //     filename: null,
-        //         //     errorMessage: this.fileTypeError + "Got: " + fileType + ".",
-        //         //     displayError: true,
-        //         // });
-        //         return
-        //     }
-        // }
 
         // Is always used
         let reader = new FileReader();
@@ -583,16 +528,6 @@ export default class SNETImageUpload extends React.Component {
         img.crossOrigin = 'anonymous';
         img.onerror = function () {
             this.displayErrorMessage(this.urlErrorMessage);
-            // this.setState({
-            //     mainState: "initial",
-            //     searchText: null,
-            //     inputImageData: null,
-            //     mimeType: null,
-            //     encoding: null,
-            //     filename: null,
-            //     errorMessage: this.urlErrorMessage,
-            //     displayError: true,
-            // })
         }.bind(this);
 
         if (this.props.returnByteArray) {
@@ -622,23 +557,18 @@ export default class SNETImageUpload extends React.Component {
             };
         }
         img.src = src;
-        // if (img.complete || img.complete === undefined) {
-        //     img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-        //     img.src = src;
-        // }
     };
 
     searchTextUpdate(event) {
         console.log("InstantURL Fetch: " + this.props.instantUrlFetch + "\nCondition: " +( this.props.instantUrlFetch && (this.state.searchText !== null)));
         this.setState({
                 searchText: event.target.value,
-            }, this.props.instantUrlFetch ?
-            this.handleSearchSubmit : () => {console.log("Identified false condition. Search text: " + this.state.searchText)}
+            }, this.props.instantUrlFetch ? this.handleSearchSubmit : null
         );
     };
 
     handleSearchSubmit(image = null) {
-        console.log("Still called handle seach submit");
+        console.log("Still called handle search submit");
         this.setLoadingState();
 
         let url;
@@ -832,14 +762,6 @@ export default class SNETImageUpload extends React.Component {
                         alt="Service input"
                         src={this.state.inputImageData}
                         onError={() => this.displayErrorMessage(this.urlErrorMessage)}
-                            // this.setState({
-                            // mainState: "initial",
-                            // searchText: null,
-                            // inputImageData: null,
-                            // filename: null,
-                            // errorMessage: this.urlErrorMessage,
-                            // displayError: true,
-                            // })}
                         id="loadedImage"
                         // crossOrigin="anonymous"
                         style={this.props.displayProportionalImage ? {
@@ -985,14 +907,6 @@ export default class SNETImageUpload extends React.Component {
                         alt="Service input"
                         src={this.state.inputImageData}
                         onError={() => this.displayErrorMessage(this.inputImageErrorMessage, "display")}
-                            // this.setState({
-                            // mainState: "initial",
-                            // searchText: null,
-                            // inputImageData: null,
-                            // filename: null,
-                            // errorMessage: this.inputImageErrorMessage,
-                            // displayError: true,
-                            // })}
                         id="loadedImage"
                         // crossOrigin="anonymous"
                         style={this.props.displayProportionalImage ? {
@@ -1043,14 +957,6 @@ export default class SNETImageUpload extends React.Component {
                         alt="Service output"
                         src={this.state.outputImage}
                         onError={() => this.displayErrorMessage(this.outputImageErrorMessage, "display")}
-                            // this.setState({
-                            // mainState: "display",
-                            // searchText: null,
-                            // inputImageData: null,
-                            // filename: null,
-                            // errorMessage: this.outputImageErrorMessage,
-                            // displayError: true,
-                            // })}
                         id="loadedImage"
                         // crossOrigin="anonymous"
                         style={this.props.displayProportionalImage ? {
