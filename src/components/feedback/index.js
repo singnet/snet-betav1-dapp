@@ -9,7 +9,7 @@ import Vote from './vote';
 import Comment from './comment';
 
 
-export default class Feedback extends React.Component {
+export default class Feedback extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -26,8 +26,8 @@ export default class Feedback extends React.Component {
     }
 
     componentDidMount() {
+        console.log(this.props.serviceState);
         //Checking if user has already provided feedback
-        console.log('serviceState', this.props.serviceState);
         if (this.props.serviceState.comment != null) {
             this.setState({ userComment: this.props.serviceState.comment });
         }
@@ -56,6 +56,15 @@ export default class Feedback extends React.Component {
         this.setState({ upVote: false, downVote: false });
     }
 
+    isFeedbackChanged(){
+        if(this.props.serviceState["up_vote"] != this.state.upVote ||
+        this.props.serviceState["down_vote"] != this.state.downVote ||
+        this.props.serviceState.comment != this.state.userComment){
+            return true;
+        }
+        return false;
+    }
+
     handleFeedbackSubmit() {
         const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'feedback'
         var sha3Message = web3.sha3(this.props.userAddress + this.props.serviceState["org_id"] + this.state.upVote + this.props.serviceState["service_id"] + this.state.downVote + this.state.userComment.toLowerCase());
@@ -73,13 +82,8 @@ export default class Feedback extends React.Component {
             }
             Requests.post(urlfetchvote, requestObject)
                 .then(res => this.setState({feedbackSubmitted:true,submitSuccessful:true,submitMessage:'Feedback submitted successfully 😊'}))
-                .catch(err => {
-                    console.log('feedback submit error',err)
-                    this.setState({feedbackSubmitted:true,submitSuccessful:false,submitMessage:'Unable to submit feedback 😟. Please try again'})});
-        }).catch(err=>{
-            console.log('feedback submit error',err)
-                    this.setState({feedbackSubmitted:true,submitSuccessful:false,submitMessage:'User denied signature 😟. Please sign in Metamask'})
-        })
+                .catch(err => this.setState({feedbackSubmitted:true,submitSuccessful:false,submitMessage:'Unable to submit feedback 😟. Please try again'}));
+        }).catch(err=>this.setState({feedbackSubmitted:true,submitSuccessful:false,submitMessage:'User denied signature 😟. Please sign in Metamask'}));
     }
 
     render() {
@@ -94,7 +98,7 @@ export default class Feedback extends React.Component {
                         <Vote chainId={chainId} enableVoting={enableFeedback} serviceState={serviceState} userAddress={userAddress}
                             upVote={upVote} downVote={downVote} toggleVote={this.toggleVote} />
                         <Comment userComment={userComment} handleUserComment={this.handleUserComment} />
-                        <button type="button" className="btn-primary" onClick={this.handleFeedbackSubmit}> Submit</button>
+                        {isFeedbackChanged()?<button type="button" className="btn-primary" onClick={this.handleFeedbackSubmit}> Submit</button>:''}
                     </React.Fragment>
                     : ""}
 
