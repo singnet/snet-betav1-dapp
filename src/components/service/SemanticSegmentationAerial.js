@@ -52,10 +52,7 @@ export default class SemanticSegmentationAerial extends React.Component {
         this.reference = "https://github.com/nshaud/DeepNetsForEO";
 
         this.submitAction = this.submitAction.bind(this);
-        this.canBeInvoked = this.canBeInvoked.bind(this);
         this.handleChange = this.handleChange.bind(this);
-        this.getImageData = this.getImageData.bind(this);
-        // this.parseResponse = this.parseResponse.bind(this);
 
         // Color Palette
         this.theme = createMuiTheme({
@@ -86,11 +83,6 @@ export default class SemanticSegmentationAerial extends React.Component {
         });
     }
 
-    canBeInvoked() {
-        // Can be invoked if both content and style images have been chosen
-        return (this.state.input);
-    }
-
     submitAction() {
         this.props.callApiCallback(
             this.state.serviceName,
@@ -100,10 +92,6 @@ export default class SemanticSegmentationAerial extends React.Component {
                 window_size: this.state.window_size,
                 stride: this.state.stride
             });
-    }
-
-    getImageData(data) {
-        this.setState({input: data});
     }
 
     searchTextUpdate(event) {
@@ -237,7 +225,7 @@ export default class SemanticSegmentationAerial extends React.Component {
                                         color="primary"
                                         style={{fontSize: "13px", marginLeft: "10px"}}
                                         onClick={this.submitAction}
-                                        disabled={!this.canBeInvoked()}
+                                        disabled={!this.state.input}
                                 >
                                     Invoke
                                 </Button>
@@ -248,23 +236,6 @@ export default class SemanticSegmentationAerial extends React.Component {
             </React.Fragment>
         )
     }
-
-    // parseResponse() {
-    //     const {response, isComplete} = this.props;
-    //     if (isComplete) {
-    //         this.setState({response: response});
-    //         if (typeof response !== 'undefined') {
-    //             if (typeof response === 'string') {
-    //                 return response;
-    //             }
-    //             return response;
-    //         } else {
-    //             return null;
-    //         }
-    //     } else {
-    //         return null;
-    //     }
-    // }
 
     renderComplete() {
         if (this.props.response) {
