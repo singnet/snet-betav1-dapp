@@ -206,7 +206,6 @@ export default class SemanticSegmentationAerial extends React.Component {
                 <Grid item container justify="center" style={{paddingTop: 16}}>
                     <Grid item>
                         <Tooltip
-                            disableFocusListener
                             title={
                                 <Typography
                                     style={{
@@ -217,7 +216,6 @@ export default class SemanticSegmentationAerial extends React.Component {
                                     Please input a valid URL for a TIFF image under http(s) or ftp.
                                 </Typography>
                             }
-                            open={this.state.input === ""}
                         >
                             <div>
                                 <Button variant="contained"
