@@ -4,79 +4,7 @@ import { getMarketplaceURL } from '../../util'
 import 'react-perfect-scrollbar/dist/css/styles.css';
 
 
-export default class Vote extends React.Component {
-    constructor() {
-      super(props)
-      
-      this.state = {
-        upVote: false,
-        downVote: false,
-      };
-      this.userVoted = false
-      // this.handleVote = this.handleVote.bind(this);
-    }
-
-    // updateVote(upVote, downVote)
-    // {
-    //   this.setState({upVote:upVote})
-    //   this.setState({downVote:downVote})
-    // }
-
-    // processError(err, upVote, downVote)
-    // {
-    //   this.userVoted = false
-    //   console.log(err)
-    //   this.updateVote(upVote, downVote)
-    // }
-
-    // handleVote(orgid,serviceid,upVote, downVote)
-    // {
-    //   this.userVoted = true
-    //   console.log("Changing upVote to " + upVote + " and downVote to " + downVote)
-    //   const voteLikeOriginal = this.state.upVote
-    //   const voteDislikeOriginal = this.state.downVote
-            
-    //   if(typeof upVote === 'undefined'){
-    //     upVote = downVote ? false : this.state.upVote
-    //   } 
-    //   else if(typeof downVote === 'undefined') {
-    //     downVote = upVote ? false : this.state.downVote
-    //   }
-    //   this.updateVote(upVote, downVote)
-      
-    //   const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'user-vote'
-    //   // const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'feedback'
-    //   console.log("Message " + this.props.userAddress + orgid + upVote + serviceid + downVote)
-    //   var sha3Message = web3.sha3(this.props.userAddress + orgid + upVote + serviceid + downVote + comment);
-    //   console.log("Hash " + sha3Message)
-    //   window.ethjs.personal_sign(sha3Message, this.props.userAddress).then((signed) => {
-    //     console.log("Signature " + signed)
-    //     const requestObject = {
-    //       vote: {
-    //         user_address: this.props.userAddress,
-    //         org_id: orgid,
-    //         service_id: serviceid,
-    //         up_vote: upVote,
-    //         down_vote: downVote,
-    //         signature: signed
-    //       }
-    //     }
-    //     console.log(JSON.stringify(requestObject))
-  
-    //     Requests.post(urlfetchvote,requestObject)
-    //       .then(res => this.processRespone(res))
-    //       .catch(err => this.processError(err, voteLikeOriginal, voteDislikeOriginal));
-    //   }).catch(err=> this.processError(err, voteLikeOriginal, voteDislikeOriginal))
-    // }
-
-    // isVotingEnabled() {
-    //   const urlfetchvote = getMarketplaceURL(this.props.chainId)
-    //   return (typeof urlfetchvote !== 'undefined' && this.props.enableVoting)
-    // }
-
-    render()
-    {
-      const {upVote,downVote,toggleVote} = this.props;
+const Vote = ({upVote,downVote,toggleVote}) =>{
         return(
             <React.Fragment>
               <div className="col-xs-12 col-sm-12 col-md-12 vote no-padding">
@@ -94,5 +22,6 @@ export default class Vote extends React.Component {
               </div> 
             </React.Fragment>
         )
-    }
 }
+
+export default Vote;
