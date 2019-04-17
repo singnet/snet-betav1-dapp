@@ -1,6 +1,4 @@
-import React, { props } from 'react';
-import { Requests } from '../../requests'
-import { getMarketplaceURL } from '../../util'
+import React from 'react';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 
 
