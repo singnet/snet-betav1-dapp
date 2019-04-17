@@ -179,7 +179,7 @@ class SampleServices extends React.Component {
     const marketPlaceURL = getMarketplaceURL(chainId);
     const url = marketPlaceURL + "service"
     const urlfetchservicestatus = marketPlaceURL + 'group-info'
-    const urlfetchvote = marketPlaceURL + 'fetch-vote?user_address=' + (typeof web3 === 'undefined' ? "0x" : web3.eth.defaultAccount)
+    const urlfetchvote = marketPlaceURL + 'feedback?user_address=' + (typeof web3 === 'undefined' ? "0x" : web3.eth.defaultAccount)
     console.log("Fetching data for " + chainId)
     Promise.all([Requests.get(url),Requests.get(urlfetchservicestatus),Requests.get(urlfetchvote)])
     .then((values) =>
@@ -207,6 +207,7 @@ class SampleServices extends React.Component {
                   agent["down_vote_count"] = voteDetail["down_vote_count"]
                   agent["up_vote"] = voteDetail["up_vote"]
                   agent["down_vote"] = voteDetail["down_vote"]
+                  agent.comment = voteDetail.comment
                 }
               })); 
           }

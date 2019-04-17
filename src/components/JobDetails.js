@@ -12,7 +12,7 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 import ServiceMappings from "./service/ServiceMappings.js"
 import ChannelHelper from './ChannelHelper.js';
 import { Root } from 'protobufjs'
-import Vote from './Vote.js';
+import Feedback from './feedback';
 import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
 import {serviceStateJSON} from '../service_state'
@@ -43,7 +43,7 @@ export  class Jobdetails extends React.Component {
         fundTabEnabled:false,
         depositopenchannelerror:'',
         valueTab:0,
-        enableVoting:false,
+        enableFeedback:false,
         showModal:false,
         sliderWidth:minSliderWidth,
         showEscrowBalanceAlert:false,
@@ -313,7 +313,7 @@ export  class Jobdetails extends React.Component {
             .then(response => {
               console.log("Got a GRPC response " + JSON.stringify(response))
               this.setState({grpcResponse: response})
-              this.setState({enableVoting: true})
+              this.setState({enableFeedback: true})
               this.nextJobStep();
               this.setState({fundTabEnabled: false});
             })
@@ -321,7 +321,7 @@ export  class Jobdetails extends React.Component {
               console.log("GRPC call failed with error " + JSON.stringify(err));
               this.setState({grpcResponse: JSON.stringify(err)});
               this.setState({grpcErrorOccurred: true})
-              this.setState({enableVoting: true})
+              this.setState({enableFeedback: true})
               this.nextJobStep();
               this.setState({fundTabEnabled: false});
             })
@@ -548,7 +548,7 @@ export  class Jobdetails extends React.Component {
       this.setState({jobDetailsSliderOpen: true });
       this.seedDefaultValues(false,0);
             
-      this.setState({enableVoting: false})
+      this.setState({enableFeedback: false})
       this.setState({runjobstate:false})
       this.setState({depositopenchannelerror:''})
       if (typeof web3 === 'undefined' || typeof this.props.userAddress === 'undefined') {
@@ -749,7 +749,7 @@ export  class Jobdetails extends React.Component {
                                 </div>
                             </div>
                                 : null }
-                            <Vote chainId={this.props.chainId} enableVoting={this.state.enableVoting} serviceState={this.serviceState} userAddress={this.props.userAddress}/>
+                            <Feedback enableFeedback={this.state.enableFeedback} serviceState={this.serviceState} userAddress={this.props.userAddress} chainId={this.props.chainId}/>
                         </div>
                     </Typography>
                   </PerfectScrollbar>
