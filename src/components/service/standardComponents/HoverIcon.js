@@ -67,6 +67,7 @@ HoverIcon.propTypes = {
 };
 
 HoverIcon.defaultProps = {
+    text: null,
     fontFamily: "Muli",
     fontSize: 14,
     textColor: "white",
