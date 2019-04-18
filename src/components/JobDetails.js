@@ -513,6 +513,7 @@ export  class Jobdetails extends React.Component {
     }
 
     onCloseJobDetailsSlider(){
+      this.props.reloadDetails()
       this.setState({ jobDetailsSliderOpen: false });
       if (this.watchBlocknumberTimer) {
         console.log("Clearing the watchblock timer")
