@@ -38,6 +38,7 @@ class SampleServices extends React.Component {
     this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
+    this.loadDetails = this.loadDetails.bind(this);
   }
 
     watchWallet() {
@@ -170,12 +171,11 @@ class SampleServices extends React.Component {
     this.handleWindowLoad();
   }
 
-  loadDetails(chainId) {
+  loadDetails(chainId=this.network.chainId) {
     if(!isSupportedNetwork(chainId)) {
       this.setState({agents:[]})
       return;
     }
-    
     const marketPlaceURL = getMarketplaceURL(chainId);
     const url = marketPlaceURL + "service"
     const urlfetchservicestatus = marketPlaceURL + 'group-info'
@@ -382,7 +382,8 @@ class SampleServices extends React.Component {
                 <Jobdetails ref="jobdetailsComp"
                             userAddress={this.state.userAddress}
                             chainId={this.state.chainId}
-                            network={this.network}/>
+                            network={this.network}
+                            reloadDetails={this.loadDetails}/>
                 </div>
             </main>
             <Footer/>
