@@ -1,10 +1,8 @@
-import React, { props } from 'react';
-import TextField from '@material-ui/core/TextField';
-import PropTypes, { bool } from 'prop-types';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { Requests } from '../../requests'
 import { getMarketplaceURL } from '../../util'
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { Button } from '@material-ui/core/es';
 import Vote from './vote';
 import Comment from './comment';
 
