@@ -23,6 +23,7 @@ export default class Feedback extends React.PureComponent {
         this.handleUserComment = this.handleUserComment.bind(this);
         this.toggleVote = this.toggleVote.bind(this);
         this.handleFeedbackSubmit = this.handleFeedbackSubmit.bind(this);
+        this.isFeedbackChanged = this.isFeedbackChanged.bind(this);
     }
 
     componentDidMount() {
@@ -39,6 +40,19 @@ export default class Feedback extends React.PureComponent {
         }
     }
 
+    componentDidUpdate(prevProps){
+        if(prevProps.serviceState.comment != this.props.serviceState.comment){
+            this.setState({userComment:this.props.serviceState.comment})
+        }
+        
+        if(prevProps.serviceState['up_vote'] != this.props.serviceState['up_vote']){
+            this.setState({upVote:this.props.serviceState['up_vote']})
+        }
+        if(prevProps.serviceState['down_vote'] != this.props.serviceState['down_vote']){
+            this.setState({downVote:this.props.serviceState['down_vote']})
+        }
+    }
+
     handleUserComment(event) {
         this.setState({ userComment: event.target.value });
     }
@@ -50,10 +64,6 @@ export default class Feedback extends React.PureComponent {
         else if (type === 'down') {
             this.setState(prevState => { return ({ upVote: false, downVote: !prevState.downVote }) });
         }
-    }
-
-    resetVote() {
-        this.setState({ upVote: false, downVote: false });
     }
 
     isFeedbackChanged(){
@@ -98,7 +108,7 @@ export default class Feedback extends React.PureComponent {
                         <Vote chainId={chainId} enableVoting={enableFeedback} serviceState={serviceState} userAddress={userAddress}
                             upVote={upVote} downVote={downVote} toggleVote={this.toggleVote} />
                         <Comment userComment={userComment} handleUserComment={this.handleUserComment} />
-                        {isFeedbackChanged()?<button type="button" className="btn-primary" onClick={this.handleFeedbackSubmit}> Submit</button>:''}
+                        {this.isFeedbackChanged()?<button type="button" className="btn-primary" onClick={this.handleFeedbackSubmit}> Submit</button>:''}
                     </React.Fragment>
                     : ""}
 
