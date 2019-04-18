@@ -58,12 +58,12 @@ export default class HoverIcon extends React.Component{
 
 HoverIcon.propTypes = {
     text: PropTypes.string,
-    textColor: PropTypes.PropTypes.string,
+    textColor: PropTypes.string,
     fontFamily: PropTypes.string,
     fontSize: PropTypes.number,
     href: PropTypes.string,
-    onColor: PropTypes.PropTypes.string,
-    offColor: PropTypes.PropTypes.string,
+    onColor: PropTypes.string,
+    offColor: PropTypes.string,
 };
 
 HoverIcon.defaultProps = {
