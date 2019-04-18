@@ -1,17 +1,66 @@
 # SingularityNET Standard UI Components
 
-Here's the documentation for SNET's standard components:
+This is the documentation for the official [Material UI](https://material-ui.com/) based standard components for SingularityNET services:
 
 Summary:
+- [Hover Icon](#hover-icon);
 - [Image Upload Component](#image-upload-component);
 
+___
+
+## Hover Icon
+
+> Maintainer: Ramon Durães | http://github.com/ramongduraes | ramon@singularitynet.io
+
+### Functionality
+
+This component is a wrapper for Material UI's icons that turns them into hyperlink buttons. They will change color and display an optional tooltip (`text`) when hovered upon and open the referenced URL (`href`) on another tab upon clicking. The suggested use is to wrap this component around an icon of choice and set its `href` and `text` properties. Other optional parameters are described and an example usage is given in the Parameters and Example Usage sections below, respectively.
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| href | string | - | The URL to which the user will be redirected upon clicking the button. |
+| text | string | `null` | Tooltip text shown when the icon is focused. Will not render a Tooltip if not given. |
+| textColor | string | "white" | Tooltip text color. |
+| fontFamily | string | "Muli" | Tooltip text font family. |
+| fontSize | number | "14" | Tooltip text font size. |
+| onColor | string | blue[500] | Icon's active color (onHover). |
+| offColor | string | grey[600] | Icon's inactive color. |
+
+### Example Usage
+
+Below are two example usages of the component, one using Material UI's custom SvgIcon and another using its standard Info icon.
+ 
+```javascript
+import React from 'react';
+import HoverIcon from "./standardComponents/HoverIcon";
+import SvgIcon from "@material-ui/core/SvgIcon";
+import InfoIcon from "@material-ui/icons/Info";
+
+export default class App extends Component {    
+    render() {
+        return (
+            <div>
+                <HoverIcon text="View code on Github" href="https://github.com/singnet/snet-dapp/blob/master/src/components/service/standardComponents/HoverIcon.js">
+                    <SvgIcon>
+                        <path // Github Icon
+                            d="M12.007 0C6.12 0 1.1 4.27.157 10.08c-.944 5.813 2.468 11.45 8.054 13.312.19.064.397.033.555-.084.16-.117.25-.304.244-.5v-2.042c-3.33.735-4.037-1.56-4.037-1.56-.22-.726-.694-1.35-1.334-1.756-1.096-.75.074-.735.074-.735.773.103 1.454.557 1.846 1.23.694 1.21 2.23 1.638 3.45.96.056-.61.327-1.178.766-1.605-2.67-.3-5.462-1.335-5.462-6.002-.02-1.193.42-2.35 1.23-3.226-.327-1.015-.27-2.116.166-3.09 0 0 1.006-.33 3.3 1.23 1.966-.538 4.04-.538 6.003 0 2.295-1.5 3.3-1.23 3.3-1.23.445 1.006.49 2.144.12 3.18.81.877 1.25 2.033 1.23 3.226 0 4.607-2.805 5.627-5.476 5.927.578.583.88 1.386.825 2.206v3.29c-.005.2.092.393.26.507.164.115.377.14.565.063 5.568-1.88 8.956-7.514 8.007-13.313C22.892 4.267 17.884.007 12.008 0z"/>
+                    </SvgIcon>
+                </HoverIcon>
+                <HoverIcon text="Material UI" href="https://material-ui.com/">
+                    <InfoIcon/>
+                </HoverIcon>
+            </div>
+        );
+    }
+}
+```
 ___
 
 ## Image Upload Component
 
 > Maintainer: Ramon Durães | http://github.com/ramongduraes | ramon@singularitynet.io
-
-This is the documentation for the official [Material UI](https://material-ui.com/) based image upload component for SingularityNET services.
 
 ### General Functionality
 
