@@ -1,6 +1,5 @@
 import React from 'react';
 import Button from '@material-ui/core/Button';
-import SNETImageUpload from "./standardComponents/SNETImageUpload";
 import {Grid, IconButton, MuiThemeProvider, Tooltip} from "@material-ui/core";
 import {blue} from "@material-ui/core/colors";
 import SvgIcon from "@material-ui/core/SvgIcon";
@@ -10,10 +9,16 @@ import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import grey from "@material-ui/core/es/colors/grey";
 import red from "@material-ui/core/es/colors/red";
-import Switch from "@material-ui/core/Switch";
-import Slider from "@material-ui/lab/Slider";
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+import Select from "@material-ui/core/Select";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
+import MenuItem from "@material-ui/core/MenuItem";
+import TextField from "@material-ui/core/TextField";
+import ReactDOM from "react-dom";
+import SNETImageUpload from "./standardComponents/SNETImageUpload";
 
-export default class StyleTransfer extends React.Component {
+export default class SemanticSegmentationAerial extends React.Component {
 
     constructor(props) {
         super(props);
@@ -21,17 +26,20 @@ export default class StyleTransfer extends React.Component {
         this.initialState = {
             // From .proto file
             // Single option for both service and method names
-            serviceName: "StyleTransfer",
-            methodName: "transfer_image_style",
+            serviceName: "SemanticSegmentationAerial",
+            methodName: "segment_aerial_image",
+            searchText: "",
+
             // Actual inputs
-            content: "",
-            style: "",
-            contentSize: 640,
-            styleSize: 640,
-            preserveColor: false,
-            alpha: 1.0, // 0 to 1
-            crop: false,
-            saveExt: "",
+            input: "",
+            window_size: 256,
+            stride: 256,
+            // Output
+            response: null,
+
+            // For the outlined select components
+            swsLabelWidth: 0,
+            strideLabelWidth: 0,
         };
 
         this.state = this.initialState;
@@ -39,30 +47,12 @@ export default class StyleTransfer extends React.Component {
         this.mainFont = "Muli";
         this.mainFontSize = 14;
 
-        this.users_guide = "https://singnet.github.io/style-transfer-service/";
-        this.code_repo = "https://github.com/singnet/style-transfer-service";
-        this.reference = "https://github.com/xunhuang1995/AdaIN-style";
-
-        this.styleGallery = [
-            "https://raw.githubusercontent.com/dxyang/StyleTransfer/master/style_imgs/mosaic.jpg",
-            "https://raw.githubusercontent.com/ShafeenTejani/fast-style-transfer/master/examples/dora-maar-picasso.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/input/style/brushstrokes.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/impronte_d_artista_cropped.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/woman_with_hat_matisse_cropped.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/sketch_cropped.png",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/ashville_cropped.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/goeritz_cropped.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/en_campo_gris_cropped.jpg",
-        ];
+        this.users_guide = "https://singnet.github.io/semantic-segmentation-aerial/";
+        this.code_repo = "https://github.com/singnet/semantic-segmentation-aerial";
+        this.reference = "https://github.com/nshaud/DeepNetsForEO";
 
         this.submitAction = this.submitAction.bind(this);
-        this.canBeInvoked = this.canBeInvoked.bind(this);
-
-        this.preserveColorSwitchChange = this.preserveColorSwitchChange.bind(this);
-        this.cropSwitchChange = this.cropSwitchChange.bind(this);
-        this.getContentImageData = this.getContentImageData.bind(this);
-        this.getStyleImageData = this.getStyleImageData.bind(this);
-        this.handleSliderChange = this.handleSliderChange.bind(this);
+        this.handleChange = this.handleChange.bind(this);
 
         // Color Palette
         this.theme = createMuiTheme({
@@ -86,9 +76,11 @@ export default class StyleTransfer extends React.Component {
         });
     }
 
-    canBeInvoked() {
-        // Can be invoked if both content and style images have been chosen
-        return (this.state.content && this.state.style);
+    componentDidMount() {
+        this.setState({
+            swsLabelWidth: ReactDOM.findDOMNode(this.SWSLabelRef).offsetWidth,
+            strideLabelWidth: ReactDOM.findDOMNode(this.StrideLabelRef).offsetWidth,
+        });
     }
 
     submitAction() {
@@ -96,164 +88,184 @@ export default class StyleTransfer extends React.Component {
             this.state.serviceName,
             this.state.methodName,
             {
-                content: this.state.content,
-                style: this.state.style,
-                contentSize: this.state.contentSize,
-                styleSize: this.state.styleSize,
-                preserveColor: this.state.preserveColor,
-                alpha: this.state.alpha,
-                crop: this.state.crop,
-                saveExt: this.state.saveExt,
+                input: this.state.input,
+                window_size: this.state.window_size,
+                stride: this.state.stride
             });
     }
 
-    getContentImageData(data) {
-        this.setState({content: data});
-    }
+    searchTextUpdate(event) {
+        let url_pattern =
+            /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?(\.tif|\.tiff)/;
 
-    getStyleImageData(data) {
-        this.setState({style: data});
-    }
+        this.setState({
+            searchText: event.target.value,
+            input: ""
+        });
 
-    preserveColorSwitchChange() {
-        this.setState({preserveColor: !this.state.preserveColor})
-    }
+        if (event.target.value.match(url_pattern) != null) {
+            this.setState({input: event.target.value})
+        }
+    };
 
-    cropSwitchChange() {
-        this.setState({crop: !this.state.crop})
-    }
-
-    handleSliderChange(event, value) {
-        this.setState({alpha: value})
-    }
+    handleChange(event) {
+        if (event.target.name === "window_size") {
+            this.setState({
+                [event.target.name]: event.target.value,
+                stride: event.target.value,
+            });
+        } else {
+            this.setState({[event.target.name]: event.target.value});
+        }
+    };
 
     renderForm() {
-        const {preserveColor, crop, alpha} = this.state;
         return (
             <React.Fragment>
-                <Grid item xs={12} container justify="space-around" style={{paddingTop: 12}}>
-                    <Grid item xs={6} justify="center" container direction="column" alignItems="center">
-                        <Grid item>
-                            <Tooltip
-                                title={
-                                    <Typography
-                                        style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>
-                                        Preserve content image's original colors.
-                                    </Typography>
-                                }
-                            >
-                                <Switch
-                                    checked={preserveColor}
-                                    onChange={this.preserveColorSwitchChange}
-                                    value={preserveColor}
-                                    color="primary"
-                                />
-                            </Tooltip>
-                        </Grid>
-                        <Grid item>
-                            <Typography
-                                style={{
-                                    fontFamily: this.mainFont,
-                                    fontSize: this.mainFontSize,
-                                }}
-                            >
-                                Preserve Color
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                    <Grid item xs={6} justify="center" container direction="column" alignItems="center">
-                        <Grid item>
-                            <Tooltip
-                                title={
-                                    <Typography
-                                        style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>
-                                        Use only the central square crop of the image.
-                                    </Typography>
-                                }>
-                                <Switch
-                                    checked={crop}
-                                    onChange={this.cropSwitchChange}
-                                    value={crop}
-                                    color="primary"
-                                />
-                            </Tooltip>
-                        </Grid>
-                        <Grid item>
-                            <Typography
-                                style={{
-                                    fontFamily: this.mainFont,
-                                    fontSize: this.mainFontSize,
-                                }}
-                            >
-                                Crop
-                            </Typography>
-                        </Grid>
-                    </Grid>
+                <Grid item container xs={12} direction="row" justify="center" alignItems="center">
+                    <MuiThemeProvider theme={this.theme}>
+                        <TextField
+                            style={{
+                                width: "80%",
+                                primary: blue,
+                                textAlign: "left",
+                            }}
+                            variant="outlined"
+                            type="text"
+                            label={<span style={{fontWeight: 'normal', fontSize: 12}}>TIFF Image URL</span>}
+                            onChange={this.searchTextUpdate.bind(this)}
+                        />
+                    </MuiThemeProvider>
                 </Grid>
-                <Grid item xs={12} container direction="column" spacing={8} style={{paddingTop: 16}}>
-                    <Grid item xs={12} container justify="center">
+                <div style={{width: "80%", paddingTop: 10}}>
+                    <Grid item xs={12} container alignItems="center" justify="space-around">
+                        <Grid item xs container justify="flex-start" alignItems="center">
+
+                            <FormControl variant="outlined">
+                                <InputLabel
+                                    ref={ref => {
+                                        this.SWSLabelRef = ref;
+                                    }}
+                                    htmlFor="outlined-sws"
+                                >
+                                    Sliding Window Size
+                                </InputLabel>
+                                <Select
+                                    value={this.state.window_size}
+                                    onChange={this.handleChange}
+                                    input={
+                                        <OutlinedInput
+                                            labelWidth={this.state.swsLabelWidth}
+                                            name="window_size"
+                                            id="outlined-sws"
+                                        />
+                                    }
+                                >
+                                    <MenuItem value="512">512</MenuItem>
+                                    <MenuItem value="256">256</MenuItem>
+                                    <MenuItem value="128">128</MenuItem>
+                                    <MenuItem value="64">64</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs container justify="flex-end" alignItems="center">
+                            <FormControl variant="outlined">
+                                <InputLabel
+                                    ref={ref => {
+                                        this.StrideLabelRef = ref;
+                                    }}
+                                    htmlFor="outlined-stride"
+                                >
+                                    Stride
+                                </InputLabel>
+                                <Select
+                                    value={this.state.stride}
+                                    onChange={this.handleChange}
+                                    input={
+                                        <OutlinedInput
+                                            labelWidth={this.state.strideLabelWidth}
+                                            name="stride"
+                                            id="outlined-stride"
+                                        />
+                                    }
+                                >
+                                    <MenuItem
+                                        value={this.state.window_size}>{this.state.window_size.toString()}
+                                    </MenuItem>
+                                    <MenuItem
+                                        value={this.state.window_size / 2}>{(this.state.window_size / 2).toString()}
+                                    </MenuItem>
+                                    <MenuItem
+                                        value={this.state.window_size / 4}>{(this.state.window_size / 4).toString()}
+                                    </MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                    </Grid>
+                </div>
+                <Grid item container justify="center" style={{paddingTop: 16}}>
+                    <Grid item>
                         <Tooltip
                             title={
                                 <Typography
-                                    style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}
-                                    id="slider_label">
-                                    {
-                                        Math.round(alpha * 100) /100 // Rounds to 2 decimals
-                                    }
+                                    style={{
+                                        fontFamily: this.mainFont,
+                                        fontSize: this.mainFontSize,
+                                        color: "white"
+                                    }}>
+                                    Please input a valid URL for a TIFF image under http(s) or ftp.
                                 </Typography>
                             }
                         >
-                            <Slider
-                                style={{width: "80%"}}
-                                value={alpha}
-                                min={0.0}
-                                max={1.0}
-                                step={0.01}
-                                onChange={this.handleSliderChange}
-                            />
+                            <div>
+                                <Button variant="contained"
+                                        size="medium"
+                                        color="primary"
+                                        style={{fontSize: "13px", marginLeft: "10px"}}
+                                        onClick={this.submitAction}
+                                        disabled={!this.state.input}
+                                >
+                                    Invoke
+                                </Button>
+                            </div>
                         </Tooltip>
-                    </Grid>
-                    <Grid item xs={12} container justify="center">
-                        <Typography
-                            style={{
-                                fontFamily: this.mainFont,
-                                fontSize: this.mainFontSize,
-                            }}
-                        >
-                            Content-style trade-off
-                        </Typography>
-                    </Grid>
-                </Grid>
-                <Grid item container justify="center" style={{paddingTop: 16}}>
-                    <Grid item>
-                        <Button variant="contained"
-                                size="medium"
-                                color="primary"
-                                style={{fontSize: "13px", marginLeft: "10px"}}
-                                onClick={this.submitAction}
-                                disabled={!this.canBeInvoked()}
-                        >
-                            Invoke
-                        </Button>
                     </Grid>
                 </Grid>
             </React.Fragment>
         )
     }
 
-    parseResponse() {
-        const { response, isComplete } = this.props;
-        if(isComplete){
-            if(typeof response !== 'undefined') {
-                if(typeof response === 'string') {
-                    return response;
-                }
-                return response.data;
+    renderComplete() {
+        if (this.props.response) {
+            if (this.props.response.data.length < 300) {
+                return (
+                    <Grid item xs={12} container justify="center">
+                        <Typography
+                            style={{
+                                fontFamily: this.mainFont,
+                                fontSize: this.mainFontSize,
+                                color: "red",
+                            }}>
+                            Error: {this.props.response.data}
+                        </Typography>
+                    </Grid>
+                )
             } else {
-                return null;
+                return (
+                    <Grid item xs={12} container justify="center">
+                        <SNETImageUpload
+                            imageDataFunc={function () {
+                                return 0
+                            }}
+                            outputImage={this.props.response.data}
+                            outputImageName="segmented_image"
+                            width="90%"
+                            disableComparisonTab={true}
+                            disableInputTab={true}
+                        />
+                    </Grid>
+                )
             }
-        } else {
-            return null;
         }
     }
 
@@ -263,22 +275,26 @@ export default class StyleTransfer extends React.Component {
                 <Paper style={{
                     padding: 8 * 2,
                     margin: 'auto',
-                    width: "100%",
+                    width: "85%",
                     maxWidth: 550,
                 }}>
                     <MuiThemeProvider theme={this.theme}>
                         <Grid container spacing={8} justify="center" alignItems="center">
-                            <Grid item xs={12} container alignItems="center" justify="space-between">
+                            <Grid item xs={12} container alignItems="center" justify="center">
                                 <Grid item>
                                     <Typography
                                         style={{
                                             fontFamily: this.mainFont,
-                                            fontSize: this.mainFontSize * 4 / 3,
+                                            fontSize: 19,
                                         }}
                                     >
-                                        Style Transfer
+                                        Semantic Segmentation for Aerial Images
                                     </Typography>
                                 </Grid>
+                            </Grid>
+                        </Grid>
+                        <Grid container spacing={8} justify="center" alignItems="center">
+                            <Grid item xs={12} container alignItems="center" justify="flex-end">
                                 <Grid item xs container justify="flex-end">
                                     <Grid item>
                                         <Tooltip
@@ -368,36 +384,7 @@ export default class StyleTransfer extends React.Component {
                                     </Grid>
                                 </Grid>
                             </Grid>
-                            <Grid item xs={12} container justify="center">
-                                <SNETImageUpload
-                                    style={{align: "center"}}
-                                    maxImageSize={3000000}
-                                    maxImageWidth={2400}
-                                    maxImageHeight={1800}
-                                    imageDataFunc={this.getContentImageData}
-                                    imageName="Input"
-                                    outputImage={this.parseResponse()}
-                                    outputImageName="stylizedImage"
-                                    width="90%"
-                                    instantUrlFetch={true}
-                                    allowURL={true}
-                                />
-                            </Grid>
-                            <Grid item xs={12} container justify="center">
-                                <SNETImageUpload
-                                    imageDataFunc={this.getStyleImageData}
-                                    imageName="Style"
-                                    maxImageSize={3000000}
-                                    maxImageWidth={2400}
-                                    maxImageHeight={1800}
-                                    disableResetButton={this.props.isComplete}
-                                    width="90%"
-                                    instantUrlFetch={true}
-                                    allowURL={true}
-                                    imageGallery={this.styleGallery}
-                                />
-                            </Grid>
-                            { !this.props.isComplete && this.renderForm() }
+                            {this.props.isComplete ? this.renderComplete() : this.renderForm()}
                         </Grid>
                     </MuiThemeProvider>
                 </Paper>

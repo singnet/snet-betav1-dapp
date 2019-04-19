@@ -10,10 +10,14 @@ import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import grey from "@material-ui/core/es/colors/grey";
 import red from "@material-ui/core/es/colors/red";
-import Switch from "@material-ui/core/Switch";
-import Slider from "@material-ui/lab/Slider";
+import MenuItem from "@material-ui/core/MenuItem";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
+import Select from "@material-ui/core/Select";
+import ReactDOM from 'react-dom';
+import InputLabel from "@material-ui/core/InputLabel";
+import FormControl from "@material-ui/core/FormControl";
 
-export default class StyleTransfer extends React.Component {
+export default class SuperResolution extends React.Component {
 
     constructor(props) {
         super(props);
@@ -21,17 +25,16 @@ export default class StyleTransfer extends React.Component {
         this.initialState = {
             // From .proto file
             // Single option for both service and method names
-            serviceName: "StyleTransfer",
-            methodName: "transfer_image_style",
+            serviceName: "SuperResolution",
+            methodName: "increase_image_resolution",
             // Actual inputs
-            content: "",
-            style: "",
-            contentSize: 640,
-            styleSize: 640,
-            preserveColor: false,
-            alpha: 1.0, // 0 to 1
-            crop: false,
-            saveExt: "",
+            input: null,
+            model: "",
+            scale: "",
+
+            // For the outlined select components
+            modelLabelWidth: 0,
+            scaleLabelWidth: 0,
         };
 
         this.state = this.initialState;
@@ -39,30 +42,17 @@ export default class StyleTransfer extends React.Component {
         this.mainFont = "Muli";
         this.mainFontSize = 14;
 
-        this.users_guide = "https://singnet.github.io/style-transfer-service/";
-        this.code_repo = "https://github.com/singnet/style-transfer-service";
-        this.reference = "https://github.com/xunhuang1995/AdaIN-style";
-
-        this.styleGallery = [
-            "https://raw.githubusercontent.com/dxyang/StyleTransfer/master/style_imgs/mosaic.jpg",
-            "https://raw.githubusercontent.com/ShafeenTejani/fast-style-transfer/master/examples/dora-maar-picasso.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/input/style/brushstrokes.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/impronte_d_artista_cropped.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/woman_with_hat_matisse_cropped.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/sketch_cropped.png",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/ashville_cropped.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/goeritz_cropped.jpg",
-            "https://raw.githubusercontent.com/singnet/style-transfer-service/master/docs/assets/examples/en_campo_gris_cropped.jpg",
-        ];
+        this.users_guide = "https://singnet.github.io/super-resolution-service/";
+        this.code_repo = "https://github.com/singnet/super-resolution-service";
+        this.reference = "https://github.com/fperazzi/proSR";
 
         this.submitAction = this.submitAction.bind(this);
         this.canBeInvoked = this.canBeInvoked.bind(this);
 
-        this.preserveColorSwitchChange = this.preserveColorSwitchChange.bind(this);
-        this.cropSwitchChange = this.cropSwitchChange.bind(this);
-        this.getContentImageData = this.getContentImageData.bind(this);
-        this.getStyleImageData = this.getStyleImageData.bind(this);
-        this.handleSliderChange = this.handleSliderChange.bind(this);
+        this.handleServiceName = this.handleServiceName.bind(this);
+        this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.getImageData = this.getImageData.bind(this);
 
         // Color Palette
         this.theme = createMuiTheme({
@@ -87,8 +77,15 @@ export default class StyleTransfer extends React.Component {
     }
 
     canBeInvoked() {
-        // Can be invoked if both content and style images have been chosen
-        return (this.state.content && this.state.style);
+        // Can be invoked if all of the input parameters have been chosen
+        return (this.state.input !== null && this.state.model !== "" && this.state.scale !== "");
+    }
+
+    componentDidMount() {
+        this.setState({
+            modelLabelWidth: ReactDOM.findDOMNode(this.ModelLabelRef).offsetWidth,
+            scaleLabelWidth: ReactDOM.findDOMNode(this.ScaleLabelRef).offsetWidth,
+        });
     }
 
     submitAction() {
@@ -96,135 +93,126 @@ export default class StyleTransfer extends React.Component {
             this.state.serviceName,
             this.state.methodName,
             {
-                content: this.state.content,
-                style: this.state.style,
-                contentSize: this.state.contentSize,
-                styleSize: this.state.styleSize,
-                preserveColor: this.state.preserveColor,
-                alpha: this.state.alpha,
-                crop: this.state.crop,
-                saveExt: this.state.saveExt,
+                input: this.state.input,
+                model: this.state.model,
+                scale: this.state.scale,
             });
     }
 
-    getContentImageData(data) {
-        this.setState({content: data});
+    handleFormUpdate(event) {
+        this.setState({[event.target.name]: event.target.value})
     }
 
-    getStyleImageData(data) {
-        this.setState({style: data});
+    handleServiceName(event) {
+        let strService = event.target.value;
+        this.setState({
+            serviceName: strService
+        });
+        console.log("Selected service is " + strService);
+        let data = this.methodsForAllServices[strService];
+        if (typeof data === 'undefined') {
+            data = [];
+        }
+        this.serviceMethods = data;
     }
 
-    preserveColorSwitchChange() {
-        this.setState({preserveColor: !this.state.preserveColor})
+    handleChange(event) {
+        if (event.target.name === "model") {
+            this.setState({
+                [event.target.name]: event.target.value,
+                scale: ""
+            });
+        } else {
+            this.setState({[event.target.name]: event.target.value});
+        }
+
     }
 
-    cropSwitchChange() {
-        this.setState({crop: !this.state.crop})
-    }
-
-    handleSliderChange(event, value) {
-        this.setState({alpha: value})
+    getImageData(data) {
+        this.setState({input: data});
     }
 
     renderForm() {
-        const {preserveColor, crop, alpha} = this.state;
         return (
             <React.Fragment>
                 <Grid item xs={12} container justify="space-around" style={{paddingTop: 12}}>
-                    <Grid item xs={6} justify="center" container direction="column" alignItems="center">
-                        <Grid item>
-                            <Tooltip
-                                title={
-                                    <Typography
-                                        style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>
-                                        Preserve content image's original colors.
-                                    </Typography>
+                    <Grid item xs container justify="center" alignItems="center">
+
+                        <FormControl variant="outlined"
+                                     style={{
+                                         margin: 8,
+                                         minWidth: 120,
+                                     }}>
+                            <InputLabel
+                                ref={ref => {
+                                    this.ModelLabelRef = ref;
+                                }}
+                                htmlFor="outlined-model"
+                            >
+                                Model
+                            </InputLabel>
+                            <Select
+                                value={this.state.model}
+                                onChange={this.handleChange}
+                                input={
+                                    <OutlinedInput
+                                        labelWidth={this.state.modelLabelWidth}
+                                        name="model"
+                                        id="outlined-model"
+                                    />
                                 }
                             >
-                                <Switch
-                                    checked={preserveColor}
-                                    onChange={this.preserveColorSwitchChange}
-                                    value={preserveColor}
-                                    color="primary"
-                                />
-                            </Tooltip>
-                        </Grid>
-                        <Grid item>
-                            <Typography
-                                style={{
-                                    fontFamily: this.mainFont,
-                                    fontSize: this.mainFontSize,
-                                }}
-                            >
-                                Preserve Color
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                    <Grid item xs={6} justify="center" container direction="column" alignItems="center">
-                        <Grid item>
-                            <Tooltip
-                                title={
-                                    <Typography
-                                        style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>
-                                        Use only the central square crop of the image.
-                                    </Typography>
-                                }>
-                                <Switch
-                                    checked={crop}
-                                    onChange={this.cropSwitchChange}
-                                    value={crop}
-                                    color="primary"
-                                />
-                            </Tooltip>
-                        </Grid>
-                        <Grid item>
-                            <Typography
-                                style={{
-                                    fontFamily: this.mainFont,
-                                    fontSize: this.mainFontSize,
-                                }}
-                            >
-                                Crop
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                </Grid>
-                <Grid item xs={12} container direction="column" spacing={8} style={{paddingTop: 16}}>
-                    <Grid item xs={12} container justify="center">
+                                <MenuItem value="">
+                                    <em>None</em>
+                                </MenuItem>
+                                <MenuItem value="proSR">proSR</MenuItem>
+                                <MenuItem value="proSRGAN">proSRGAN</MenuItem>
+                            </Select>
+                        </FormControl>
                         <Tooltip
                             title={
                                 <Typography
-                                    style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}
-                                    id="slider_label">
-                                    {
-                                        Math.round(alpha * 100) /100 // Rounds to 2 decimals
-                                    }
+                                    style={{fontFamily: this.mainFont, fontSize: this.mainFontSize, color: "white"}}>
+                                    proSR: higher PSNR (Peak Signal to Noise Ratio)<br/>
+                                    proSRGAN: higher details.
                                 </Typography>
                             }
                         >
-                            <Slider
-                                style={{width: "80%"}}
-                                value={alpha}
-                                min={0.0}
-                                max={1.0}
-                                step={0.01}
-                                onChange={this.handleSliderChange}
-                            />
+                            <InfoIcon style={{color:grey[500]}}/>
                         </Tooltip>
                     </Grid>
-                    <Grid item xs={12} container justify="center">
-                        <Typography
-                            style={{
-                                fontFamily: this.mainFont,
-                                fontSize: this.mainFontSize,
-                            }}
-                        >
-                            Content-style trade-off
-                        </Typography>
+                    <Grid item xs container justify="center">
+                        <FormControl variant="outlined">
+                            <InputLabel
+                                ref={ref => {
+                                    this.ScaleLabelRef = ref;
+                                }}
+                                htmlFor="outlined-scale"
+                            >
+                                Scale
+                            </InputLabel>
+                            <Select
+                                value={this.state.scale}
+                                onChange={this.handleChange}
+                                input={
+                                    <OutlinedInput
+                                        labelWidth={this.state.scaleLabelWidth}
+                                        name="scale"
+                                        id="outlined-scale"
+                                    />
+                                }
+                            >
+                                <MenuItem value="">
+                                    <em>None</em>
+                                </MenuItem>
+                                {this.state.model === "proSR" && <MenuItem value={2}>2</MenuItem>}
+                                <MenuItem value={4}>4</MenuItem>
+                                {/*<MenuItem value={8}>8</MenuItem>*/}
+                            </Select>
+                        </FormControl>
                     </Grid>
                 </Grid>
-                <Grid item container justify="center" style={{paddingTop: 16}}>
+                <Grid item xs={12} container justify="center">
                     <Grid item>
                         <Button variant="contained"
                                 size="medium"
@@ -242,12 +230,14 @@ export default class StyleTransfer extends React.Component {
     }
 
     parseResponse() {
-        const { response, isComplete } = this.props;
-        if(isComplete){
-            if(typeof response !== 'undefined') {
-                if(typeof response === 'string') {
+        const {response, isComplete} = this.props;
+        if (isComplete) {
+            if (typeof response !== 'undefined') {
+                if (typeof response === 'string') {
+                    console.log("returning response");
                     return response;
                 }
+                console.log("returning data");
                 return response.data;
             } else {
                 return null;
@@ -276,7 +266,7 @@ export default class StyleTransfer extends React.Component {
                                             fontSize: this.mainFontSize * 4 / 3,
                                         }}
                                     >
-                                        Style Transfer
+                                        Super Resolution
                                     </Typography>
                                 </Grid>
                                 <Grid item xs container justify="flex-end">
@@ -370,34 +360,19 @@ export default class StyleTransfer extends React.Component {
                             </Grid>
                             <Grid item xs={12} container justify="center">
                                 <SNETImageUpload
-                                    style={{align: "center"}}
-                                    maxImageSize={3000000}
-                                    maxImageWidth={2400}
-                                    maxImageHeight={1800}
-                                    imageDataFunc={this.getContentImageData}
-                                    imageName="Input"
+                                    imageDataFunc={this.getImageData}
                                     outputImage={this.parseResponse()}
-                                    outputImageName="stylizedImage"
                                     width="90%"
-                                    instantUrlFetch={true}
-                                    allowURL={true}
+                                    infoTip="Warning 1: Due to high GPU memory usage the maximum input image size has been greatly limited. We're working to define more flexible file size limits.
+
+                                            Warning 2: Due to the original implementation, PNG image transparency turns to black."
+                                    maxImageSize={300000}
+                                    disableUrlTab={true}
+                                    // instantUrlFetch={true}
+                                    // allowURL={true}
                                 />
                             </Grid>
-                            <Grid item xs={12} container justify="center">
-                                <SNETImageUpload
-                                    imageDataFunc={this.getStyleImageData}
-                                    imageName="Style"
-                                    maxImageSize={3000000}
-                                    maxImageWidth={2400}
-                                    maxImageHeight={1800}
-                                    disableResetButton={this.props.isComplete}
-                                    width="90%"
-                                    instantUrlFetch={true}
-                                    allowURL={true}
-                                    imageGallery={this.styleGallery}
-                                />
-                            </Grid>
-                            { !this.props.isComplete && this.renderForm() }
+                            {!this.props.isComplete && this.renderForm()}
                         </Grid>
                     </MuiThemeProvider>
                 </Paper>

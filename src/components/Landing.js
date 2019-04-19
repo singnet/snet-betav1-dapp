@@ -1,7 +1,7 @@
 import React, { props } from 'react';
 import SampleServices from './Services';
 import Homepage from './ConnectWallet.js';
-import BlockchainHelper from "./BlockchainHelper.js"
+import BlockchainHelper from "./BlockchainHelper.js";
 
 export default class Landing extends React.Component {
 	constructor() {
