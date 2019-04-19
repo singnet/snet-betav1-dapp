@@ -105,12 +105,7 @@ export  class Jobdetails extends React.Component {
       return this.channelHelper.reInitialize(channelInfoUrl);
     }
 
-    setServiceSpec(serviceSpecJSON) {
-      this.serviceSpecJSON = serviceSpecJSON;
-      this.protoSpec = new GRPCProtoV3Spec(serviceSpecJSON);
-    }    
-
-    initExpBlockDate(setMinExpDate=false) {
+    initExpBlockDate(setMinExpDate=false){
       let expBlockNumber =  this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET;
       let expDays = Math.ceil(expBlockNumber *BLOCK_TIME_SECONDS/(24 * 3600));
       let expDate = new Date();
@@ -121,8 +116,14 @@ export  class Jobdetails extends React.Component {
         this.setState({selectedDate,minExpDate});
         return;
       }
+      this.setState({selectedDate});
     }
 
+    setServiceSpec(serviceSpecJSON) {
+      this.serviceSpecJSON = serviceSpecJSON;
+      this.protoSpec = new GRPCProtoV3Spec(serviceSpecJSON);
+    }
+        
     fetchServiceSpec() {
       var caller = this;
       let _urlservicebuf = getProtobufjsURL(this.props.chainId) + this.serviceState["org_id"] + "/" + this.serviceState["service_id"];
