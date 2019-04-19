@@ -12,9 +12,14 @@ export  class JobdetailsStandalone extends Jobdetails {
 
     onOpenJobDetails(data) {
       this.serviceSpecJSON = data["serviceSpecJSON"]
-      super.setServiceSpec(data["serviceSpecJSON"])
       this.endpoint = data['endpoint']
+
+      super.setServiceSpec(data["serviceSpecJSON"])
       super.onOpenJobDetails(data);
+      super.seedDefaultValues(true, 1);
+    }
+
+    startjob() {
       super.seedDefaultValues(true, 1);
     }
 

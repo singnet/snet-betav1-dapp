@@ -32,9 +32,8 @@ class Standalone extends React.Component {
   }
 
   handleWindowLoad() {
-    this.network.initialize().then().catch(err => {
-        console.error(err);
-    })
+    this.network.initialize();
+    console.log(" Standalone web3 " + (typeof web3 === 'undefined'))
   }
 
   generate_service_spec_json() {
@@ -42,9 +41,7 @@ class Standalone extends React.Component {
         const protobuf = require("protobufjs")
         protobuf.parse.defaults.keepCase = true;
         let obj = protobuf.parse(this.state.proto)
-        console.log(obj)
         this.serviceSpecJSON = obj.root; 
-        console.log("Created the json " + this.serviceSpecJSON);
         this.protoSpec = new GRPCProtoV3Spec(this.serviceSpecJSON);
         this.setState({isComponentReady:true});
     }
@@ -79,34 +76,56 @@ class Standalone extends React.Component {
 
   renderBase() {
     return(
-        <React.Fragment>
-            <div>
-              <div className="col-xs-5 col-sm-8 col-md-8 mtb-10">Org ID (Used to look up servicemappings)</div>
-              <div className="col-xs-7 col-sm-4 col-md-4">
+      <React.Fragment>
+        <div className="standalone-container">
+
+          <div className="row">
+            <div className="col-xs-5 col-sm-4 col-md-5 mtb-10">
+              Org ID (Used to look up servicemappings)
+            </div>
+            <div className="col-xs-7 col-sm-8 col-md-7 input-container">
               <TextField id="orgID" name="orgID" onChange={this.handleField} value={this.state.orgID} style={{ width: "100%", fontWeight: "bold" }}/>
-              </div>
-              <div className="col-xs-5 col-sm-8 col-md-8 mtb-10">Service ID (Used to look up servicemappings)</div>
-              <div className="col-xs-7 col-sm-4 col-md-4">
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-xs-5 col-sm-4 col-md-5 mtb-10">
+              Service ID (Used to look up servicemappings)
+            </div>
+            <div className="col-xs-7 col-sm-8 col-md-7 input-container">
               <TextField id="serviceID" name="serviceID" onChange={this.handleField} value={this.state.serviceID} style={{ width: "100%", fontWeight: "bold" }}/>
-              </div>
-              <div className="col-xs-5 col-sm-8 col-md-8 mtb-10">Proto Path</div>
-              <div className="col-xs-7 col-sm-4 col-md-4">
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-xs-5 col-sm-4 col-md-5 mtb-10">
+              Proto Contents
+            </div>
+            <div className="col-xs-7 col-sm-8 col-md-7 input-container">
               <TextField id="proto" name="proto" onChange={this.handleField} value={this.state.proto} style={{ width: "100%", fontWeight: "bold" }}/>
-              </div>
-              <div className="col-xs-5 col-sm-8 col-md-8 mtb-10">Endpoint of daemon with blockchain disabled</div>
-              <div className="col-xs-7 col-sm-4 col-md-4">
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-xs-5 col-sm-4 col-md-5 mtb-10">
+              Endpoint of daemon with blockchain disabled
+            </div>
+            <div className="col-xs-7 col-sm-8 col-md-7 input-container">
               <TextField id="endpoint" name="endpoint" onChange={this.handleField} value={this.state.endpoint} style={{ width: "100%", fontWeight: "bold" }}/>
-              </div>
             </div>
-            <div className="col-xs-7 col-sm-4 col-md-4">
-              <button type="button" className="btn btn-primary width-mobile-100" onClick={()=>this.runJob()}>Execute Component</button>
-            </div>
-            <JobdetailsStandalone ref="jobdetailsComp" 
-              userAddress= {web3.eth.defaultAccount}
-              chainId={this.network.chainId}
-              network={this.network}/>
-        </React.Fragment>
-     )
+          </div>
+
+          <div className="col-xs-12 col-sm-12 col-md-12 text-center">
+            <button type="button" className="btn btn-primary width-mobile-100" onClick={()=>this.runJob()}>Execute Component</button>
+          </div>
+        </div>
+
+        <JobdetailsStandalone ref="jobdetailsComp" 
+          userAddress= {web3.eth.defaultAccount}
+          chainId={this.network.chainId}
+          network={this.network}/>
+      </React.Fragment>
+    )
   }
 
   render() {
