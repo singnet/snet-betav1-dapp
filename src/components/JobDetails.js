@@ -93,6 +93,11 @@ export  class Jobdetails extends React.Component {
       return this.channelHelper.reInitialize(channelInfoUrl);
     }
 
+    setServiceSpec(serviceSpecJSON) {
+      this.serviceSpecJSON = serviceSpecJSON;
+      this.protoSpec = new GRPCProtoV3Spec(serviceSpecJSON);
+    }
+
     fetchServiceSpec() {
       var caller = this;
       let _urlservicebuf = getProtobufjsURL(this.props.chainId) + this.serviceState["org_id"] + "/" + this.serviceState["service_id"];
@@ -101,8 +106,7 @@ export  class Jobdetails extends React.Component {
         .then(serviceSpecResponse => serviceSpecResponse.json())
         .then(serviceSpec => new Promise(function(resolve) {
           const serviceSpecJSON = Root.fromJSON(serviceSpec[0]);
-          caller.serviceSpecJSON = serviceSpecJSON;
-          caller.protoSpec = new GRPCProtoV3Spec(serviceSpecJSON);
+          caller.setServiceSpec(serviceSpecJSON)
           resolve();
         }));
     }
@@ -281,27 +285,31 @@ export  class Jobdetails extends React.Component {
             endpointgetter = "http://" + endpointgetter;
           }
 
-          const Service = this.serviceSpecJSON.lookup(serviceName)
-          const serviceObject = Service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
-          grpcRequest(serviceObject, methodName, requestObject)
-            .then(response => {
-              console.log("Got a GRPC response " + JSON.stringify(response))
-              this.setState({grpcResponse: response})
-              this.setState({enableVoting: true})
-              this.nextJobStep();
-              this.setState({fundTabEnabled: false});
-            })
-            .catch((err) => {
-              console.log("GRPC call failed with error " + JSON.stringify(err));
-              this.setState({grpcResponse: JSON.stringify(err)});
-              this.setState({grpcErrorOccurred: true})
-              this.setState({enableVoting: true})
-              this.nextJobStep();
-              this.setState({fundTabEnabled: false});
-            })
+          const serviceObj = this.serviceSpecJSON.lookup(serviceName)
+          this.makeGRPCCall(serviceObj, endpointgetter, packageName, serviceName, methodName, requestHeaders, requestObject)
 
-            return window.ethjs.personal_ecRecover(msg, signed);
+          return window.ethjs.personal_ecRecover(msg, signed);
         });
+    }
+
+    makeGRPCCall(serviceObj, endpointgetter, packageName, serviceName, methodName, requestHeaders, requestObject) {
+      const serviceObject = serviceObj.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
+      grpcRequest(serviceObject, methodName, requestObject)
+        .then(response => {
+          console.log("Got a GRPC response " + JSON.stringify(response))
+          this.setState({grpcResponse: response})
+          this.setState({enableVoting: true})
+          this.nextJobStep();
+          this.setState({fundTabEnabled: false});
+        })
+        .catch((err) => {
+          console.log("GRPC call failed with error " + JSON.stringify(err));
+          this.setState({grpcResponse: JSON.stringify(err)});
+          this.setState({grpcErrorOccurred: true})
+          this.setState({enableVoting: true})
+          this.nextJobStep();
+          this.setState({fundTabEnabled: false});
+        })
     }
 
     onCloseModal() {
