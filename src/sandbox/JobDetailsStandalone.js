@@ -4,7 +4,7 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 import {Jobdetails} from '../components/JobDetails.js';
 
 export  class JobdetailsStandalone extends Jobdetails {
-    constructor() {
+    constructor(props) {
       super(props)
       this.serviceSpecJSON = ''
       this.endpoint = ''
