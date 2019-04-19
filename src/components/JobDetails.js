@@ -21,46 +21,7 @@ import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import Slider from '@material-ui/lab/Slider';
-import { withStyles } from '@material-ui/core/styles';
 
-const primaryColor = "#4086ff";
-
-const StyledSwitch = withStyles({
-  icon:{
-    color:'white' 
-  },
-  iconChecked:{
-    color: primaryColor,
-  },
-  switchBase:{
-    color: primaryColor,
-    '&$checked': {
-      color: 'red',
-      '& + $bar': {
-        backgroundColor: '#4086ff',
-      },
-    },
-  },
-  checked:{
-    color: primaryColor,
-  },
-  colorPrimary: {
-    color: primaryColor,
-  },
-  bar:{
-  },
-})(Switch)
-
-const StyledSlider = withStyles({
-  track:{
-    color:primaryColor,
-    backgroundColor:primaryColor
-  },
-  thumb:{
-    color:primaryColor,
-    backgroundColor:primaryColor
-  }
-})(Slider);
 
 const minSliderWidth = '550px';
 const maxSliderWidth = '100%';
@@ -633,7 +594,8 @@ export class Jobdetails extends React.Component {
     this.setState(prevState => { return { enableCustomFunding: !prevState.enableCustomFunding } });
   }
   handleSliderValueChange(event, value) {
-    this.setState({ sliderValue: value });
+    let ocexpiration = this.serviceState['payment_expiration_threshold'] + (this.currentBlockNumber * value);
+    this.setState({ sliderValue: value, ocexpiration});
   }
   render() {
     const { valueTab } = this.state;
@@ -710,9 +672,10 @@ export class Jobdetails extends React.Component {
                               <React.Fragment>
                                 <FormControlLabel
                                   control={
-                                    <StyledSwitch
+                                    <Switch
                                       checked={this.state.enableCustomFunding}
                                       onChange={this.handleChangeCustomFunding}
+                                      disabled={!this.state.fundTabEnabled}
                                       value="checkedA"
                                       color="primary"
                                     />
@@ -736,13 +699,14 @@ export class Jobdetails extends React.Component {
                                             <span>{this.state.sliderValue}</span>
                                           </div>
                                           <div className="col-xs-7 col-sm-4 col-md-4 mt-23">
-                                            <StyledSlider
+                                            <Slider
                                               value={this.state.sliderValue}
                                               min={0}
                                               max={6}
                                               step={1}
                                               onChange={this.handleSliderValueChange}
                                               disabled={!this.state.fundTabEnabled}
+                                              color="primary"
                                             />
                                           </div>
                                         </div>
