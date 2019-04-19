@@ -123,7 +123,7 @@ export  class Jobdetails extends React.Component {
       this.serviceSpecJSON = serviceSpecJSON;
       this.protoSpec = new GRPCProtoV3Spec(serviceSpecJSON);
     }
-        
+
     fetchServiceSpec() {
       var caller = this;
       let _urlservicebuf = getProtobufjsURL(this.props.chainId) + this.serviceState["org_id"] + "/" + this.serviceState["service_id"];
@@ -311,15 +311,15 @@ export  class Jobdetails extends React.Component {
             endpointgetter = "http://" + endpointgetter;
           }
 
-          const serviceObj = this.serviceSpecJSON.lookup(serviceName)
-          this.makeGRPCCall(serviceObj, endpointgetter, packageName, serviceName, methodName, requestHeaders, requestObject)
+          const Service = this.serviceSpecJSON.lookup(serviceName)
+          this.makeGRPCCall(Service, endpointgetter, packageName, serviceName, methodName, requestHeaders, requestObject)
 
           return window.ethjs.personal_ecRecover(msg, signed);
         });
     }
 
-    makeGRPCCall(serviceObj, endpointgetter, packageName, serviceName, methodName, requestHeaders, requestObject) {
-      const serviceObject = serviceObj.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
+    makeGRPCCall(service, endpointgetter, packageName, serviceName, methodName, requestHeaders, requestObject) {
+      const serviceObject = service.create(rpcImpl(endpointgetter, packageName, serviceName, methodName, requestHeaders), false, false)
       grpcRequest(serviceObject, methodName, requestObject)
         .then(response => {
           console.log("Got a GRPC response " + JSON.stringify(response))
