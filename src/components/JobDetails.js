@@ -701,7 +701,7 @@ export class Jobdetails extends React.Component {
                                             <span>{this.state.sliderValue}</span>
                                           </div>
                                           <div className="col-xs-7 col-sm-4 col-md-4 mt-23">
-                                            f
+                                            <Slider
                                               value={this.state.sliderValue}
                                               min={0}
                                               max={6}
