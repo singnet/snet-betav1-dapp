@@ -9,7 +9,7 @@ import Vote from './vote';
 import Comment from './comment';
 
 let submittedData = {
-    userComment: '',
+    userComment: null,
     upVote: false,
     downVote: false,
 };
@@ -18,7 +18,7 @@ export default class Feedback extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            userComment: '',
+            userComment: null,
             upVote: false,
             downVote: false,
             feedbackSubmitted: false,
@@ -65,7 +65,8 @@ export default class Feedback extends React.PureComponent {
     }
 
     handleUserComment(event) {
-        this.setState({ userComment: event.target.value });
+        let userComment = event.target.value == ''? null:event.target.value;
+        this.setState({ userComment });
     }
 
     toggleVote(type) {
@@ -95,8 +96,9 @@ export default class Feedback extends React.PureComponent {
     }
 
     handleFeedbackSubmit() {
-        const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'feedback'
-        var sha3Message = web3.sha3(this.props.userAddress + this.props.serviceState["org_id"] + this.state.upVote + this.props.serviceState["service_id"] + this.state.downVote + this.state.userComment.toLowerCase());
+        const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'feedback';
+        let userComment = this.state.userComment == null?'':this.state.userComment.toLowerCase();
+        var sha3Message = web3.sha3(this.props.userAddress + this.props.serviceState["org_id"] + this.state.upVote + this.props.serviceState["service_id"] + this.state.downVote + userComment);
         window.ethjs.personal_sign(sha3Message, this.props.userAddress).then((signed) => {
             const requestObject = {
                 feedback: {
