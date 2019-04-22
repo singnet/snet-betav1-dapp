@@ -231,6 +231,7 @@ export  class Jobdetails extends React.Component {
     }
 
     startjob() {
+      this.setState({enableFeedback:false});
       var reInitialize = this.reInitializeJobState();
       var serviceSpec = this.fetchServiceSpec();
       Promise.all([reInitialize, serviceSpec]).then(() => {
