@@ -41,7 +41,6 @@ import Places365SceneRecognition from "./Places365SceneRecognition";
 import SuperResolution from "./SuperResolution";
 
 import DefaultService from './DefaultService.js';
-import {NETWORKS} from '../../networks';
 
 const defaultChainId = -1;
 
@@ -97,14 +96,7 @@ export default class SampleServices {
     getComponent(orgId, serviceId, chainId) {
         let component = this.serviceOrgIDToComponent[this.generateUniqueID(orgId, serviceId, chainId)];
         if (typeof component === 'undefined') {
-            let chainIds =  [...Object.keys(NETWORKS),defaultChainId];
-            for (let i = 0; i < chainIds.length; i++) {
-                const chainId = chainIds[i];
-                component = this.serviceOrgIDToComponent[this.generateUniqueID(orgId, serviceId, chainId)];
-                if (typeof component !== 'undefined'){
-                    break;
-                }
-            }          
+            component = this.serviceOrgIDToComponent[this.generateUniqueID(orgId, serviceId, defaultChainId)];     
             if (typeof component === 'undefined') {
                 component = DefaultService;
             }
