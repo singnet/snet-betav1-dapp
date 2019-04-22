@@ -2161,3 +2161,51 @@ input[type=date]::-webkit-clear-button {
 }
 /* Expiry Date picker ends  */
 
+/* Feedback starts */
+.feedback{
+  text-align: center;
+}
+.feedback .error-msg {
+  background-color: #efced1;
+  border: 1px solid #efced1;
+  padding: 5px;
+  font-size: 12px;
+  color: black;
+} 
+.feedback .transaction-message {
+  background-color: #2ac600;
+  border: 1px solid #2ac600;
+  padding: 5px;
+  color: black;
+  font-size: 13px;
+} 
+
+.comment{
+  padding: 15px 0;
+  border-bottom: none;
+}
+
+.vote-error-text{
+  /* position: relative;
+    top: 11px; */
+}
+#feedback-textfield label{
+  font-size: 14px !important;
+  color: #000 !important;
+  font-weight: bold !important;
+}
+#feedback-textfield textarea{
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 14px;
+  letter-spacing: normal;
+  line-height: 14px;
+  opacity: 0.9;
+}
+
+
+#feedback-submit-button{
+background-color: #4086ff;
+}
+
+/* Feedback ends */
+
