@@ -46,7 +46,7 @@ export class Jobdetails extends React.Component {
       grpcErrorOccurred: false,
       fundTabEnabled: false,
       enableCustomFunding: false,
-      sliderValue: 0,
+      sliderValue: 1,
       depositopenchannelerror: '',
       valueTab: 0,
       enableFeedback: false,
@@ -353,8 +353,7 @@ export class Jobdetails extends React.Component {
   }
 
   changeocexpiration(e) {
-    this.setState({ depositopenchannelerror: "" })
-    this.setState({ ocexpiration: e.target.value })
+    this.setState({ depositopenchannelerror: "",ocexpiration: e.target.value })
   }
 
   openchannelhandler() {
@@ -594,8 +593,8 @@ export class Jobdetails extends React.Component {
     this.setState(prevState => { return { enableCustomFunding: !prevState.enableCustomFunding } });
   }
   handleSliderValueChange(event, value) {
-    let ocexpiration = this.serviceState['payment_expiration_threshold'] + (this.currentBlockNumber * value);
-    this.setState({ sliderValue: value, ocexpiration});
+    let ocvalue = this.serviceState['price_in_agi'] * value;
+    this.setState({ sliderValue: value, ocvalue});
   }
   render() {
     const { valueTab } = this.state;
@@ -701,14 +700,37 @@ export class Jobdetails extends React.Component {
                                           <div className="col-xs-7 col-sm-4 col-md-4 mt-23">
                                             <Slider
                                               value={this.state.sliderValue}
-                                              min={0}
-                                              max={6}
+                                              min={1}
+                                              max={99}
                                               step={1}
                                               onChange={this.handleSliderValueChange}
                                               disabled={!this.state.fundTabEnabled}
                                               color="primary"
                                             />
                                           </div>
+                                        </div>
+                                      </div>
+                                      <div className="col-xs-12 col-md-12 no-padding">
+                                        <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Date:
+                                              <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px" }}>
+                                            The channel becomes eligible for you to reclaim funds after this date. In general agents will accept your request only if the expiry date is in the future. </span>} >
+                                            <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                          </Tooltip>
+                                        </div>
+                                        <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
+                                          <TextField
+                                            id="date"
+                                            type="date"
+                                            value={this.state.selectedDate}
+                                            onChange={this.handleDateChange}
+                                            disabled={!this.state.fundTabEnabled}
+                                            className="datepicker-textfield"
+                                            inputProps={{
+                                              id: "datepicker-input",
+                                              min: this.state.minExpDate,
+                                              onKeyDown: (e) => { e.preventDefault(); },
+                                            }}
+                                          />
                                         </div>
                                       </div>
                                       <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
