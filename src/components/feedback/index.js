@@ -3,9 +3,16 @@ import PropTypes from 'prop-types';
 import { Requests } from '../../requests'
 import { getMarketplaceURL } from '../../util'
 import 'react-perfect-scrollbar/dist/css/styles.css';
+import Paper from '@material-ui/core/Paper';
+import Slide from '@material-ui/core/Slide';
 import Vote from './vote';
 import Comment from './comment';
 
+let submittedData = {
+    userComment: '',
+    upVote: false,
+    downVote: false,
+};
 
 export default class Feedback extends React.PureComponent {
     constructor(props) {
@@ -14,9 +21,9 @@ export default class Feedback extends React.PureComponent {
             userComment: '',
             upVote: false,
             downVote: false,
-            feedbackSubmitted:false,
-            submitSuccessful:false,
-            submitMessage:''
+            feedbackSubmitted: false,
+            submitSuccessful: false,
+            submitMessage: ''
         }
         this.handleUserComment = this.handleUserComment.bind(this);
         this.toggleVote = this.toggleVote.bind(this);
@@ -25,29 +32,35 @@ export default class Feedback extends React.PureComponent {
     }
 
     componentDidMount() {
-        console.log(this.props.serviceState);
         //Checking if user has already provided feedback
         if (this.props.serviceState.comment != null) {
             this.setState({ userComment: this.props.serviceState.comment });
+            submittedData.userComment = this.props.serviceState.comment;
         }
         //Checking if user has already voted
         if (this.props.serviceState["up_vote"]) {
             this.toggleVote('up');
+            submittedData.upVote = this.props.upVote;
+
         } else if (this.props.serviceState["down_vote"]) {
             this.toggleVote('down');
+            submittedData.downVote = this.props.downVote;
         }
     }
 
-    componentDidUpdate(prevProps){
-        if(prevProps.serviceState.comment != this.props.serviceState.comment){
-            this.setState({userComment:this.props.serviceState.comment})
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.serviceState.comment != this.props.serviceState.comment) {
+            this.setState({ userComment: this.props.serviceState.comment })
         }
-        
-        if(prevProps.serviceState['up_vote'] != this.props.serviceState['up_vote']){
-            this.setState({upVote:this.props.serviceState['up_vote']})
+
+        if (prevProps.serviceState['up_vote'] != this.props.serviceState['up_vote']) {
+            this.setState({ upVote: this.props.serviceState['up_vote'] })
         }
-        if(prevProps.serviceState['down_vote'] != this.props.serviceState['down_vote']){
-            this.setState({downVote:this.props.serviceState['down_vote']})
+        if (prevProps.serviceState['down_vote'] != this.props.serviceState['down_vote']) {
+            this.setState({ downVote: this.props.serviceState['down_vote'] })
+        }
+        if (this.state.feedbackSubmitted) {
+            setTimeout(() => { this.setState({ feedbackSubmitted: false }) }, 3000)
         }
     }
 
@@ -57,17 +70,25 @@ export default class Feedback extends React.PureComponent {
 
     toggleVote(type) {
         if (type === 'up') {
-            this.setState(prevState => { return ({ upVote: !prevState.upVote, downVote: false}) });
+            this.setState(prevState => { return ({ upVote: !prevState.upVote, downVote: false }) });
         }
         else if (type === 'down') {
             this.setState(prevState => { return ({ upVote: false, downVote: !prevState.downVote }) });
         }
     }
 
-    isFeedbackChanged(){
-        if(this.props.serviceState["up_vote"] != this.state.upVote ||
-        this.props.serviceState["down_vote"] != this.state.downVote ||
-        this.props.serviceState.comment != this.state.userComment){
+    isFeedbackChanged() {
+        if (this.state.submitSuccessful) {
+            if (this.state.upVote != submittedData.upVote ||
+                this.state.downVote != submittedData.downVote ||
+                this.state.userComment != submittedData.userComment) {
+                return true;
+            }
+            return false;
+        }
+        if (this.props.serviceState["up_vote"] != this.state.upVote ||
+            this.props.serviceState["down_vote"] != this.state.downVote ||
+            this.props.serviceState.comment != this.state.userComment) {
             return true;
         }
         return false;
@@ -89,9 +110,16 @@ export default class Feedback extends React.PureComponent {
                 }
             }
             Requests.post(urlfetchvote, requestObject)
-                .then(res => this.setState({feedbackSubmitted:true,submitSuccessful:true,submitMessage:'Feedback submitted successfully 😊'}))
-                .catch(err => this.setState({feedbackSubmitted:true,submitSuccessful:false,submitMessage:'Unable to submit feedback 😟. Please try again'}));
-        }).catch(err=>this.setState({feedbackSubmitted:true,submitSuccessful:false,submitMessage:'User denied signature 😟. Please sign in Metamask'}));
+                .then(res => {
+                    this.setState({ feedbackSubmitted: true, submitSuccessful: true, submitMessage: 'Feedback submitted successfully 😊' });
+                    submittedData = {
+                        upVote: this.state.upVote,
+                        downVote: this.state.downVote,
+                        userComment: this.state.userComment
+                    }
+                })
+                .catch(err => this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'Unable to submit feedback 😟. Please try again' }));
+        }).catch(err => this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'User denied signature 😟. Please sign in Metamask' }));
     }
 
     render() {
@@ -101,12 +129,16 @@ export default class Feedback extends React.PureComponent {
             <div className="feedback">
                 {enableFeedback && getMarketplaceURL(chainId) ?
                     <React.Fragment>
-                        {feedbackSubmitted?<div className={submitSuccessful ? "col-xs-12 col-sm-12 col-md-12 transaction-message":"col-xs-12 col-sm-12 col-md-12 error-msg"}>
-                                            {submitMessage}</div>:''}
+                        <Slide direction="right" in={feedbackSubmitted} mountOnEnter unmountOnExit timeout={1000}>
+                            <Paper elevation={4}>
+                                <div className={submitSuccessful ? "col-xs-12 col-sm-12 col-md-12 transaction-message" : "col-xs-12 col-sm-12 col-md-12 error-msg"}>
+                                    {submitMessage}</div>
+                            </Paper>
+                        </Slide>
                         <Vote chainId={chainId} enableVoting={enableFeedback} serviceState={serviceState} userAddress={userAddress}
                             upVote={upVote} downVote={downVote} toggleVote={this.toggleVote} />
                         <Comment userComment={userComment} handleUserComment={this.handleUserComment} />
-                        {this.isFeedbackChanged()?<button type="button" className="btn-primary" onClick={this.handleFeedbackSubmit}> Submit</button>:''}
+                        {this.isFeedbackChanged() ? <button type="button" className="btn-primary" onClick={this.handleFeedbackSubmit}> Submit</button> : ''}
                     </React.Fragment>
                     : ""}
 

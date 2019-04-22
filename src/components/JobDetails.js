@@ -252,23 +252,38 @@ export class Jobdetails extends React.Component {
           balance = parseInt(balance)
         }
 
+  startjob() {
+    this.setState({enableFeedback:false});
+    var reInitialize = this.reInitializeJobState();
+    var serviceSpec = this.fetchServiceSpec();
+    Promise.all([reInitialize, serviceSpec]).then(() => {
+      let mpeTokenInstance = this.props.network.getMPEInstance(this.props.chainId);
+      mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
+        if(err) {
+          this.processChannelErrors("Unable to retrieve balance. Please retry with a higher gas")
+          return;
+        }
+        if(typeof balance !== 'undefined') {
+              balance = parseInt(balance)
+        }
+
         const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
         let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, threshold);
         if (foundChannel) {
           this.onShowModal(MESSAGES.WAIT_FOR_MM);
           //We have a channel, lets check if this channel can make this call by getting the channel service state
           //from the daemon. The daemon will return the last amount which was signed by client
-          var msg = this.composeSHA3Message(["uint256"], [this.channelHelper.getChannelId()]);
+          var msg = this.composeSHA3Message(["uint256"],[this.channelHelper.getChannelId()]);
           window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
-            .then((signed) => {
-              this.onShowModal(MESSAGES.WAIT_FOR_CHANNEL_STATE);
-              this.fetchChannelState(signed).then(channelAvailable =>
-                this.handleChannel(balance, channelAvailable, threshold));
-            }).catch(error => {
-              this.processChannelErrors(error);
-              this.setState({ fundTabEnabled: false });
-            });
-        }
+          .then((signed) => {
+            this.onShowModal(MESSAGES.WAIT_FOR_CHANNEL_STATE);
+            this.fetchChannelState(signed).then(channelAvailable => 
+              this.handleChannel(balance, channelAvailable, threshold));
+          }).catch(error => {
+            this.processChannelErrors(error);
+            this.setState({fundTabEnabled: false});
+          });
+        } 
         else {
           this.handleNewChannel(balance);
         }
