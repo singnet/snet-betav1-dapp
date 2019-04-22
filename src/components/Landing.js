@@ -3,14 +3,6 @@ import SampleServices from './Services';
 import Homepage from './ConnectWallet.js';
 import BlockchainHelper from "./BlockchainHelper.js";
 
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-
-const theme = createMuiTheme({
-	palette:{
-		primary:{main:"#4086ff"}
-	}
-});
-
 export default class Landing extends React.Component {
 	constructor() {
 		super(props)
@@ -30,11 +22,9 @@ export default class Landing extends React.Component {
 
 	render() {
 		return (
-			<MuiThemeProvider theme={theme}>
 			<React.Fragment>
 				{(typeof web3 !== 'undefined') ? <SampleServices /> : <Homepage />}
 			</React.Fragment>
-			</MuiThemeProvider>
 		)
 	}
 }
