@@ -162,8 +162,12 @@ export default class ChannelHelper {
       console.log('channel state information is ' +  this.groupId);
       if (this.channels.length > 0)
       {
+        let lowestChannelID = this.channels[0]["channelId"];
         for(let ii=0; ii < this.channels.length; ii++) {
           var rrchannels = this.channels[ii];
+          if(rrchannels["channelId"] < lowestChannelID){
+            lowestChannelID = rrchannels["channelId"];
+          }
           if (parseInt(rrchannels["balance_in_cogs"]) >= parseInt(data["price_in_cogs"]) 
               && parseInt(rrchannels["expiration"]) >= parseInt(thresholdBlockNumber))
           {
@@ -174,7 +178,9 @@ export default class ChannelHelper {
           }  
         }
 
-        this.channelId = this.channels[0]["channelId"]; 
+        console.log("No channel is found with adequate funds and expiration");
+        console.log("Choosing channel with lowest id");
+        this.channelId = lowestChannelID;
         return true; 
       }
     }
