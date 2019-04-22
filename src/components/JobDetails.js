@@ -357,43 +357,44 @@ export class Jobdetails extends React.Component {
   }
 
   openchannelhandler() {
-    if (typeof web3 === 'undefined') {
-      return;
-    }
+      if (typeof web3 === 'undefined') {
+        return;
+      }
 
-    try {
-      this.setState({ depositopenchannelerror: '' });
-      let mpeInstance = this.props.network.getMPEInstance(this.props.chainId);
-      var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
+      try
+      {
+        this.setState({depositopenchannelerror: ''});
+        let mpeInstance = this.props.network.getMPEInstance(this.props.chainId);
+        var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
 
-      if (typeof this.channelHelper.getChannels() === 'undefined') {
-        this.onOpenEscrowBalanceAlert()
-      } else {
-        const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
-        if (this.state.ocexpiration < threshold) {
-          this.processChannelErrors("The selected date provided should be greater than " + this.state.minExpDate + " for the service to accept the request");
-          return;
-        }
-
-        let groupIDBytes = atob(this.channelHelper.getGroupId());
-        let recipientaddress = this.channelHelper.getRecipient();
-
-        if (typeof this.channelHelper.getChannelId() !== 'undefined') {
-          let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
-          console.log("Found an existing channel, will try to extend it " + JSON.stringify(selectedChannel));
-          if (this.state.ocexpiration < selectedChannel["expiration"]) {
-            this.processChannelErrors("The payment channel being used has the expiry block set to " + selectedChannel["expiration"] + " which cannot be reduced. Provide a value equal to or greater than " + selectedChannel["expiration"]);
+        if (typeof this.channelHelper.getChannels() === 'undefined') {
+          this.onOpenEscrowBalanceAlert()
+        } else {
+          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
+          if(this.state.ocexpiration < threshold) {
+            this.processChannelErrors("The date selected should be greater than " + this.state.minExpDate + " for the service to accept the request");
             return;
           }
-          this.channelExtend(mpeInstance, selectedChannel, amountInCogs);
+        
+          let groupIDBytes = atob(this.channelHelper.getGroupId());
+          let recipientaddress = this.channelHelper.getRecipient();
+
+          if (typeof this.channelHelper.getChannelId() !== 'undefined') {
+            let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
+            console.log("Found an existing channel, will try to extend it " + JSON.stringify(selectedChannel));
+            if(this.state.ocexpiration < selectedChannel["expiration"]) {
+              this.processChannelErrors("The payment channel being used has the expiry block set to "+ selectedChannel["expiration"] +" which cannot be reduced. Provide a value equal to or greater than " + selectedChannel["expiration"]);
+              return;
+            }
+            this.channelExtend(mpeInstance, selectedChannel, amountInCogs);
+          } 
+          else {
+            console.log("No Channel found to going to deposit from MPE and open a channel");            
+            this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
+          }
         }
-        else {
-          console.log("No Channel found to going to deposit from MPE and open a channel");
-          this.channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs);
-        }
-      }
     }
-    catch (e) {
+    catch(e) {
       this.processChannelErrors(e.message);
     }
   }
@@ -698,7 +699,7 @@ export class Jobdetails extends React.Component {
                                             <span>{this.state.sliderValue}</span>
                                           </div>
                                           <div className="col-xs-7 col-sm-4 col-md-4 mt-23">
-                                            <Slider
+                                            f
                                               value={this.state.sliderValue}
                                               min={1}
                                               max={99}
