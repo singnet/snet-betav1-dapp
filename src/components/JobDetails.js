@@ -239,20 +239,6 @@ export class Jobdetails extends React.Component {
   }
 
   startjob() {
-    var reInitialize = this.reInitializeJobState();
-    var serviceSpec = this.fetchServiceSpec();
-    Promise.all([reInitialize, serviceSpec]).then(() => {
-      let mpeTokenInstance = this.props.network.getMPEInstance(this.props.chainId);
-      mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
-        if (err) {
-          this.processChannelErrors("Unable to retrieve balance. Please retry with a higher gas")
-          return;
-        }
-        if (typeof balance !== 'undefined') {
-          balance = parseInt(balance)
-        }
-
-  startjob() {
     this.setState({enableFeedback:false});
     var reInitialize = this.reInitializeJobState();
     var serviceSpec = this.fetchServiceSpec();
@@ -715,7 +701,7 @@ export class Jobdetails extends React.Component {
                                             <span>{this.state.sliderValue}</span>
                                           </div>
                                           <div className="col-xs-7 col-sm-4 col-md-4 mt-23">
-                                            f
+                                            <Slider
                                               value={this.state.sliderValue}
                                               min={0}
                                               max={6}
