@@ -171,7 +171,7 @@ class SampleServices extends React.Component {
     this.handleWindowLoad();
   }
 
-  loadDetails(chainId=this.network.chainId) {
+  loadDetails(chainId) {
     if(!isSupportedNetwork(chainId)) {
       this.setState({agents:[]})
       return;
