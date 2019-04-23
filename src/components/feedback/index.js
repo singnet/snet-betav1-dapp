@@ -65,7 +65,7 @@ export default class Feedback extends React.PureComponent {
     }
 
     handleUserComment(event) {
-        let userComment = event.target.value == ''? null:event.target.value;
+        let userComment = event.target.value.trim() == ''? null:event.target.value;
         this.setState({ userComment });
     }
 
@@ -97,8 +97,8 @@ export default class Feedback extends React.PureComponent {
 
     handleFeedbackSubmit() {
         const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'feedback';
-        let userComment = this.state.userComment == null?'':this.state.userComment.toLowerCase();
-        var sha3Message = web3.sha3(this.props.userAddress + this.props.serviceState["org_id"] + this.state.upVote + this.props.serviceState["service_id"] + this.state.downVote + userComment);
+        let userComment = this.state.userComment == null?'':this.state.userComment.trim();
+        var sha3Message = web3.sha3(this.props.userAddress + this.props.serviceState["org_id"] + this.state.upVote + this.props.serviceState["service_id"] + this.state.downVote + userComment.toLowerCase());
         window.ethjs.personal_sign(sha3Message, this.props.userAddress).then((signed) => {
             const requestObject = {
                 feedback: {
@@ -113,7 +113,7 @@ export default class Feedback extends React.PureComponent {
             }
             Requests.post(urlfetchvote, requestObject)
                 .then(res => {
-                    this.setState({ feedbackSubmitted: true, submitSuccessful: true, submitMessage: 'Feedback submitted successfully 😊' });
+                    this.setState({ feedbackSubmitted: true, submitSuccessful: true, submitMessage: 'Feedback submitted successfully 😊',userComment });
                     submittedData = {
                         upVote: this.state.upVote,
                         downVote: this.state.downVote,
