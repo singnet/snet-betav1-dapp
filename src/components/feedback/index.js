@@ -9,7 +9,7 @@ import Vote from './vote';
 import Comment from './comment';
 
 let submittedData = {
-    userComment: null,
+    userComment: '',
     upVote: false,
     downVote: false,
 };
@@ -18,7 +18,7 @@ export default class Feedback extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            userComment: null,
+            userComment: '',
             upVote: false,
             downVote: false,
             feedbackSubmitted: false,
@@ -33,7 +33,7 @@ export default class Feedback extends React.PureComponent {
 
     componentDidMount() {
         //Checking if user has already provided feedback
-        if (this.props.serviceState.comment != null) {
+        if (this.props.serviceState.comment != '') {
             this.setState({ userComment: this.props.serviceState.comment });
             submittedData.userComment = this.props.serviceState.comment;
         }
@@ -65,7 +65,7 @@ export default class Feedback extends React.PureComponent {
     }
 
     handleUserComment(event) {
-        let userComment = event.target.value.trim() == ''? null:event.target.value;
+        let userComment = event.target.value.trim() == '' ? '' : event.target.value;
         this.setState({ userComment });
     }
 
@@ -97,8 +97,7 @@ export default class Feedback extends React.PureComponent {
 
     handleFeedbackSubmit() {
         const urlfetchvote = getMarketplaceURL(this.props.chainId) + 'feedback';
-        let userComment = this.state.userComment == null?'':this.state.userComment.trim();
-        var sha3Message = web3.sha3(this.props.userAddress + this.props.serviceState["org_id"] + this.state.upVote + this.props.serviceState["service_id"] + this.state.downVote + userComment.toLowerCase());
+        var sha3Message = web3.sha3(this.props.userAddress + this.props.serviceState["org_id"] + this.state.upVote + this.props.serviceState["service_id"] + this.state.downVote + this.state.userComment.trim().toLowerCase());
         window.ethjs.personal_sign(sha3Message, this.props.userAddress).then((signed) => {
             const requestObject = {
                 feedback: {
@@ -107,20 +106,22 @@ export default class Feedback extends React.PureComponent {
                     service_id: this.props.serviceState["service_id"],
                     up_vote: this.state.upVote,
                     down_vote: this.state.downVote,
-                    comment: userComment,
+                    comment: this.state.userComment.trim(),
                     signature: signed
                 }
             }
             Requests.post(urlfetchvote, requestObject)
                 .then(res => {
-                    this.setState({ feedbackSubmitted: true, submitSuccessful: true, submitMessage: 'Feedback submitted successfully 😊',userComment });
+                    this.setState(prevState => { return { feedbackSubmitted: true, submitSuccessful: true, submitMessage: 'Feedback submitted successfully 😊', userComment: prevState.userComment.trim() } });
                     submittedData = {
                         upVote: this.state.upVote,
                         downVote: this.state.downVote,
                         userComment: this.state.userComment
                     }
                 })
-                .catch(err => this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'Unable to submit feedback 😟. Please try again' }));
+                .catch(err => {
+                    this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'Unable to submit feedback 😟. Please try again' })
+                });
         }).catch(err => this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'User denied signature 😟. Please sign in Metamask' }));
     }
 
