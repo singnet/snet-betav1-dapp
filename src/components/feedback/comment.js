@@ -13,7 +13,7 @@ const Comment = ({userComment, handleUserComment}) =>{
                         fullWidth
                         variant="outlined"
                         multiline
-                        rows="6"
+                        rows="4"
                         InputLabelProps={{
                             shrink: true,
                             style: {
