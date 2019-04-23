@@ -196,6 +196,8 @@ export  class Jobdetails extends React.Component {
       this.setState({ocvalue: this.serviceState['price_in_agi']});
       this.setState({fundTabEnabled: enableFundTab});
       this.setState({valueTab: valueTabIndex});
+      this.setState({grpcResponse: undefined})
+      this.setState({grpcErrorOccurred: false})
     }
 
     handleNewChannel(balance) {

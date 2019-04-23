@@ -1,6 +1,5 @@
 import React from 'react'
 import ServiceMappings from "../components/service/ServiceMappings.js"
-import { withRouter } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import GRPCProtoV3Spec from "../models/GRPCProtoV3Spec";
 import TextField from '@material-ui/core/TextField';
@@ -11,7 +10,6 @@ class Standalone extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isComponentReady:false,
       orgID:'snet',
       serviceID:'example-service',
       proto:'syntax = "proto3";  package example_service;  message Numbers {     float a = 1;     float b = 2; }  message Result {     float value = 1; }  service Calculator {     rpc add(Numbers) returns (Result) {}     rpc sub(Numbers) returns (Result) {}     rpc mul(Numbers) returns (Result) {}     rpc div(Numbers) returns (Result) {} }',
@@ -35,7 +33,6 @@ class Standalone extends React.Component {
 
   handleWindowLoad() {
     this.network.initialize();
-    console.log(" Standalone web3 " + (typeof web3 === 'undefined'))
   }
 
   generate_service_spec_json() {
@@ -45,7 +42,7 @@ class Standalone extends React.Component {
         let obj = protobuf.parse(this.state.proto)
         this.serviceSpecJSON = obj.root; 
         this.protoSpec = new GRPCProtoV3Spec(this.serviceSpecJSON);
-        this.setState({isComponentReady:true});
+        this.onOpenJobDetailsSlider();
     }
     catch(ex) {
         this.setState({runJob: false})
@@ -63,13 +60,11 @@ class Standalone extends React.Component {
 
   runJob() {
     this.errorMessage = ''
-    console.log("Running job")
     this.generate_service_spec_json(this.proto);
-    this.onOpenJobDetailsSlider();
   }
 
   onOpenJobDetailsSlider() {
-    let serviceState = []
+    let serviceState = {}
     serviceState["org_id"] = this.state.orgID;
     serviceState["service_id"] = this.state.serviceID;
     serviceState["is_available"] = 1;
@@ -136,7 +131,8 @@ class Standalone extends React.Component {
         <JobdetailsStandalone ref="jobdetailsComp" 
           userAddress= {web3.eth.defaultAccount}
           chainId={this.network.chainId}
-          network={this.network}/>
+          network={this.network}
+          reloadDetails={()=>{}}/>
           : null}
       </React.Fragment>
     )
@@ -154,4 +150,4 @@ class Standalone extends React.Component {
   Standalone.propTypes = {
     account: PropTypes.string
   };
-  export default withRouter(Standalone);
+  export default Standalone;

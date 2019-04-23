@@ -1,4 +1,3 @@
-import { props } from 'react';
 import { hasOwnDefinedProperty } from '../util'
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import {Jobdetails} from '../components/JobDetails.js';
