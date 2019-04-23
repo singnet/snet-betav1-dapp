@@ -107,7 +107,7 @@ export default class Feedback extends React.PureComponent {
                     service_id: this.props.serviceState["service_id"],
                     up_vote: this.state.upVote,
                     down_vote: this.state.downVote,
-                    comment: this.state.userComment,
+                    comment: userComment,
                     signature: signed
                 }
             }
