@@ -171,7 +171,7 @@ class SampleServices extends React.Component {
     this.handleWindowLoad();
   }
 
-  loadDetails(chainId=this.network.chainId) {
+  loadDetails(chainId) {
     if(!isSupportedNetwork(chainId)) {
       this.setState({agents:[]})
       return;
@@ -207,7 +207,7 @@ class SampleServices extends React.Component {
                   agent["down_vote_count"] = voteDetail["down_vote_count"]
                   agent["up_vote"] = voteDetail["up_vote"]
                   agent["down_vote"] = voteDetail["down_vote"]
-                  agent.comment = voteDetail.comment == null?'':voteDetail.comment
+                  agent.comment = voteDetail.comment
                 }
               })); 
           }
