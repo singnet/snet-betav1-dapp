@@ -112,7 +112,7 @@ export default class Feedback extends React.PureComponent {
             }
             Requests.post(urlfetchvote, requestObject)
                 .then(res => {
-                    this.setState(prevState => { return { feedbackSubmitted: true, submitSuccessful: true, submitMessage: 'Feedback submitted successfully �', userComment: prevState.userComment.trim() } });
+                    this.setState(prevState => { return { feedbackSubmitted: true, submitSuccessful: true, submitMessage: 'Feedback submitted successfully!', userComment: prevState.userComment.trim() } });
                     submittedData = {
                         upVote: this.state.upVote,
                         downVote: this.state.downVote,
@@ -120,9 +120,9 @@ export default class Feedback extends React.PureComponent {
                     }
                 })
                 .catch(err => {
-                    this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'Unable to submit feedback �. Please try again' });
+                    this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'Unable to submit feedback! Please try again' });
                 });
-        }).catch(err => this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'User denied signature �. Please sign in Metamask' }));
+        }).catch(err => this.setState({ feedbackSubmitted: true, submitSuccessful: false, submitMessage: 'User denied signature. Please sign in Metamask' }));
     }
 
     render() {
