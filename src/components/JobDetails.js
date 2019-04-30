@@ -34,7 +34,7 @@ const formatDate = date => {
 }
 
 export class Jobdetails extends React.Component {
-  constructor() {
+  constructor(props) {
     super(props)
 
     this.state = {
