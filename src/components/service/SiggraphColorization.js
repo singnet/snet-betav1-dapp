@@ -2,29 +2,31 @@ import React from 'react';
 import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
 
-export default class S2VTVideoCaptioning extends React.Component {
+import SNETImageUpload from "./standardComponents/SNETImageUpload";
+
+export default class SiggraphColorization extends React.Component {
 
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getImageURL = this.getImageURL.bind(this);
         this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
-            users_guide: "https://singnet.github.io/dnn-model-services/users_guide/s2vt-video-captioning.html",
-            code_repo: "https://github.com/singnet/dnn-model-services/tree/master/services/s2vt-video-captioning",
-            reference: "https://vsubhashini.github.io/s2vt.html",
+            users_guide: "https://singnet.github.io/dnn-model-services/users_guide/siggraph-colorization.html",
+            code_repo: "https://github.com/singnet/dnn-model-services/tree/master/services/siggraph-colorization",
+            reference: "ttp://iizuka.cs.tsukuba.ac.jp/projects/colorization/en/",
 
-            serviceName: "VideoCaptioning",
-            methodName: "video_cap",
+            serviceName: "Colorization",
+            methodName: "colorize",
 
-            url: "",
-            start_time_sec: 0,
-            stop_time_sec: 0,
+            img_input: "",
 
             response: undefined
         };
+
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -85,17 +87,12 @@ export default class S2VTVideoCaptioning extends React.Component {
         this.serviceMethods = data;
     }
 
-    isValidVideoURL(str) {
-        return (
-            (str.startsWith("http://") || str.startsWith("https://")) &&
-            (str.endsWith(".avi") || str.endsWith(".mp4"))
-        );
+    getImageURL(data) {
+        this.setState({ img_input: data });
     }
+
     canBeInvoked() {
-        return (
-            this.isValidVideoURL(this.state.url) &&
-            this.state.start_time_sec <= this.state.stop_time_sec
-        );
+        return (this.state.img_input);
     }
 
     handleFormUpdate(event) {
@@ -118,38 +115,15 @@ export default class S2VTVideoCaptioning extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                url: this.state.url,
-                start_time_sec: this.state.start_time_sec.toString(),
-                stop_time_sec: this.state.stop_time_sec.toString()
+                img_input: this.state.img_input
             });
     }
 
     renderForm() {
         return (
             <React.Fragment>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Video (URL): </div>
-                    <div className="col-md-3 col-lg-3">
-                        <input name="url" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.url} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>StartTime (s): </div>
-                    <div className="col-md-3 col-lg-3">
-                        <input name="start_time_sec" type="number" min="0"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.start_time_sec} onChange={this.handleFormUpdate}></input>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>StopTime (s): </div>
-                    <div className="col-md-3 col-lg-3">
-                        <input name="stop_time_sec" type="number" min={this.state.start_time_sec}
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.stop_time_sec} onChange={this.handleFormUpdate}></input>
-                    </div>
+                <div className="row" align="center">
+                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} instantUrlFetch={true} allowURL={true} />
                 </div>
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
@@ -175,21 +149,20 @@ export default class S2VTVideoCaptioning extends React.Component {
     }
 
     renderComplete() {
-        let status = "Ok\n";
-        let value = "\n";
-
+        let img_base64 = "";
         if (typeof this.state.response === "object") {
-            value = "\n" + this.state.response.value;
+            img_base64 = "data:image/jpeg;base64," + this.state.response.img_colorized;
         } else {
             status = this.state.response + "\n";
         }
+
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is: </p>
-                <pre>
-                    Status : {status}
-                    Caption: {value}
-                </pre>
+                <div className="row" align="center">
+                    <div style={{align: "center", maxWidth: "100%"}}>
+                        <img style={{maxWidth: "100%"}} src={img_base64} alt={"Response Image"} />
+                    </div>
+                </div>
             </div>
         );
     }
