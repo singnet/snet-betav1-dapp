@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "serve": "webpack-dev-server --config ./config/webpack.dev.js --progress --colors --open",
+    "serve-sandbox": "webpack-dev-server --env.sandBox=true --config ./config/webpack.dev.js --progress --colors --open",
+    "serve": "webpack-dev-server --env.sandBox=false --config ./config/webpack.dev.js --progress --colors --open",
     "build": "webpack --config ./config/webpack.prod.js -p --progress --colors",
     "build-analyze": "webpack --config ./config/webpack.prod-analyze.js -p --progress --colors",
     "serve-dist": "node scripts/serveDist.js",
