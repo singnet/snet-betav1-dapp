@@ -5,8 +5,8 @@ import Modal from '@material-ui/core/Modal'
 import Slide from '@material-ui/core/Slide'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
-import { AGI, hasOwnDefinedProperty,getMarketplaceURL,getProtobufjsURL, ERROR_UTILS,DEFAULT_GAS_PRICE,DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET, MESSAGES,BLOCK_TIME_SECONDS } from '../util'
-import {TabContainer} from './ReactStyles.js';
+import { AGI, hasOwnDefinedProperty, getMarketplaceURL, getProtobufjsURL, ERROR_UTILS, DEFAULT_GAS_PRICE, DEFAULT_GAS_ESTIMATE, BLOCK_OFFSET, MESSAGES, BLOCK_TIME_SECONDS } from '../util'
+import { TabContainer } from './ReactStyles.js';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import ServiceMappings from "./service/ServiceMappings.js"
@@ -15,95 +15,103 @@ import { Root } from 'protobufjs'
 import Feedback from './feedback';
 import DAppModal from './DAppModal.js'
 import Tooltip from '@material-ui/core/Tooltip';
-import {serviceStateJSON} from '../service_state'
+import { serviceStateJSON } from '../service_state'
 import GRPCProtoV3Spec from "../models/GRPCProtoV3Spec";
-import { TextField } from '@material-ui/core/es';
+import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+import Slider from '@material-ui/lab/Slider';
 
-const minSliderWidth='550px';
-const maxSliderWidth ='100%';
 
-const formatDate = date =>{
+const minSliderWidth = '550px';
+const maxSliderWidth = '100%';
+
+const formatDate = date => {
   let year = date.getFullYear();
-  let month = date.getMonth() < 10 ? `0${date.getMonth()+1}`:date.getMonth();
-  let day = date.getDate() <10 ? `0${date.getDate()}`:date.getDate();
+  let month = date.getMonth() < 10 ? `0${date.getMonth() + 1}` : date.getMonth();
+  let day = date.getDate() < 10 ? `0${date.getDate()}` : date.getDate();
   return `${year}-${month}-${day}`
 }
 
-export  class Jobdetails extends React.Component {
-    constructor(props) {
-      super(props)
-      
-      this.state = {
-        tagsall:[],
-        jobDetailsSliderOpen:false,
-        ocvalue:0,
-        ocexpiration:0,
-        grpcResponse:undefined,
-        grpcErrorOccurred:false,
-        fundTabEnabled:false,
-        depositopenchannelerror:'',
-        valueTab:0,
-        enableFeedback:false,
-        showModal:false,
-        sliderWidth:minSliderWidth,
-        showEscrowBalanceAlert:false,
-        selectedDate: formatDate(new Date()),
-        minExpDate:formatDate(new Date())
-      };
+export class Jobdetails extends React.Component {
+  constructor(props) {
+    super(props)
 
-      this.chainMessage = "";
-      this.serviceState = {};
-      this.channelHelper = new ChannelHelper();
-      this.currentBlockNumber = 0;
-      this.serviceSpecJSON = undefined;
-      this.protoSpec = undefined;
-      this.serviceMappings = new ServiceMappings();
-      this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
-      this.handleChangeTabs = this.handleChangeTabs.bind(this);
-      this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this);
-      this.onResizeJobDetailsSlider = this.onResizeJobDetailsSlider.bind(this);
-      this.changeocvalue = this.changeocvalue.bind(this);
-      this.changeocexpiration = this.changeocexpiration.bind(this);
-      this.initExpBlockDate = this.initExpBlockDate.bind(this);
-      this.openchannelhandler = this.openchannelhandler.bind(this);
-      this.handleJobInvocation = this.handleJobInvocation.bind(this);
-      this.startjob = this.startjob.bind(this);
-      this.onOpenEscrowBalanceAlert = this.onOpenEscrowBalanceAlert.bind(this)
-      this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this)  
-      this.onShowModal = this.onShowModal.bind(this)
-      this.onCloseModal = this.onCloseModal.bind(this)  
-      this.watchBlocknumberTimer = undefined;
-      this.handleDateChange = this.handleDateChange.bind(this);
+    this.state = {
+      tagsall: [],
+      jobDetailsSliderOpen: false,
+      ocvalue: 0,
+      ocexpiration: 0,
+      grpcResponse: undefined,
+      grpcErrorOccurred: false,
+      fundTabEnabled: false,
+      enableCustomFunding: false,
+      sliderValue: 1,
+      depositopenchannelerror: '',
+      valueTab: 0,
+      enableFeedback: false,
+      showModal: false,
+      sliderWidth: minSliderWidth,
+      showEscrowBalanceAlert: false,
+      selectedDate: formatDate(new Date()),
+      minExpDate: formatDate(new Date())
+    };
+
+    this.chainMessage = "";
+    this.serviceState = {};
+    this.channelHelper = new ChannelHelper();
+    this.currentBlockNumber = 0;
+    this.serviceSpecJSON = undefined;
+    this.protoSpec = undefined;
+    this.serviceMappings = new ServiceMappings();
+    this.onKeyPressvalidator = this.onKeyPressvalidator.bind(this);
+    this.handleChangeTabs = this.handleChangeTabs.bind(this);
+    this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this);
+    this.onResizeJobDetailsSlider = this.onResizeJobDetailsSlider.bind(this);
+    this.changeocvalue = this.changeocvalue.bind(this);
+    this.changeocexpiration = this.changeocexpiration.bind(this);
+    this.initExpBlockDate = this.initExpBlockDate.bind(this);
+    this.openchannelhandler = this.openchannelhandler.bind(this);
+    this.handleJobInvocation = this.handleJobInvocation.bind(this);
+    this.startjob = this.startjob.bind(this);
+    this.onOpenEscrowBalanceAlert = this.onOpenEscrowBalanceAlert.bind(this)
+    this.onCloseEscrowBalanceAlert = this.onCloseEscrowBalanceAlert.bind(this)
+    this.onShowModal = this.onShowModal.bind(this)
+    this.onCloseModal = this.onCloseModal.bind(this)
+    this.watchBlocknumberTimer = undefined;
+    this.handleDateChange = this.handleDateChange.bind(this);
+    this.handleChangeCustomFunding = this.handleChangeCustomFunding.bind(this);
+    this.handleSliderValueChange = this.handleSliderValueChange.bind(this);
+  }
+
+  watchBlocknumber() {
+    this.props.network.getCurrentBlockNumber((blockNumber) => {
+      this.currentBlockNumber = blockNumber
+    })
+  }
+
+  componentWillUnmount() {
+    if (this.watchBlocknumberTimer) {
+      console.log("Clearing the watchblock timer")
+      clearInterval(this.watchBlocknumberTimer);
     }
+  }
 
-    watchBlocknumber() {
-      this.props.network.getCurrentBlockNumber((blockNumber) => {
-        this.currentBlockNumber = blockNumber
-      })
-    }
+  nextJobStep() {
+    this.onCloseModal()
+    this.setState({ valueTab: (this.state.valueTab + 1) })
+  }
 
-    componentWillUnmount() {
-      if (this.watchBlocknumberTimer) {
-        console.log("Clearing the watchblock timer")
-        clearInterval(this.watchBlocknumberTimer);
-      }
-    }  
-
-    nextJobStep() {
-      this.onCloseModal()
-      this.setState({valueTab:(this.state.valueTab + 1)})
-    }
-
-    reInitializeJobState() {
-      this.setState({depositopenchannelerror: ""})
-      this.setState({ocexpiration:(this.currentBlockNumber + this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET)})
-      this.setState({ocvalue:this.serviceState['price_in_agi']})
-      const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
-                          'available-channels?user_address='+this.props.userAddress +
-                          '&service_id='+this.serviceState["service_id"] +
-                          '&org_id='+this.serviceState["org_id"];
-      return this.channelHelper.reInitialize(channelInfoUrl);
-    }
+  reInitializeJobState() {
+    this.setState({ depositopenchannelerror: "" })
+    this.setState({ ocexpiration: (this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET) })
+    this.setState({ ocvalue: this.serviceState['price_in_agi'] })
+    const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
+      'available-channels?user_address=' + this.props.userAddress +
+      '&service_id=' + this.serviceState["service_id"] +
+      '&org_id=' + this.serviceState["org_id"];
+    return this.channelHelper.reInitialize(channelInfoUrl);
+  }
 
     initExpBlockDate(setMinExpDate=false){
       let expBlockNumber =  this.serviceState['payment_expiration_threshold']+BLOCK_OFFSET;
@@ -236,43 +244,44 @@ export  class Jobdetails extends React.Component {
       }
     }
 
-    startjob() {
-      var reInitialize = this.reInitializeJobState();
-      var serviceSpec = this.fetchServiceSpec();
-      Promise.all([reInitialize, serviceSpec]).then(() => {
-        let mpeTokenInstance = this.props.network.getMPEInstance(this.props.chainId);
-        mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
-          if(err) {
-            this.processChannelErrors("Unable to retrieve balance. Please retry with a higher gas")
-            return;
-          }
-          if(typeof balance !== 'undefined') {
-                balance = parseInt(balance)
-          }
-          
-          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
-          let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, threshold);
-          if (foundChannel) {
-            this.onShowModal(MESSAGES.WAIT_FOR_MM);
-            //We have a channel, lets check if this channel can make this call by getting the channel service state
-            //from the daemon. The daemon will return the last amount which was signed by client
-            var msg = this.composeSHA3Message(["uint256"],[this.channelHelper.getChannelId()]);
-            window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
-            .then((signed) => {
-              this.onShowModal(MESSAGES.WAIT_FOR_CHANNEL_STATE);
-              this.fetchChannelState(signed).then(channelAvailable => 
-                this.handleChannel(balance, channelAvailable, threshold));
-            }).catch(error => {
-              this.processChannelErrors(error);
-              this.setState({fundTabEnabled: false});
-            });
-          } 
-          else {
-            this.handleNewChannel(balance);
-          }
-        });
+  startjob() {
+    this.setState({enableFeedback:false});
+    var reInitialize = this.reInitializeJobState();
+    var serviceSpec = this.fetchServiceSpec();
+    Promise.all([reInitialize, serviceSpec]).then(() => {
+      let mpeTokenInstance = this.props.network.getMPEInstance(this.props.chainId);
+      mpeTokenInstance.balances(this.props.userAddress, (err, balance) => {
+        if(err) {
+          this.processChannelErrors("Unable to retrieve balance. Please retry with a higher gas")
+          return;
+        }
+        if(typeof balance !== 'undefined') {
+              balance = parseInt(balance)
+        }
+
+        const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
+        let foundChannel = this.channelHelper.findExistingChannel(this.serviceState, threshold);
+        if (foundChannel) {
+          this.onShowModal(MESSAGES.WAIT_FOR_MM);
+          //We have a channel, lets check if this channel can make this call by getting the channel service state
+          //from the daemon. The daemon will return the last amount which was signed by client
+          var msg = this.composeSHA3Message(["uint256"],[this.channelHelper.getChannelId()]);
+          window.ethjs.personal_sign(msg, web3.eth.defaultAccount)
+          .then((signed) => {
+            this.onShowModal(MESSAGES.WAIT_FOR_CHANNEL_STATE);
+            this.fetchChannelState(signed).then(channelAvailable => 
+              this.handleChannel(balance, channelAvailable, threshold));
+          }).catch(error => {
+            this.processChannelErrors(error);
+            this.setState({fundTabEnabled: false});
+          });
+        } 
+        else {
+          this.handleNewChannel(balance);
+        }
       });
-    }
+    });
+  }
 
     handleJobInvocation(serviceName, methodName, requestObject) {
       this.onShowModal(MESSAGES.WAIT_FOR_MM)
@@ -354,33 +363,31 @@ export  class Jobdetails extends React.Component {
       this.setState({ocvalue: e.target.value})
     }
 
-    changeocexpiration(e) {
-      this.setState({depositopenchannelerror: ""})
-      this.setState({ocexpiration: e.target.value})
+  changeocexpiration(e) {
+    this.setState({ depositopenchannelerror: "",ocexpiration: e.target.value })
+  }
+
+  openchannelhandler() {
+    if (typeof web3 === 'undefined') {
+      return;
     }
 
-    openchannelhandler() {
-      if (typeof web3 === 'undefined') {
-        return;
-      }
+    try {
+      this.setState({ depositopenchannelerror: '' });
+      let mpeInstance = this.props.network.getMPEInstance(this.props.chainId);
+      var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
 
-      try
-      {
-        this.setState({depositopenchannelerror: ''});
-        let mpeInstance = this.props.network.getMPEInstance(this.props.chainId);
-        var amountInCogs = AGI.inCogs(web3, this.state.ocvalue);
+      if (typeof this.channelHelper.getChannels() === 'undefined') {
+        this.onOpenEscrowBalanceAlert()
+      } else {
+        const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
+        if (this.state.ocexpiration < threshold) {
+         this.processChannelErrors("The date selected should be greater than " + this.state.minExpDate + " for the service to accept the request");
+          return;
+        }
 
-        if (typeof this.channelHelper.getChannels() === 'undefined') {
-          this.onOpenEscrowBalanceAlert()
-        } else {
-          const threshold = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'];
-          if(this.state.ocexpiration < threshold) {
-            this.processChannelErrors("The date selected should be greater than " + this.state.minExpDate + " for the service to accept the request");
-            return;
-          }
-        
-          let groupIDBytes = atob(this.channelHelper.getGroupId());
-          let recipientaddress = this.channelHelper.getRecipient();
+        let groupIDBytes = atob(this.channelHelper.getGroupId());
+        let recipientaddress = this.channelHelper.getRecipient();
 
           if (typeof this.channelHelper.getChannelId() !== 'undefined') {
             let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
@@ -417,41 +424,40 @@ export  class Jobdetails extends React.Component {
           gasPrice = DEFAULT_GAS_PRICE;
         }
 
-        mpeInstance.channelExtendAndAddFunds.estimateGas(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, (err, estimatedGas) =>
-        {
-          console.log("Estimation for channel extend " + estimatedGas)
-          if(err) {
-            estimatedGas = DEFAULT_GAS_ESTIMATE
+      mpeInstance.channelExtendAndAddFunds.estimateGas(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, (err, estimatedGas) => {
+        console.log("Estimation for channel extend " + estimatedGas)
+        if (err) {
+          estimatedGas = DEFAULT_GAS_ESTIMATE
+        }
+        this.onShowModal(MESSAGES.WAIT_FOR_MM);
+        mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
+          gas: estimatedGas,
+          gasPrice: gasPrice
+        }, (error, txnHash) => {
+          if (error) {
+            this.processChannelErrors(error, "Unable to invoke the channelExtendAndAddFunds method");
           }
-          this.onShowModal(MESSAGES.WAIT_FOR_MM);
-          mpeInstance.channelExtendAndAddFunds(rrchannel["channelId"], this.state.ocexpiration, amountInCogs, {
-            gas: estimatedGas,
-            gasPrice: gasPrice
-          }, (error, txnHash) => {
-            if(error) {
-              this.processChannelErrors(error,"Unable to invoke the channelExtendAndAddFunds method");
-            }
-            else {
-              console.log("Channel extended and added funds is TXN Has : " + txnHash);
-              this.onShowModal(MESSAGES.WAIT_FOR_TRANSACTION);
-              this.props.network.waitForTransaction(txnHash).then(receipt => {
-                  this.channelHelper.setChannelId(rrchannel["channelId"]);
-                  console.log('Re using channel ' + this.channelHelper.getChannelId());
-                  this.nextJobStep();
-                })
-                .catch((error) => {
-                  this.processChannelErrors(error,"Channel extend failed with error");
-                });
-              }
-            });
-          });
+          else {
+            console.log("Channel extended and added funds is TXN Has : " + txnHash);
+            this.onShowModal(MESSAGES.WAIT_FOR_TRANSACTION);
+            this.props.network.waitForTransaction(txnHash).then(receipt => {
+              this.channelHelper.setChannelId(rrchannel["channelId"]);
+              console.log('Re using channel ' + this.channelHelper.getChannelId());
+              this.nextJobStep();
+            })
+              .catch((error) => {
+                this.processChannelErrors(error, "Channel extend failed with error");
+              });
+          }
+        });
       });
+    });
+  }
+  channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
+    if (amountInCogs < this.serviceState['price_in_cogs']) {
+      this.processChannelErrors("Amount added should be greater than " + this.serviceState['price_in_cogs']);
+      return;
     }
-    channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
-      if(amountInCogs < this.serviceState['price_in_cogs']) {
-        this.processChannelErrors("Amount added should be greater than " + this.serviceState['price_in_cogs']);
-        return;
-      }
 
       var startingBlock = this.currentBlockNumber;
       console.log("Reading events from " + startingBlock);
@@ -461,12 +467,11 @@ export  class Jobdetails extends React.Component {
           gasPrice = DEFAULT_GAS_PRICE;
         }
 
-        mpeInstance.openChannel.estimateGas(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) =>
-        {
-          console.log("Estimation for channel open " + estimatedGas)
-          if(err) {
-            estimatedGas = DEFAULT_GAS_ESTIMATE
-          }
+      mpeInstance.openChannel.estimateGas(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, (err, estimatedGas) => {
+        console.log("Estimation for channel open " + estimatedGas)
+        if (err) {
+          estimatedGas = DEFAULT_GAS_ESTIMATE
+        }
 
           this.onShowModal(MESSAGES.WAIT_FOR_MM);
           mpeInstance.openChannel(this.props.userAddress, recipientaddress, groupIDBytes, amountInCogs, this.state.ocexpiration, {
@@ -522,15 +527,15 @@ export  class Jobdetails extends React.Component {
       });
     }
 
-    onCloseJobDetailsSlider(){
-      this.props.reloadDetails(this.props.chainId)
-      this.setState({ jobDetailsSliderOpen: false });
-      if (this.watchBlocknumberTimer) {
-        console.log("Clearing the watchblock timer")
-        clearInterval(this.watchBlocknumberTimer);
-        this.watchBlocknumberTimer=undefined
-      }
+  onCloseJobDetailsSlider() {
+    this.props.reloadDetails(this.props.chainId)
+    this.setState({ jobDetailsSliderOpen: false });
+    if (this.watchBlocknumberTimer) {
+      console.log("Clearing the watchblock timer")
+      clearInterval(this.watchBlocknumberTimer);
+      this.watchBlocknumberTimer = undefined
     }
+  }
 
     onResizeJobDetailsSlider(){
       const newWidth = this.state.sliderWidth === minSliderWidth ? maxSliderWidth : minSliderWidth;
@@ -594,163 +599,244 @@ export  class Jobdetails extends React.Component {
     let ocexpiration = (this.currentBlockNumber + diff).toFixed(0);
     this.setState({selectedDate, ocexpiration});
   }
-  
-    render()
-    {
-      const {valueTab} = this.state;
-      let CallComponent = this.serviceMappings.getComponent(this.serviceState["org_id"], this.serviceState["service_id"],this.props.chainId);
-        return(
-            <React.Fragment>
-            <div>
-                <DAppModal open={this.state.showModal} message={this.chainMessage} showProgress={true}/>
-            </div>              
-            <div>
-              <DAppModal open={this.state.showEscrowBalanceAlert} message={MESSAGES.ZERO_ESCROW_BALANCE} showProgress={false} link={"/Account"} linkText="Deposit"/>
-            </div>              
-            <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
-              <Slide style={{width : this.state.sliderWidth}} direction="left" in={this.state.jobDetailsSliderOpen} mountOnEnter unmountOnExit>
-                <div className="sidebar">
-                  <PerfectScrollbar>
-                    <div style={{paddingRight:"11px", fontSize: "30px",textAlign: "right"}}>
-                      <i className={this.state.sliderWidth === minSliderWidth ?
-                        "fas fa-window-maximize mini-maxi-close":
-                        "fas fa-window-minimize mini-maxi-close" }
-                         onClick={this.onResizeJobDetailsSlider}></i>
-                      <i className="fas fa-window-close mini-maxi-close" onClick={this.onCloseJobDetailsSlider}></i>
-                    </div>
-                    <Typography component={ 'div'} style={{fontFamily: "Muli"}}>
-                        <div className="right-panel agentdetails-sec p-3 pb-5" style={{paddingRight:"11px"}}>
-                            <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
-                                <h3>{this.serviceState["display_name"]} </h3>
-                                <div className="job-details-tag-align">
-                                    {this.state.tagsall.map((rowtags,rindex) =>
-                                        <label key={rindex} className='job-details-tag mr-15'>{rowtags}</label>)}
-                                </div>
-                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
-                                    <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-description">
-                                     {this.serviceState["description"]}
-                                    </div>
-                                    <div className="job-details-url">
-                                      <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
-                                    </div>
-                                </div>
 
-                                <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
-                                <h3>Job Cost Preview</h3>
-                                <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Current Price</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > {this.serviceState["price_in_agi"]} AGI</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Price Model</div>
-                                    <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter">{this.serviceState["price_model"]}</div>
-                                </div>
-                            </div>
-                                <div className="col-xs-12 col-sm-12 col-md-12 text-center border-top1">                              
-                                    {(this.state.runjobstate) ?
-                                    <button type="button" className="btn-primary" onClick={()=> this.startjob()}>Start Job</button>
-                                    :
-                                        <div className="job-details-unavailable">
-                                            {(typeof web3 === 'undefined') ?
-                                              "Please install Metamask to invoke the API":
-                                              "Service is currently unavailable. Please try later."
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                            {(this.state.runjobstate) ?
-                            <div className="col-xs-12 col-sm-12 col-md-12 funds no-padding">
-                                <i className="up"></i>
-                                <div className="servicedetailstab">
-                                <Tabs value={valueTab} onChange={(event,valueTab)=>this.handleChangeTabs(event,valueTab)} indicatorColor='primary'>
-                                    <Tab disabled={(!this.state.fundTabEnabled) || valueTab !== 0} label={<span className="funds-title">Fund</span>}/>
-                                    <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 1)} label={<span className="funds-title">Invoke</span>}/>
-                                    <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
-                                </Tabs>
-                                    { valueTab === 0 &&
-                                    <TabContainer>
-                                        
-                                        <div className={(this.state.fundTabEnabled)? "row channels-sec" : "row channels-sec-disabled"}>
-                                          <div className="col-md-12 no-padding mtb-10">
-                                            <div className="col-xs-12 col-md-12 no-padding"> 
-                                              <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 amt-label">Amount:
-                                                <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
-                                                  Tokens to be added to the channel to make the call</span>} >
-                                                  <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
-                                                </Tooltip>                                            
-                                              </div>
-                                            <div className="col-xs-7 col-sm-4 col-md-4">
-                                              <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e)=>this.onKeyPressvalidator(e)} 
-                                                disabled={!this.state.fundTabEnabled}/>
-                                            </div>
+  handleChangeCustomFunding() {
+    this.setState(prevState => { return { enableCustomFunding: !prevState.enableCustomFunding } });
+  }
+  handleSliderValueChange(event, value) {
+    let ocvalue = this.serviceState['price_in_agi'] * value;
+    this.setState({ sliderValue: value, ocvalue});
+  }
+  render() {
+    const { valueTab } = this.state;
+    let CallComponent = this.serviceMappings.getComponent(this.serviceState["org_id"], this.serviceState["service_id"], this.props.chainId);
+    return (
+      <React.Fragment>
+        <div>
+          <DAppModal open={this.state.showModal} message={this.chainMessage} showProgress={true} />
+        </div>
+        <div>
+          <DAppModal open={this.state.showEscrowBalanceAlert} message={MESSAGES.ZERO_ESCROW_BALANCE} showProgress={false} link={"/Account"} linkText="Deposit" />
+        </div>
+        <Modal open={this.state.jobDetailsSliderOpen} onClose={this.onCloseJobDetailsSlider}>
+          <Slide style={{ width: this.state.sliderWidth }} direction="left" in={this.state.jobDetailsSliderOpen} mountOnEnter unmountOnExit>
+            <div className="sidebar">
+              <PerfectScrollbar>
+                <div style={{ paddingRight: "11px", fontSize: "30px", textAlign: "right" }}>
+                  <i className={this.state.sliderWidth === minSliderWidth ?
+                    "fas fa-window-maximize mini-maxi-close" :
+                    "fas fa-window-minimize mini-maxi-close"}
+                    onClick={this.onResizeJobDetailsSlider}></i>
+                  <i className="fas fa-window-close mini-maxi-close" onClick={this.onCloseJobDetailsSlider}></i>
+                </div>
+                <Typography component={'div'} style={{ fontFamily: "Muli" }}>
+                  <div className="right-panel agentdetails-sec p-3 pb-5" style={{ paddingRight: "11px" }}>
+                    <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
+                      <h3>{this.serviceState["display_name"]} </h3>
+                      <div className="job-details-tag-align">
+                        {this.state.tagsall.map((rowtags, rindex) =>
+                          <label key={rindex} className='job-details-tag mr-15'>{rowtags}</label>)}
+                      </div>
+                      <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
+                        <div className="col-xs-12 col-sm-12 col-md-12 no-padding job-description">
+                          {this.serviceState["description"]}
+                        </div>
+                        <div className="job-details-url">
+                          <a target="_blank" href={this.serviceState["url"]}>{this.serviceState["url"]}</a>
+                        </div>
+                      </div>
+
+                      <div className="col-xs-12 col-sm-12 col-md-12 jobcostpreview no-padding">
+                        <h3>Job Cost Preview</h3>
+                        <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
+                          <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Current Price</div>
+                          <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > {this.serviceState["price_in_agi"]} AGI</div>
+                          <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Price Model</div>
+                          <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter">{this.serviceState["price_model"]}</div>
+                        </div>
+                      </div>
+                      <div className="col-xs-12 col-sm-12 col-md-12 text-center border-top1">
+                        {(this.state.runjobstate) ?
+                          <button type="button" className="btn-primary" onClick={() => this.startjob()}>Start Job</button>
+                          :
+                          <div className="job-details-unavailable">
+                            {(typeof web3 === 'undefined') ?
+                              "Please install Metamask to invoke the API" :
+                              "Service is currently unavailable. Please try later."
+                            }
+                          </div>
+                        }
+                      </div>
+                    </div>
+                    {(this.state.runjobstate) ?
+                      <div className="col-xs-12 col-sm-12 col-md-12 funds no-padding">
+                        <i className="up"></i>
+                        <div className="servicedetailstab">
+                          <Tabs value={valueTab} onChange={(event, valueTab) => this.handleChangeTabs(event, valueTab)} indicatorColor='primary'>
+                            <Tab disabled={(!this.state.fundTabEnabled) || valueTab !== 0} label={<span className="funds-title">Fund</span>} />
+                            <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 1)} label={<span className="funds-title">Invoke</span>} />
+                            <Tab disabled={(!this.state.fundTabEnabled || valueTab !== 2)} label={<span className="funds-title">Result</span>} />
+                          </Tabs>
+                          {valueTab === 0 &&
+                            <TabContainer>
+                              <React.Fragment>
+                                <FormControlLabel
+                                  control={
+                                    <Switch
+                                      checked={this.state.enableCustomFunding}
+                                      onChange={this.handleChangeCustomFunding}
+                                      disabled={!this.state.fundTabEnabled}
+                                      value="checkedA"
+                                      color="primary"
+                                    />
+                                  }
+                                  labelPlacement="start"
+                                  label={<h5>Custom funding options</h5>}
+                                  style={{ float: "right", marginRight: 0 }}
+                                />
+                                {
+                                  !this.state.enableCustomFunding ?
+                                  <div className={(this.state.fundTabEnabled) ? "row channels-sec" : "row channels-sec-disabled"}>
+                                      <div className="col-md-12 no-padding mtb-10">
+                                        <div className="col-xs-12 col-md-12 no-padding">
+                                          <div className="col-xs-4 col-sm-7 col-md-7 mtb-10 amt-label">No of Transactions:
+                                                <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px" }}>
+                                              The required amoint of gas cost for the selected number of transaction will be automatically retrieved. Please not that gas costs per transaction is volatile and the number of transactions selected is an approximated value</span>} >
+                                              <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                            </Tooltip>
                                           </div>
-                                        </div>
-                                        <div className="col-xs-12 col-md-12 no-padding"> 
-                                          <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Date:
-                                            <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
-                                                The channel becomes eligible for you to reclaim funds after this date. In general agents will accept your request only if the expiry date is in the future. </span>} >
-                                                <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
-                                            </Tooltip>       
-                                          </div>            
-                                          <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
-                                          <TextField
-                                              id="date"
-                                              type="date"
-                                              value={this.state.selectedDate}
-                                              onChange={this.handleDateChange}
+                                          <div className="col-xs-1 col-sm-1 col-md-1 mt-17">
+                                            <span>{this.state.sliderValue}</span>
+                                          </div>
+                                          <div className="col-xs-7 col-sm-4 col-md-4 mt-23">
+                                            <Slider
+                                              value={this.state.sliderValue}
+                                              min={1}
+                                              max={99}
+                                              step={1}
+                                              onChange={this.handleSliderValueChange}
                                               disabled={!this.state.fundTabEnabled}
-                                              className="datepicker-textfield"
-                                              inputProps={{
-                                                id:"datepicker-input",
-                                                min:this.state.minExpDate,
-                                                onKeyDown:(e)=>{e.preventDefault();},
-                                              }}
+                                              color="primary"
                                             />
                                           </div>
                                         </div>
-                                        <div className="col-xs-12 col-md-12 no-padding"> 
-                                          <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Blocknumber:
-                                            <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px"}}>
-                                                Expiry in terms of Ethereum block number.</span>} >
-                                                <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
-                                            </Tooltip>       
-                                          </div>            
-                                          <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
-                                            <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled/>
-                                          </div>
+                                      </div>
+                                      <div className="col-xs-12 col-md-12 no-padding">
+                                        <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Date:
+                                              <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px" }}>
+                                            The channel becomes eligible for you to reclaim funds after this date. In general agents will accept your request only if the expiry date is in the future. </span>} >
+                                            <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                          </Tooltip>
                                         </div>
-                                        <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
-                                          <button type="button" className={this.state.fundTabEnabled?"btn btn-primary width-mobile-100":"btn btn-primary-disabled width-mobile-100"} onClick={()=>this.openchannelhandler()}
-                                                        disabled={!this.state.fundTabEnabled}>Reserve Funds</button>
+                                        <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
+                                          <TextField
+                                            id="date"
+                                            type="date"
+                                            value={this.state.selectedDate}
+                                            onChange={this.handleDateChange}
+                                            disabled={!this.state.fundTabEnabled}
+                                            className="datepicker-textfield"
+                                            inputProps={{
+                                              id: "datepicker-input",
+                                              min: this.state.minExpDate,
+                                              onKeyDown: (e) => { e.preventDefault(); },
+                                            }}
+                                          />
                                         </div>
                                       </div>
+                                      <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
+                                        <button type="button" className={this.state.fundTabEnabled ? "btn btn-primary width-mobile-100" : "btn btn-primary-disabled width-mobile-100"} onClick={() => this.openchannelhandler()}
+                                          disabled={!this.state.fundTabEnabled}>Reserve Funds</button>
+                                      </div>
+                                    </div>
+                                    :
 
-                                        <p className="job-details-error-text">{this.state.depositopenchannelerror!==''?ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror):''}</p>
-                                        <div className="row">
-                                        <div className="fund-details">
-                                        {this.state.fundTabEnabled ?
-                                          (typeof this.channelHelper.getChannelId() === 'undefined') ?
-                                           "The default values provided are for one call. To open a chanel, please add tokens based on the number of calls you wish to make. This will optimize any blockchain operations to extend a channel if needed. "
-                                          :"The default values provided are for one call. Any existing channels will be reused. Please add tokens based on the number of calls you wish to make. This will optimize any blockchain operations to extend a channel if needed."
-                                          : 
-                                          "The first step in invoking the API is to open a payment channel. The System attempt to resuse any existing channel. If no channels are found a new one will be created. This step involves interactions with MetaMask."
-                                        }
+                                    <div className={(this.state.fundTabEnabled) ? "row channels-sec" : "row channels-sec-disabled"}>
+                                      <div className="col-md-12 no-padding mtb-10">
+                                        <div className="col-xs-12 col-md-12 no-padding">
+                                          <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 amt-label">Amount:
+                                                  <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px" }}>
+                                              Tokens to be added to the channel to make the call</span>} >
+                                              <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                            </Tooltip>
+                                          </div>
+                                          <div className="col-xs-7 col-sm-4 col-md-4">
+                                            <input type="text" className="chennels-amt-field" value={this.state.ocvalue} onChange={this.changeocvalue} onKeyPress={(e) => this.onKeyPressvalidator(e)}
+                                              disabled={!this.state.fundTabEnabled} />
+                                          </div>
                                         </div>
+                                      </div>
+                                      <div className="col-xs-12 col-md-12 no-padding">
+                                        <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Date:
+                                              <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px" }}>
+                                            The channel becomes eligible for you to reclaim funds after this date. In general agents will accept your request only if the expiry date is in the future. </span>} >
+                                            <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                          </Tooltip>
                                         </div>
-                                    </TabContainer>
-                                    } {(valueTab === 2 || valueTab === 1) &&
-                                      <TabContainer>
-                                        { (valueTab === 2 && this.state.grpcErrorOccurred)?
-                                          <div>
-                                             <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
-                                          </div>:
-                                          <React.Fragment>
-                                            <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse} sliderWidth={this.state.sliderWidth} protoSpec={this.protoSpec} />
-                                          </React.Fragment>
-                                        }
-                                        <div className="row">
-                                         <p></p>
-                                         {(valueTab === 2) ?
-                                          <div className="fund-details">Your request has been completed. You can now vote for the agent below.
+                                        <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
+                                          <TextField
+                                            id="date"
+                                            type="date"
+                                            value={this.state.selectedDate}
+                                            onChange={this.handleDateChange}
+                                            disabled={!this.state.fundTabEnabled}
+                                            className="datepicker-textfield"
+                                            inputProps={{
+                                              id: "datepicker-input",
+                                              min: this.state.minExpDate,
+                                              onKeyDown: (e) => { e.preventDefault(); },
+                                            }}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="col-xs-12 col-md-12 no-padding">
+                                        <div className="col-xs-5 col-sm-8 col-md-8 mtb-10 expiry-block-no-label">Expiry Blocknumber:
+                                              <Tooltip title={<span style={{ fontSize: "13px", lineHeight: "18px" }}>
+                                            Expiry in terms of Ethereum block number.</span>} >
+                                            <i className="fa fa-info-circle info-icon" aria-hidden="true"></i>
+                                          </Tooltip>
+                                        </div>
+                                        <div className="col-xs-7 col-sm-4 col-md-4 expiry-block-no-input">
+                                          <input type="text" className="chennels-amt-field" value={this.state.ocexpiration} onChange={this.changeocexpiration} disabled />
+                                        </div>
+                                      </div>
+                                      <div className="col-xs-12 col-sm-12 col-md-12 text-right mtb-10 no-padding">
+                                        <button type="button" className={this.state.fundTabEnabled ? "btn btn-primary width-mobile-100" : "btn btn-primary-disabled width-mobile-100"} onClick={() => this.openchannelhandler()}
+                                          disabled={!this.state.fundTabEnabled}>Reserve Funds</button>
+                                      </div>
+                                    </div>
+                                }
+
+
+
+                                <p className="job-details-error-text">{this.state.depositopenchannelerror !== '' ? ERROR_UTILS.sanitizeError(this.state.depositopenchannelerror) : ''}</p>
+                                <div className="row">
+                                  <div className="fund-details">
+                                    {this.state.fundTabEnabled ?
+                                      (typeof this.channelHelper.getChannelId() === 'undefined') ?
+                                        "The default values provided are for one call. To open a chanel, please add tokens based on the number of calls you wish to make. This will optimize any blockchain operations to extend a channel if needed. "
+                                        : "The default values provided are for one call. Any existing channels will be reused. Please add tokens based on the number of calls you wish to make. This will optimize any blockchain operations to extend a channel if needed."
+                                      :
+                                      "The first step in invoking the API is to open a payment channel. The System attempt to resuse any existing channel. If no channels are found a new one will be created. This step involves interactions with MetaMask."
+                                    }
+                                  </div>
+                                </div>
+                              </React.Fragment>
+                            </TabContainer>
+                          } {(valueTab === 2 || valueTab === 1) &&
+                            <TabContainer>
+                              {(valueTab === 2 && this.state.grpcErrorOccurred) ?
+                                <div>
+                                  <p className="job-details-error-text">Error: {this.state.grpcResponse}</p>
+                                </div> :
+                                <React.Fragment>
+                                  <CallComponent isComplete={valueTab === 2} serviceSpec={this.serviceSpecJSON} callApiCallback={this.handleJobInvocation} response={this.state.grpcResponse} sliderWidth={this.state.sliderWidth} protoSpec={this.protoSpec} />
+                                </React.Fragment>
+                              }
+                              <div className="row">
+                                <p></p>
+                                {(valueTab === 2) ?
+                                  <div className="fund-details">Your request has been completed. You can now vote for the agent below.
                                           </div> :
                                           <div className="fund-details">Click the "Invoke" button to initate the API call. This will prompt one further interaction with MetaMask to sign your API request before submitting the request to the Agent. This interaction does not initiate a transaction or transfer any additional funds.
                                           </div>
