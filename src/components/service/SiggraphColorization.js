@@ -17,7 +17,7 @@ export default class SiggraphColorization extends React.Component {
         this.state = {
             users_guide: "https://singnet.github.io/dnn-model-services/users_guide/siggraph-colorization.html",
             code_repo: "https://github.com/singnet/dnn-model-services/tree/master/services/siggraph-colorization",
-            reference: "ttp://iizuka.cs.tsukuba.ac.jp/projects/colorization/en/",
+            reference: "http://iizuka.cs.tsukuba.ac.jp/projects/colorization/en/",
 
             serviceName: "Colorization",
             methodName: "colorize",
