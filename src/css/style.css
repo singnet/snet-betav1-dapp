@@ -1248,6 +1248,11 @@ h4 { display: inline-block; }
   width:100%;
 }
 
+.standalone-container {
+  width: 70%;
+  padding: 25px;
+}
+
 .btn-start-disabled {
   color: #fff;
   background-color: #d8d8d8;
