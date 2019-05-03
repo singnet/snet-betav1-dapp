@@ -17,6 +17,7 @@ class SampleServices extends React.Component {
     super(props);
     this.state = {
       agents : [],
+      paginationTotal:0,
       offset:0,
       searchTerm:'',
       searchResults:[],
@@ -174,7 +175,7 @@ class SampleServices extends React.Component {
 
   loadDetails(chainId) {
     if(!isSupportedNetwork(chainId)) {
-      this.setState({agents:[]})
+      this.setState({agents:[],paginationTotal:0})
       return;
     }
     const marketPlaceURL = getMarketplaceURL(chainId);
@@ -221,7 +222,7 @@ class SampleServices extends React.Component {
                 }
             }))            
           }      
-          this.setState({agents: values[0].data})
+          this.setState({agents: values[0].data,paginationTotal:values[0].data.length})
         }   
       }
       //Do this the first time the page gets loaded.
@@ -246,8 +247,8 @@ class SampleServices extends React.Component {
     Requests.get(searchURL).then(response=>{
       console.log('response',response);  
       if(response.status === 'success'){
-        let { result:agents, offset } = response.data;
-        this.setState({agents,offset});
+        let { result:agents, offset, total_count:paginationTotal } = response.data;
+        this.setState({agents,offset,paginationTotal});
       }
     }).catch(err=>{
       console.log('error',err);
@@ -270,8 +271,8 @@ class SampleServices extends React.Component {
     Requests.get(searchURL).then(response=>{
       // console.log('response',response);
       if(response.status === 'success'){
-        let { result:agents, offset } = response.data;
-        this.setState({agents,offset});
+        let { result:agents, offset, total_count:paginationTotal } = response.data;
+        this.setState({agents,offset, paginationTotal});
       }
     }).catch(err=>{
       console.log('error',err);
@@ -280,7 +281,6 @@ class SampleServices extends React.Component {
   }
 
   render() {
-    let arraylimit = this.state.agents.length
     let agentsample = this.state.agents
 
     const agents = agentsample.slice(0,15).map((rown,index) =>
@@ -391,9 +391,9 @@ class SampleServices extends React.Component {
                         {agents}
                     </div>
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-center no-padding">
-                        {arraylimit>15?
+                        {this.state.paginationTotal>15?
                         <MuiThemeProvider theme={theme}>
-                            <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handlePagination(offset)} />
+                            <Pagination limit={15} offset={this.state.offset} total={this.state.paginationTotal} onClick={(e, offset)=> this.handlePagination(offset)} />
                         </MuiThemeProvider>
                         :null}
                     </div>
