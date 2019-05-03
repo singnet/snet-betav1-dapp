@@ -70,16 +70,10 @@ export const theme = createMuiTheme({
     overrides: {
         MuiButton: {
             root: {
-                background: 'white',
-                borderRadius: 3,
-                border: 0,
-                color: 'white',
-                height: 38,
-                padding: '0 30px',
-                boxShadow: '0 3px 5px 2px lightblue',
-                fontFamily: "Muli",
-                fontSize: "12px",
-            },
+              height: 38,
+              fontFamily: "Muli",
+              fontSize: "18px",
+          },
         },
     },
 });

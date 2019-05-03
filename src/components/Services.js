@@ -4,7 +4,7 @@ import { MuiThemeProvider } from "@material-ui/core/styles"
 import Pagination from "material-ui-flat-pagination"
 import Typography from '@material-ui/core/Typography'
 import { withRouter } from 'react-router-dom'
-import { AGI, getMarketplaceURL, isSupportedNetwork } from '../util'
+import { AGI, getMarketplaceURL, isSupportedNetwork, generateSearchString } from '../util'
 import { Requests } from '../requests'
 import BlockchainHelper from "./BlockchainHelper.js"
 import {Jobdetails} from './JobDetails.js';
@@ -31,14 +31,15 @@ class SampleServices extends React.Component {
     this.account = undefined;
     this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
-    this.captureSearchTerm = this.captureSearchTerm.bind(this)
+    this.handleSearch = this.handleSearch.bind(this)
     this.handlepricesort = this.handlepricesort.bind(this)
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
     this.handlehealthsort = this.handlehealthsort.bind(this)
-    this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
+    // this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
     this.loadDetails = this.loadDetails.bind(this);
+    this.handlePagination = this.handlePagination.bind(this);
   }
 
     watchWallet() {
@@ -69,26 +70,26 @@ class SampleServices extends React.Component {
     return false;
   }
 
-  handleSearchKeyUp(e) {
-    e.preventDefault();
-    if(this.state.searchTerm === '') {
-      this.setState({searchResults:[]});
-      return;
-    }
+  // handleSearchKeyUp(e) {
+  //   e.preventDefault();
+  //   if(this.state.searchTerm === '') {
+  //     this.setState({searchResults:[]});
+  //     return;
+  //   }
 
-    let ucSearchTerm = this.state.searchTerm.toUpperCase();
-    this.state.agents.map(row =>
-      (this.inArray(row["tags_uc"], ucSearchTerm)) ?
-      console.log("Matched " + row["tags_uc"]) : console.log("Not Matched " + row["tags_uc"]))
+  //   let ucSearchTerm = this.state.searchTerm.toUpperCase();
+  //   this.state.agents.map(row =>
+  //     (this.inArray(row["tags_uc"], ucSearchTerm)) ?
+  //     console.log("Matched " + row["tags_uc"]) : console.log("Not Matched " + row["tags_uc"]))
 
-    let searchedagents = this.state.agents.map(row =>
-        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1
-        || (this.inArray(row["tags_uc"], ucSearchTerm)) ? row : null))
+  //   let searchedagents = this.state.agents.map(row =>
+  //       (row["display_name_uc"].indexOf(ucSearchTerm) !== -1
+  //       || (this.inArray(row["tags_uc"], ucSearchTerm)) ? row : null))
 
-    let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
-    console.log("Setting search results to " + bestsearchresults.length)
-    this.setState({searchResults:bestsearchresults});
-  }
+  //   let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
+  //   console.log("Setting search results to " + bestsearchresults.length)
+  //   this.setState({searchResults:bestsearchresults});
+  // }
 
   handlehealthsort() {
     var healthSort = this.state.agents
@@ -237,8 +238,20 @@ class SampleServices extends React.Component {
     this.setState({userAddress: web3.eth.defaultAccount});
   }
 
-  handleClick(offset) {
+  handlePagination(offset) {
     this.setState({ offset });
+    let marketPlaceURL = getMarketplaceURL(this.state.chainId);
+    let searchTerm = this.state.searchTerm;
+    let searchURL = generateSearchString({marketPlaceURL,searchTerm,offset});
+    Requests.get(searchURL).then(response=>{
+      console.log('response',response);  
+      if(response.status === 'success'){
+        let { result:agents, offset } = response.data;
+        this.setState({agents,offset});
+      }
+    }).catch(err=>{
+      console.log('error',err);
+    });
   }
 
   onOpenJobDetailsSlider(data) {
@@ -249,21 +262,28 @@ class SampleServices extends React.Component {
     this.refs.jobdetailsComp.onCloseJobDetailsSlider();
   }
 
-  captureSearchTerm(e) {
-    this.setState({searchTerm:e.target.value})
+  handleSearch(e) {
+    let marketPlaceURL = getMarketplaceURL(this.state.chainId);
+    let searchTerm = e.target.value;
+    this.setState({searchTerm});
+    let searchURL = generateSearchString({marketPlaceURL,searchTerm})
+    Requests.get(searchURL).then(response=>{
+      // console.log('response',response);
+      if(response.status === 'success'){
+        let { result:agents, offset } = response.data;
+        this.setState({agents,offset});
+      }
+    }).catch(err=>{
+      console.log('error',err);
+    });
+    
   }
 
   render() {
-    const {open} = this.state;
     let arraylimit = this.state.agents.length
-
     let agentsample = this.state.agents
-    if (this.state.searchTerm != '' || this.state.searchResults.length > 0) {
-      agentsample = this.state.searchResults
-      arraylimit = this.state.searchResults.length
-    }
 
-    const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
+    const agents = agentsample.slice(0,15).map((rown,index) =>
       <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 media" key={index} id={rown[ "service_id"]} name={rown[ "display_name"].toUpperCase()}>
           <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
           <div className="col-sm-2 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
@@ -326,7 +346,7 @@ class SampleServices extends React.Component {
                         <span className="service-agents">Service Agents</span>
                     </div>
                     <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 search-bar">
-                    <input className="search" placeholder={this.state.searchTerm === '' ? 'Search by Agent or Tags' : this.state.searchTerm} name="srch-term" id="srch-term" type="label" onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handleSearchKeyUp(e)} />
+                    <input className="search" placeholder={this.state.searchTerm === '' ? 'Search by Agent or Tags' : this.state.searchTerm} name="srch-term" id="srch-term" type="label" onChange={this.handleSearch}  />
                     <button className="btn-search"><i className="fa fa-search search-icon" aria-hidden="true"></i></button> 
                     </div>
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 head-txt-sec">
@@ -370,10 +390,10 @@ class SampleServices extends React.Component {
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 no-mobile-padding">
                         {agents}
                     </div>
-                    <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-right no-padding">
+                    <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-center no-padding">
                         {arraylimit>15?
                         <MuiThemeProvider theme={theme}>
-                            <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
+                            <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handlePagination(offset)} />
                         </MuiThemeProvider>
                         :null}
                     </div>

@@ -150,3 +150,7 @@ export function isSupportedNetwork(chainId) {
 
 export const BLOCK_OFFSET = 80640 //# Approximately blocks generated in 30 minutes
 export const BLOCK_TIME_SECONDS = 15 // Number of seconds, a single block unit corresponds to.
+
+export const generateSearchString = ({marketPlaceURL,searchTerm,field='all',limit=15,offset=0}) =>{
+  return `${marketPlaceURL}search?q=${searchTerm}&s=${field}&limit=${limit}&offset=${offset}`;
+}
