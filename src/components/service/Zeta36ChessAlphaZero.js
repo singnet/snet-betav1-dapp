@@ -39,7 +39,7 @@ export default class Zeta36ChessAlphaZero extends React.Component {
         } else {
             console.log(nextProps.response);
             if (typeof nextProps.response !== 'undefined') {
-                this.state.response = nextProps.response;
+                this.setState({ response: nextProps.response });
             }
         }
     }
