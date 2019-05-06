@@ -28,6 +28,8 @@ class SampleServices extends React.Component {
       chainId: undefined
     };
 
+    this.masterData=[]
+
     this.network = new BlockchainHelper();
     this.account = undefined;
     this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
@@ -36,11 +38,11 @@ class SampleServices extends React.Component {
     this.handlepricesort = this.handlepricesort.bind(this)
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
     this.handlehealthsort = this.handlehealthsort.bind(this)
-    // this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
     this.loadDetails = this.loadDetails.bind(this);
     this.handlePagination = this.handlePagination.bind(this);
+    this.parseSearchResult = this.parseSearchResult.bind(this);
   }
 
     watchWallet() {
@@ -70,27 +72,6 @@ class SampleServices extends React.Component {
     }
     return false;
   }
-
-  // handleSearchKeyUp(e) {
-  //   e.preventDefault();
-  //   if(this.state.searchTerm === '') {
-  //     this.setState({searchResults:[]});
-  //     return;
-  //   }
-
-  //   let ucSearchTerm = this.state.searchTerm.toUpperCase();
-  //   this.state.agents.map(row =>
-  //     (this.inArray(row["tags_uc"], ucSearchTerm)) ?
-  //     console.log("Matched " + row["tags_uc"]) : console.log("Not Matched " + row["tags_uc"]))
-
-  //   let searchedagents = this.state.agents.map(row =>
-  //       (row["display_name_uc"].indexOf(ucSearchTerm) !== -1
-  //       || (this.inArray(row["tags_uc"], ucSearchTerm)) ? row : null))
-
-  //   let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
-  //   console.log("Setting search results to " + bestsearchresults.length)
-  //   this.setState({searchResults:bestsearchresults});
-  // }
 
   handlehealthsort() {
     var healthSort = this.state.agents
@@ -221,7 +202,8 @@ class SampleServices extends React.Component {
                   agent["is_available"] = healthDetail["is_available"]
                 }
             }))            
-          }      
+          }   
+          this.masterData= values[0].data;   
           this.setState({agents: values[0].data,paginationTotal:values[0].data.length})
         }   
       }
@@ -245,9 +227,9 @@ class SampleServices extends React.Component {
     let searchTerm = this.state.searchTerm;
     let searchURL = generateSearchString({marketPlaceURL,searchTerm,offset});
     Requests.get(searchURL).then(response=>{
-      console.log('response',response);  
       if(response.status === 'success'){
-        let { result:agents, offset, total_count:paginationTotal } = response.data;
+        let { offset, total_count:paginationTotal } = response.data;
+        let agents = this.parseSearchResult(response);
         this.setState({agents,offset,paginationTotal});
       }
     }).catch(err=>{
@@ -269,15 +251,34 @@ class SampleServices extends React.Component {
     this.setState({searchTerm});
     let searchURL = generateSearchString({marketPlaceURL,searchTerm})
     Requests.get(searchURL).then(response=>{
-      // console.log('response',response);
       if(response.status === 'success'){
-        let { result:agents, offset, total_count:paginationTotal } = response.data;
-        this.setState({agents,offset, paginationTotal});
+        let { offset, total_count:paginationTotal } = response.data;
+        let agents = this.parseSearchResult(response);
+        this.setState({agents, offset, paginationTotal});
       }
     }).catch(err=>{
       console.log('error',err);
     });
     
+  }
+
+  parseSearchResult(response){
+    let {result:searchResults} = response.data;
+        if(!Array.isArray(searchResults) || (searchResults.length == 0)){ return []}
+        searchResults.map(srchRslt=>{
+          this.masterData.map(agent=>{
+            if(srchRslt["service_id"] === agent["service_id"] && srchRslt["org_id"] === agent["org_id"]){
+              srchRslt["is_available"] = agent["is_available"];
+              srchRslt["price_in_agi"] = agent["price_in_agi"];
+              srchRslt["comment"] = agent["comment"];
+              srchRslt["down_vote"] = agent["down_vote"];
+              srchRslt["down_vote_count"] = agent["down_vote_count"];
+              srchRslt["up_vote"] = agent["up_vote"];
+              srchRslt["up_vote_count"] = agent["up_vote_count"];
+            }
+          }); // end of agents map
+        }); // end of searchResults map
+        return searchResults;
   }
 
   render() {
@@ -346,7 +347,12 @@ class SampleServices extends React.Component {
                         <span className="service-agents">Service Agents</span>
                     </div>
                     <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 search-bar">
-                    <input className="search" placeholder={this.state.searchTerm === '' ? 'Search by Agent or Tags' : this.state.searchTerm} name="srch-term" id="srch-term" type="label" onChange={this.handleSearch}  />
+                    <input className="search" 
+                          placeholder={'Search by Agent or Tags'}
+                          value={this.state.searchTerm} 
+                          name="srch-term" id="srch-term" type="label" 
+                          onChange={this.handleSearch}
+                          disabled={this.masterData.length == 0}  />
                     <button className="btn-search"><i className="fa fa-search search-icon" aria-hidden="true"></i></button> 
                     </div>
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 head-txt-sec">
@@ -391,7 +397,7 @@ class SampleServices extends React.Component {
                         {agents}
                     </div>
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-center no-padding">
-                        {this.state.paginationTotal>15?
+                        {this.state.agents.length>15?
                         <MuiThemeProvider theme={theme}>
                             <Pagination limit={15} offset={this.state.offset} total={this.state.paginationTotal} onClick={(e, offset)=> this.handlePagination(offset)} />
                         </MuiThemeProvider>
