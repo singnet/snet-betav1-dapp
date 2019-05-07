@@ -397,7 +397,7 @@ class SampleServices extends React.Component {
                         {agents}
                     </div>
                     <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-center no-padding">
-                        {this.state.agents.length>15?
+                        {(this.state.agents.length>15 || this.state.paginationTotal > 15)?
                         <MuiThemeProvider theme={theme}>
                             <Pagination limit={15} offset={this.state.offset} total={this.state.paginationTotal} onClick={(e, offset)=> this.handlePagination(offset)} />
                         </MuiThemeProvider>
