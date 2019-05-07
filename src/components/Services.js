@@ -4,7 +4,7 @@ import { MuiThemeProvider } from "@material-ui/core/styles"
 import Pagination from "material-ui-flat-pagination"
 import Typography from '@material-ui/core/Typography'
 import { withRouter } from 'react-router-dom'
-import { AGI, getMarketplaceURL, isSupportedNetwork, generateSearchString } from '../util'
+import { AGI, getMarketplaceURL, isSupportedNetwork, generateSearchURL } from '../util'
 import { Requests } from '../requests'
 import BlockchainHelper from "./BlockchainHelper.js"
 import {Jobdetails} from './JobDetails.js';
@@ -225,7 +225,7 @@ class SampleServices extends React.Component {
     this.setState({ offset });
     let marketPlaceURL = getMarketplaceURL(this.state.chainId);
     let searchTerm = this.state.searchTerm;
-    let searchURL = generateSearchString({marketPlaceURL,searchTerm,offset});
+    let searchURL = generateSearchURL({marketPlaceURL,searchTerm,offset});
     Requests.get(searchURL).then(response=>{
       if(response.status === 'success'){
         let { offset, total_count:paginationTotal } = response.data;
@@ -249,7 +249,7 @@ class SampleServices extends React.Component {
     let marketPlaceURL = getMarketplaceURL(this.state.chainId);
     let searchTerm = e.target.value;
     this.setState({searchTerm});
-    let searchURL = generateSearchString({marketPlaceURL,searchTerm})
+    let searchURL = generateSearchURL({marketPlaceURL,searchTerm})
     Requests.get(searchURL).then(response=>{
       if(response.status === 'success'){
         let { offset, total_count:paginationTotal } = response.data;
