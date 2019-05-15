@@ -2,29 +2,31 @@ import React from 'react';
 import {hasOwnDefinedProperty} from '../../util';
 import Button from '@material-ui/core/Button';
 
-export default class I3DActionRecognition extends React.Component {
+import SNETImageUpload from "./standardComponents/SNETImageUpload";
+
+export default class SiggraphColorization extends React.Component {
 
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
         this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
+        this.getImageURL = this.getImageURL.bind(this);
         this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
-            users_guide: "https://singnet.github.io/dnn-model-services/users_guide/i3d-video-action-recognition.html",
-            code_repo: "https://github.com/singnet/dnn-model-services/tree/master/services/i3d-video-action-recognition",
-            reference: "https://github.com/deepmind/kinetics-i3d",
+            users_guide: "https://singnet.github.io/dnn-model-services/users_guide/siggraph-colorization.html",
+            code_repo: "https://github.com/singnet/dnn-model-services/tree/master/services/siggraph-colorization",
+            reference: "http://iizuka.cs.tsukuba.ac.jp/projects/colorization/en/",
 
-            serviceName: "VideoActionRecognition",
-            methodName: "video_action_recon",
+            serviceName: "Colorization",
+            methodName: "colorize",
 
-            model: "400",
-            url: "",
+            img_input: "",
 
             response: undefined
         };
-        this.modelOptions = ["400", "600"];
+
         this.isComplete = false;
         this.serviceMethods = [];
         this.allServices = [];
@@ -85,15 +87,12 @@ export default class I3DActionRecognition extends React.Component {
         this.serviceMethods = data;
     }
 
-    isValidVideoURL(str) {
-        return (
-            (str.startsWith("http://") || str.startsWith("https://")) &&
-            (str.endsWith(".avi") || str.endsWith(".mp4"))
-        );
+    getImageURL(data) {
+        this.setState({ img_input: data });
     }
 
     canBeInvoked() {
-        return (this.isValidVideoURL(this.state.url));
+        return (this.state.img_input);
     }
 
     handleFormUpdate(event) {
@@ -116,32 +115,15 @@ export default class I3DActionRecognition extends React.Component {
     submitAction() {
         this.props.callApiCallback(this.state.serviceName,
             this.state.methodName, {
-                model: this.state.model,
-                url: this.state.url
+                img_input: this.state.img_input
             });
     }
 
     renderForm() {
         return (
             <React.Fragment>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>I3D Model: </div>
-                    <div className="col-md-3 col-lg-3">
-                        <select name="model"
-                                style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                                onChange={this.handleFormUpdate}>
-                            {this.modelOptions.map((row, index) =>
-                                <option value={row} key={index}>{row}</option>)}
-                        </select>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>Video URL: </div>
-                    <div className="col-md-3 col-lg-3">
-                        <input name="url" type="text"
-                               style={{height: "30px", width: "250px", fontSize: "13px", marginBottom: "5px"}}
-                               value={this.state.url} onChange={this.handleFormUpdate}></input>
-                    </div>
+                <div className="row" align="center">
+                    <SNETImageUpload imageName={""} imageDataFunc={this.getImageURL} instantUrlFetch={true} allowURL={true} />
                 </div>
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{padding: "10px", fontSize: "13px", marginLeft: "10px"}}>About: </div>
@@ -167,22 +149,20 @@ export default class I3DActionRecognition extends React.Component {
     }
 
     renderComplete() {
-        let status = "Ok\n";
-        let value = "\n";
-
+        let img_base64 = "";
         if (typeof this.state.response === "object") {
-            value = "\n" + this.state.response.value;
+            img_base64 = "data:image/jpeg;base64," + this.state.response.img_colorized;
         } else {
             status = this.state.response + "\n";
         }
+
         return (
             <div>
-                <p style={{fontSize: "13px"}}>Response from service is: </p>
-                <pre>
-                    Status: {status}
-                    Top Predicted Actions:
-                    {value}
-                </pre>
+                <div className="row" align="center">
+                    <div style={{align: "center", maxWidth: "100%"}}>
+                        <img style={{maxWidth: "100%"}} src={img_base64} alt={"Response Image"} />
+                    </div>
+                </div>
             </div>
         );
     }
