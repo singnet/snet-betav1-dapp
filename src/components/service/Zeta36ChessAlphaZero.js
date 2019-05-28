@@ -12,8 +12,8 @@ export default class Zeta36ChessAlphaZero extends React.Component {
         this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/zeta36-chess-alpha-zero.md",
-            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/zeta36-chess-alpha-zero",
+            users_guide: "https://singnet.github.io/dnn-model-services/users_guide/zeta36-chess-alpha-zero.html",
+            code_repo: "https://github.com/singnet/dnn-model-services/tree/master/services/zeta36-chess-alpha-zero",
             reference: "https://github.com/Zeta36/chess-alpha-zero",
 
             serviceName: "AlphaZero",
@@ -39,7 +39,7 @@ export default class Zeta36ChessAlphaZero extends React.Component {
         } else {
             console.log(nextProps.response);
             if (typeof nextProps.response !== 'undefined') {
-                this.state.response = nextProps.response;
+                this.setState({ response: nextProps.response });
             }
         }
     }

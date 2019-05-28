@@ -234,6 +234,8 @@ a:hover {
 .mr-15 { margin-right:15px; }
 .ml-10 { margin-left: 10px; }
 .mt-100 { margin-top:100px; }
+.mt-23 { margin-top: 23px; }
+.mt-17 { margin-top: 17px; }
 .border-left-1 { border-left:1px solid #ddd; }
 .border { border:1px solid #ddd; }
 .width-100 { width:100%; }
@@ -1246,6 +1248,11 @@ h4 { display: inline-block; }
   width:100%;
 }
 
+.standalone-container {
+  width: 70%;
+  padding: 25px;
+}
+
 .btn-start-disabled {
   color: #fff;
   background-color: #d8d8d8;
@@ -1730,6 +1737,7 @@ i {
   .hamburger-menu { display: block; }
   .navigation { display: none; }
   .agent-detail { height: auto; }
+  
 }
 
 @media only screen and (max-width: 768px) {
@@ -1858,6 +1866,7 @@ i {
     margin-top: 25px;
     padding:15px!important;
   }
+  
 }
 
 @media only screen and (max-width: 667px) {
@@ -2007,6 +2016,7 @@ i {
     border-top: 1px solid #8dbbf0;
     width: 50%
   }
+  
 }
 
 /* Hamburger stying */
@@ -2073,6 +2083,7 @@ i {
   .navigation { display: none; }
 
   .agent-detail { height: auto; }
+  
 }
 
 @media(max-width: 564px){
@@ -2083,6 +2094,7 @@ i {
 
   .service-agents { font-size: 16px; }
   .search-bar input { width: 100%; }
+  
 }
 
 @media(max-width: 535px){
@@ -2097,15 +2109,18 @@ i {
     text-align: left;
     display: block; 
   }
+  
 }
 
 @media screen and (max-height: 450px) {
   .sidenav { padding-top: 1.5rem; }
+  
 }
 
 @media(max-width: 399px){
   .header-menu { width: 100%; }
   .header-menu .get-started { float: right !important; }
+  
 }
 
 @media(max-width: 380px){
@@ -2114,7 +2129,85 @@ i {
   .expiry-block-data,
   .data-on-expand,
   .claim-channel-btn span {font-size: 12px !important; }
+  
 }
 
 @media(max-width:360px) { .header-menu { top: 31px; } }
 /*# sourceMappingURL=style.css.map */
+
+/* gdpr styling starts */
+.qc-cmp-persistent-link {
+  display: none !important;
+}
+
+/* gdpr styling ends */
+
+/* Expiry Date picker starts  */
+
+#datepicker-input{
+  font-size: 14px;
+  color: #0066ff;
+}  
+#datepicker-input:disabled{
+  color: #757577;
+}
+input[type=date]::-webkit-clear-button {
+  display: none;
+}
+  input[type=date]::-webkit-calendar-picker-indicator{
+  opacity: 1;
+}
+  input[type=date]::-webkit-inner-spin-button,
+  input[type=date]::-webkit-outer-spin-button {
+   display: none;
+}
+/* Expiry Date picker ends  */
+
+/* Feedback starts */
+.feedback{
+  text-align: center;
+}
+.feedback .error-msg {
+  background-color: #efced1;
+  border: 1px solid #efced1;
+  padding: 5px;
+  font-size: 12px;
+  color: black;
+} 
+.feedback .transaction-message {
+  background-color: #2ac600;
+  border: 1px solid #2ac600;
+  padding: 5px;
+  color: black;
+  font-size: 13px;
+} 
+
+.comment{
+  padding: 15px 0;
+  border-bottom: none;
+}
+
+.vote-error-text{
+  /* position: relative;
+    top: 11px; */
+}
+#feedback-textfield label{
+  font-size: 14px !important;
+  color: #000 !important;
+  font-weight: bold !important;
+}
+#feedback-textfield textarea{
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 14px;
+  letter-spacing: normal;
+  line-height: 14px;
+  opacity: 0.9;
+}
+
+
+#feedback-submit-button{
+background-color: #4086ff;
+}
+
+/* Feedback ends */
+

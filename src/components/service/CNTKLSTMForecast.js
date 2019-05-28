@@ -48,7 +48,7 @@ export default class CNTKLSTMForecast extends React.Component {
         } else {
             console.log(nextProps.response);
             if (typeof nextProps.response !== 'undefined') {
-                this.state.response = nextProps.response;
+                this.setState({ response: nextProps.response });
             }
         }
     }

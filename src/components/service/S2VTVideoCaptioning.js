@@ -12,8 +12,8 @@ export default class S2VTVideoCaptioning extends React.Component {
         this.getServiceMethods = this.getServiceMethods.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/s2vt-video-captioning.md",
-            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/s2vt-video-captioning",
+            users_guide: "https://singnet.github.io/dnn-model-services/users_guide/s2vt-video-captioning.html",
+            code_repo: "https://github.com/singnet/dnn-model-services/tree/master/services/s2vt-video-captioning",
             reference: "https://vsubhashini.github.io/s2vt.html",
 
             serviceName: "VideoCaptioning",
@@ -39,7 +39,7 @@ export default class S2VTVideoCaptioning extends React.Component {
         } else {
             console.log(nextProps.response);
             if (typeof nextProps.response !== 'undefined') {
-                this.state.response = nextProps.response;
+                this.setState({ response: nextProps.response });
             }
         }
     }
