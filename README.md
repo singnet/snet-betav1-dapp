@@ -42,6 +42,13 @@ Currently the UI needed by a service to capture inputs and render the output mus
 * callApiCallback - Function to be called when the service needs to be called. The signature of this function is `callApiCallback(serviceName,methodName, requestObject)`. The component must invoke this callback with the service name, method name and the request object for the call to succeed.
 * response - The response object returned by the service call. This is sent only when isComplete is true. If the service call fails the DApp will display the error
 
+To aid testing of the service before its published to the platform, the DApp has a standalone mode in which the UI can be tested. Here is how you use it
+1. Set up the AI service with the snet daemon
+2. The snet daemon should have the `blockchain_enabled` flag set to false
+3. Update the `src/components/service/ServiceMappings.js` with the mapping for the service
+4. Run the DApp `npm run serve-sandbox`
+5. Enter the service id, org id, proto file contents and the daemon endpoint to start testing the UI
+
 This approach will change in the future as we support a generic mechanism to declaratively describe a service's API. See [this](https://github.com/singnet/custom-ui-research) for more details
 
 

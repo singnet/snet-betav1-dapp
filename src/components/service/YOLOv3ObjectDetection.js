@@ -17,8 +17,8 @@ export default class YOLOv3ObjectDetection extends React.Component {
         this.handleSliderChange = this.handleSliderChange.bind(this);
 
         this.state = {
-            users_guide: "https://github.com/singnet/dnn-model-services/blob/master/docs/users_guide/yolov3-object-detection.md",
-            code_repo: "https://github.com/singnet/dnn-model-services/blob/master/Services/gRPC/yolov3-object-detection",
+            users_guide: "https://singnet.github.io/dnn-model-services/users_guide/yolov3-object-detection.html",
+            code_repo: "https://github.com/singnet/dnn-model-services/tree/master/services/yolov3-object-detection",
             reference: "https://pjreddie.com/darknet/yolo/",
 
             serviceName: "Detect",
@@ -45,7 +45,7 @@ export default class YOLOv3ObjectDetection extends React.Component {
         } else {
             console.log(nextProps.response);
             if (typeof nextProps.response !== 'undefined') {
-                this.state.response = nextProps.response;
+                this.setState({ response: nextProps.response });
             }
         }
     }

@@ -6,9 +6,11 @@ var MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 var paths = require('./paths.js')
 
-module.exports = {
+module.exports = function(isSandBox) {
+  var codePath = isSandBox === 'true' ? paths.sandBoxPath : paths.srcPath;
 
-  entry: path.join(paths.srcPath, 'index.js'),
+  return {
+  entry: path.join(codePath, 'index.js'),
 
   output: {
     path: paths.outPath,
@@ -89,4 +91,5 @@ module.exports = {
       },
     })
   ]
+}
 };

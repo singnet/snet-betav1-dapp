@@ -149,3 +149,4 @@ export function isSupportedNetwork(chainId) {
 }
 
 export const BLOCK_OFFSET = 80640 //# Approximately blocks generated in 30 minutes
+export const BLOCK_TIME_SECONDS = 15 // Number of seconds, a single block unit corresponds to.
