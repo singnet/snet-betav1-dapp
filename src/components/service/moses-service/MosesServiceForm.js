@@ -12,9 +12,10 @@ import {
   ExpansionPanelSummary,
   ExpansionPanelDetails
 } from "@material-ui/core";
-import { Check } from "@material-ui/icons";
+import { Check, AssignmentOutlined, Clear } from "@material-ui/icons";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import * as utf8 from "utf8";
+import MosesOptionsSummary from "./MosesOptionsSummary";
 
 const Options = {
   DATASET: 0,
@@ -64,7 +65,8 @@ export default class MosesServiceForm extends React.Component {
         mosesOptions: true,
         crossValOptions: true,
         targetFeatureAndFilters: true
-      }
+      },
+      showSummary: false
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -283,16 +285,49 @@ export default class MosesServiceForm extends React.Component {
           <Grid item xs={12} style={{ textAlign: "end" }}>
             <Button
               variant="contained"
+              onClick={() => this.setState({ showSummary: true })}
+              style={{ marginLeft: "5px" }}
+            >
+              <AssignmentOutlined style={{ marginRight: "10px" }} />
+              Review Options
+            </Button>
+            <Button
+              variant="contained"
               color="primary"
               onClick={() => this.handleSubmit()}
               disabled={this.props.busy || !this.isValid()}
               style={{ marginLeft: "5px" }}
             >
+              <Check style={{ marginRight: "10px" }} />
               Submit
-              <Check />
             </Button>
           </Grid>
         </Grid>
+
+        <MosesOptionsSummary
+          onClose={() => this.setState({ showSummary: false })}
+          open={this.state.showSummary}
+          options={Object.keys(this.state.mosesOpts)
+            .map(k => ({
+              name: k,
+              value:
+                typeof this.state.mosesOpts[k] === "boolean" ? (
+                  this.state.mosesOpts[k] ? (
+                    <Check />
+                  ) : (
+                    <Clear />
+                  )
+                ) : (
+                  this.state.mosesOpts[k]
+                )
+            }))
+            .concat(
+              Object.keys(this.state.additionalParameters).map(k => ({
+                name: k,
+                value: this.state.additionalParameters[k]
+              }))
+            )}
+        />
       </MuiThemeProvider>
     );
   }
