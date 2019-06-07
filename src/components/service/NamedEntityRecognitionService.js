@@ -1,5 +1,4 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
 import Grid from "@material-ui/core/Grid";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
@@ -17,13 +16,13 @@ export default class NamedEntityRecognitionService extends React.Component {
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
-        this.handleChange = this.handleChange.bind(this);
+        this.handleMessageChange = this.handleMessageChange.bind(this);
+        this.handleSentences = this.handleSentences.bind(this);
 
         this.state = {
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "RecognizeMessage",
+            methodName: "Recognize",
             message: undefined,
             response: undefined,
             styles: {
@@ -36,154 +35,61 @@ export default class NamedEntityRecognitionService extends React.Component {
                 }
             }
         };
-        this.message = undefined;
-        this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
-    }
-
-    parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
-                    this.setState({response: nextProps.response});
-                } else {
-                    this.setState({response: nextProps.response.value});
-                }
-            }
-        }
-    }
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        var objects = undefined;
-        var items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-                var methods = Object.keys(items[rr]["methods"]);
-                this.methodsForAllServices[rr] = methods;
-            }
-        });
     }
 
     handleFormUpdate(event) {
-        console.log(event.target);
         this.setState({[event.target.name]: event.target.value});
     }
 
-    handleServiceName(event) {
-        var strService = event.target.value;
-        this.setState({serviceName: strService});
-        this.serviceMethods.length = 0;
-        var data = Object.values(this.methodsForAllServices[strService]);
-        if (typeof data !== 'undefined') {
-            console.log("typeof data !== 'undefined'");
-            this.serviceMethods = data;
+    handleMessageChange(event) {
+        this.setState({[event.target.name]: event.target.value});
+    };
+
+    renderServiceMethodNames(serviceMethodNames) {
+        const serviceNameOptions = ["Select a method", ...serviceMethodNames];
+        return serviceNameOptions.map((serviceMethodName, index) => {
+            return <MenuItem style={this.state.styles.defaultFontSize} key={index}
+                             value={serviceMethodName}>{serviceMethodName}</MenuItem>
+        });
+    }
+
+    handleSentences() {
+        let tempMessages = this.state.message.toString().split("\n");
+        let tempArray = [];
+        for (let i = 0; i < tempMessages.length; i++) {
+            if (tempMessages[i].length >= 1) {
+                tempArray.push(tempMessages[i]);
+            }
         }
+        let filterArray = tempArray.filter(function (el) {
+            return el != null;
+        });
+
+        let itemsToAnalyze = [];
+        for (let i = 0; i < filterArray.length; i++) {
+            itemsToAnalyze.push({id: i + 1, sentence: filterArray[i]});
+        }
+        return itemsToAnalyze;
     }
 
     submitAction() {
         this.props.callApiCallback(
             this.state.serviceName,
             this.state.methodName, {
-                value: btoa(this.state.message)
+                value: JSON.stringify(this.handleSentences())
             });
     }
 
-    handleChange(event) {
-        this.setState({[event.target.name]: event.target.value});
-    };
-
-    parseResponse(response) {
-        //Temporary parse
-        //Will be improved and migrated to backend service soon
-        try {
-            let resultItems = [];
-            let responseArray = atob(response)
-                .split("[").join("")
-                .split("]").join("")
-                .split(')');
-            for (let i = 0; i < responseArray.length - 1; i++) {
-                let temp = '';
-                if (i === 0) {
-                    temp = responseArray[i].substring(1, responseArray[i].length);
-                } else {
-                    temp = responseArray[i].substring(3, responseArray[i].length);
-                }
-                let entityArrayItem = temp.split(",");
-                let tempEntity, tempStartSpan, tempEndSpan = {};
-                for (let j = 0; j < entityArrayItem.length; j++) {
-                    let tempProperty = entityArrayItem[j];
-                    tempProperty = entityArrayItem[j].replace(":", "").replace(",", "")
-                    if(j % 2 === 0) {
-                        if (tempProperty.includes('Start span')) {
-                            tempStartSpan = {startSpan: entityArrayItem[j + 1]};
-                        } else if (tempProperty.includes('End span')) {
-                            tempEndSpan = {endSpan: entityArrayItem[j + 1]};
-                        } else if (typeof tempProperty === 'string') {
-                            tempEntity = {
-                                entity: {
-                                name: entityArrayItem[j].split("'").join(""),
-                                type: entityArrayItem[j + 1].split("'").join("")
-                                }
-                            };
-                        }
-                    }
-                }
-                resultItems.push(Object.assign(tempEntity, tempStartSpan, tempEndSpan));
-            }
-            return resultItems;
-        } catch (e) {
-            return [];
-        }
-    }
-
     renderForm() {
+        const service = this.props.protoSpec.findServiceByName(this.state.serviceName);
+        const serviceMethodNames = service.methodNames;
         return (
             <React.Fragment>
+                <Grid item xs={12} style={{textAlign: "center"}}>
+                    <h3>Entity Detection in Text</h3>
+                </Grid>
                 <Grid item xs={12}>
                     <br/>
-                    <br/>
-                    <FormControl style={{minWidth: '100%'}}>
-                        <Select
-                            value={this.state.serviceName}
-                            onChange={this.handleServiceName}
-                            displayEmpty
-                            name="serviceName"
-                            style={this.state.styles.defaultFontSize}
-                        >
-                            <MenuItem style={this.state.styles.defaultFontSize} value={undefined}>
-                                <em>Select a Service</em>
-                            </MenuItem>
-                            {this.allServices.map((item) =>
-                                <MenuItem style={this.state.styles.defaultFontSize} value={item}
-                                          key={item}>{item}</MenuItem>
-                            )};
-                        </Select>
-                    </FormControl>
                     <br/>
                     <FormControl style={{minWidth: '100%'}}>
                         <Select
@@ -193,12 +99,7 @@ export default class NamedEntityRecognitionService extends React.Component {
                             name="methodName"
                             style={this.state.styles.defaultFontSize}
                         >
-                            <MenuItem style={this.state.styles.defaultFontSize} value={undefined}>
-                                <em>Select a Method</em>
-                            </MenuItem>
-                            {this.serviceMethods.map((item) =>
-                                <MenuItem style={this.state.styles.defaultFontSize} value={item}>{item}</MenuItem>
-                            )};
+                            {this.renderServiceMethodNames(serviceMethodNames)}
                         </Select>
                     </FormControl>
                     <br/>
@@ -206,6 +107,8 @@ export default class NamedEntityRecognitionService extends React.Component {
                         id="standard-multiline-static"
                         label="Input sentence"
                         style={{width: "100%", fontSize: 24}}
+                        value={this.state.message}
+                        name="message"
                         InputProps={{
                             style: {fontSize: 15}
                         }}
@@ -214,10 +117,8 @@ export default class NamedEntityRecognitionService extends React.Component {
                         }}
                         multiline
                         rows="6"
-                        value={this.state.message}
-                        name="message"
-                        onChange={this.handleChange}
                         defaultValue=""
+                        onChange={(event) => this.handleMessageChange(event)}
                         margin="normal"
                     />
                 </Grid>
@@ -248,12 +149,12 @@ export default class NamedEntityRecognitionService extends React.Component {
                             <Typography style={this.state.styles.defaultFontSize}>Response example</Typography>
                         </ExpansionPanelSummary>
                         <ExpansionPanelDetails style={this.state.styles.details}>
-                            <pre style={{
-                                whiteSpace: "pre-wrap",
-                                overflowX: "scroll"
-                            }}>
-                                oi
-                                {/*[('Texas', 'LOCATION', 'Start span:', 97, 'End span:', 102), ('Arizona', 'LOCATION', 'Start span:', 113, 'End span:', 120), ('California', 'LOCATION', 'Start span:', 131, 'End span:', 141), ('Donald Trump', 'PERSON', 'Start span:', 144, 'End span:', 156), ('Trump Hotels', 'ORGANIZATION', 'Start span:', 331, 'End span:', 343)]*/}
+                            <pre style={{textAlign: 'left', width: '100%'}}>
+                                <p>Texas : LOCATION<br/>Start span: 97 - End span: 102</p>
+                                <p>Arizona : LOCATION<br/>Start span: 113 - End span: 120  </p>
+                                <p>California : LOCATION<br/>Start span: 131 - End span: 141 </p>
+                                <p>Donald Trump : PERSON<br/>Start span: 144 - End span: 156 </p>
+                                <p>Trump Hotels : ORGANIZATION<br/>Start span: 332 - End span: 344 </p>
                             </pre>
                         </ExpansionPanelDetails>
                     </ExpansionPanel>
@@ -263,9 +164,7 @@ export default class NamedEntityRecognitionService extends React.Component {
     }
 
     renderComplete() {
-        const result = this.parseResponse(this.props.response.value);
-        console.log("RESULT");
-        console.log(result);
+        const response = JSON.parse(this.props.response.value);
         return (
             <React.Fragment>
                 <Grid item xs={12} style={{textAlign: "center"}}>
@@ -276,12 +175,13 @@ export default class NamedEntityRecognitionService extends React.Component {
                     <div style={{textAlign: "left", padding: 20, backgroundColor: "#E5EFFC"}}>
                         <h4>This is the entities found and it's positions in the inputed sentence.</h4>
                         <br/>
-                        {result.map((item) =>
-                        <div>
-                            <h5>{item.entity.name} : {item.entity.type}</h5>
-                            <p>Start span: {item.startSpan} - End span: {item.endSpan}</p>
-                        </div>
-                    )};
+                        {response.map((item) =>
+                            item.entities.map((entity) =>
+                                <div>
+                                    <h5>{entity.name} : {entity.type}</h5>
+                                    <p>Start span: {entity.start_span} - End span: {entity.end_span}</p>
+                                </div>
+                            ))}
                     </div>
                 </Grid>
             </React.Fragment>
@@ -289,7 +189,7 @@ export default class NamedEntityRecognitionService extends React.Component {
     }
 
     render() {
-        if (this.isComplete)
+        if (this.props.isComplete)
             return (
                 <div style={{flexGrow: 1}}>
                     <Grid container
