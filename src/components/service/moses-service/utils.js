@@ -1,37 +1,3 @@
-import React from "react";
-import { Snackbar, SnackbarContent, CircularProgress } from "@material-ui/core";
-import { withStyles } from "@material-ui/core/styles";
-import red from "@material-ui/core/colors/red";
-
-// Parse moses options from options string to JSON
-export function parseMosesOptions(options) {
-  const splitString = options.split(" ");
-  const mosesOptions = {};
-  const additionalParameters = {};
-
-  for (let i = 0; i < splitString.length; i = i + 2) {
-    const mapping = MosesOptionsMapping.find(m => m[1] === splitString[i]);
-    // check if the string is a numeric value, if so convert it to number
-    // if not, assign original value
-    let value = isNaN(splitString[i + 1])
-      ? splitString[i + 1]
-      : +splitString[i + 1];
-    // check if the string is a boolean value and if so convert it to boolean
-    // if not, assign the original value
-    value = value === "true" || (value === "false" ? false : value);
-    // check if the option is included in moses options, if so use the long moses option name, if not add it to additional parameters
-    if (mapping) {
-      mosesOptions[mapping[0]] = value;
-    } else {
-      additionalParameters[splitString[i]] = value;
-    }
-  }
-  return {
-    mosesOptions: mosesOptions,
-    additionalParameters: additionalParameters
-  };
-}
-
 // convert moses options and additional parameters objects to an option string
 export function stringifyMosesOptions(mosesOptions, additionalParameters) {
   const options = Object.assign({}, mosesOptions);
@@ -108,46 +74,30 @@ export const checkDuplicate = (value, array) => {
     : null;
 };
 
-const ErrorSnackbarContent = withStyles({
-  root: { background: red[600] },
-  message: { color: "#fff" }
-})(SnackbarContent);
+export const checkMosesOptionValidity = value => {
+  return value === "" || MosesOptions.find(o => o.option.includes(value))
+    ? null
+    : {
+        error: true,
+        helperText: `"${value}" is not a valid moses option.`
+      };
+};
 
-export const showNotification = ({ message, busy }, callBack) => {
-  return (
-    <Snackbar
-      anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "right"
-      }}
-      style={{
-        position: "fixed",
-        bottom: "15px",
-        right: "15px",
-        margin: "15px"
-      }}
-      open
-      autoHideDuration={null}
-      onClose={callBack}
-    >
-      {busy ? (
-        <SnackbarContent
-          message={
-            <span style={{ display: "flex", alignItems: "center" }}>
-              <CircularProgress
-                size={24}
-                color="secondary"
-                style={{ marginRight: "15px" }}
-              />
-              {message}
-            </span>
-          }
-        />
-      ) : (
-        <ErrorSnackbarContent message={<span>{message}</span>} />
-      )}
-    </Snackbar>
-  );
+export const checkMosesOptionValueValidity = (option, value) => {
+  const type = isNaN(value)
+    ? "string"
+    : value.includes(".")
+    ? "float"
+    : "integer";
+  const mosesOption = MosesOptions.find(o => o.option.includes(option));
+  return !mosesOption ||
+    (mosesOption.type === "float" && type === "string") ||
+    (mosesOption.type === "integer" && type !== "integer")
+    ? {
+        error: true,
+        helperText: `"${option}" accepts ${mosesOption.type} value.`
+      }
+    : null;
 };
 
 export const MosesOptionsMapping = [
@@ -163,4 +113,552 @@ export const MosesOptionsMapping = [
   ["balance", "--balance"],
   ["hcCrossoverMinNeighbors", "hc-crossover-min-neighbors"],
   ["hcCrossoverPopSize", "hc-crossover-pop-size"]
+];
+
+export const MosesOptions = [
+  {
+    option: ["-K", "--ip_kld_weight"],
+    type: "integer"
+  },
+  {
+    option: ["-J", "--ip_skewness_weight"],
+    type: "integer"
+  },
+  {
+    option: ["-U", "--ip_stdU_weight"],
+    type: "integer"
+  },
+  {
+    option: ["-X", "--ip_skew_U_weight"],
+    type: "integer"
+  },
+  {
+    option: ["-i", "---input-file"],
+    type: "string"
+  },
+  {
+    option: ["-u", "--target-feature"],
+    type: "string"
+  },
+  {
+    option: ["--score-weight"],
+    type: "string"
+  },
+  {
+    option: ["--timestamp-feature"],
+    type: "string"
+  },
+  {
+    option: ["-Y", "--igonre-feature"],
+    type: "string"
+  },
+  {
+    option: ["-y", "--combo-program"],
+    type: "string"
+  },
+  {
+    option: ["-k", "--problem-size"],
+    type: "integer"
+  },
+  {
+    option: ["-j", "--jobs"],
+    type: "integer"
+  },
+  {
+    option: ["--mini-pool"],
+    type: "integer"
+  },
+  {
+    option: ["-e", "--exemplar"],
+    type: "string"
+  },
+  {
+    option: ["-H", "--problem"],
+    type: "string"
+  },
+  {
+    option: ["-b", "--nsamples"],
+    type: "integer"
+  },
+  {
+    option: ["--balance"],
+    type: "integer"
+  },
+  {
+    option: ["-a", "--opt-algo"],
+    type: "string"
+  },
+  {
+    option: ["-A", "--max-score"],
+    type: "float"
+  },
+  {
+    option: ["-m", "--max-evals"],
+    type: "integer"
+  },
+  {
+    option: ["--max-time"],
+    type: "integer"
+  },
+  {
+    option: ["-s", "--cache-size"],
+    type: "integer"
+  },
+  {
+    option: ["-n", "--ignore-operator"],
+    type: "string"
+  },
+  {
+    option: ["--linear-regression"],
+    type: "integer"
+  },
+  {
+    option: ["--logical-perm-ratio"],
+    type: "integer"
+  },
+  {
+    option: ["-r", "--random-seed"],
+    type: "integer"
+  },
+  {
+    option: ["-v", "--complexity-temprature"],
+    type: "integer"
+  },
+  {
+    option: ["-z", "--complexity-ratio"],
+    type: "float"
+  },
+  {
+    option: ["--cap-coef"],
+    type: "integer"
+  },
+  {
+    option: ["--hc-max-nn-evals"],
+    type: "integer"
+  },
+  {
+    option: ["--hc-fraction-of-nn"],
+    type: "integer"
+  },
+  {
+    option: ["-Z", "--hc-crossover"],
+    type: "integer"
+  },
+  {
+    option: ["--hc-crossover-pop-size"],
+    type: "integer"
+  },
+  {
+    option: ["--hc-crossover-min-neighbors"],
+    type: "integer"
+  },
+  {
+    option: ["--hc-resize-to-fit-ram"],
+    type: "integer"
+  },
+  {
+    option: ["--hc-allow-resize-deme"],
+    type: "integer"
+  },
+  {
+    option: ["--ps-max-particles"],
+    type: "integer"
+  },
+  {
+    option: ["--contin-depth"],
+    type: "integer"
+  },
+  {
+    option: ["--boost"],
+    type: "integer"
+  },
+  {
+    option: ["--boost-promote"],
+    type: "integer"
+  },
+  {
+    option: ["--boost-exact"],
+    type: "integer"
+  },
+  {
+    option: ["--boost-expalpha"],
+    type: "integer"
+  },
+  {
+    option: ["--boost-bias"],
+    type: "integer"
+  },
+  {
+    option: ["-B", "--reduce-knob-building-effort"],
+    type: "integer"
+  },
+  {
+    option: ["-D", "--max-dist"],
+    type: "integer"
+  },
+  {
+    option: ["-d", "--reduce-all"],
+    type: "integer"
+  },
+  {
+    option: ["-E", "--reduce-candidate-effort"],
+    type: "integer"
+  },
+  {
+    option: ["-g", "--max-gens"],
+    type: "integer"
+  },
+  {
+    option: ["--discard-dominated"],
+    type: "integer"
+  },
+  {
+    option: ["-L", "--hc-single-step"],
+    type: "integer"
+  },
+  {
+    option: ["-N", "--include-only-operator"],
+    type: "string"
+  },
+  {
+    option: ["-P", "--pop-size-ratio"],
+    type: "integer"
+  },
+  {
+    option: ["-p", "--noise"],
+    type: "integer"
+  },
+  {
+    option: ["-T", "--hc-widen-search"],
+    type: "integer"
+  },
+  {
+    option: ["--well-enough"],
+    type: "integer"
+  },
+  {
+    option: ["--revisit"],
+    type: "integer"
+  },
+  {
+    option: ["-c", "--result-count"],
+    type: "integer"
+  },
+  {
+    option: ["-S", "--output-score"],
+    type: "integer"
+  },
+  {
+    option: ["-x", "--output-cscore"],
+    type: "integer"
+  },
+  {
+    option: ["-t", "--output-bscore"],
+    type: "integer"
+  },
+  {
+    option: ["-C", "--output-only-best"],
+    type: "integer"
+  },
+  {
+    option: ["-V", "--output-eval-number"],
+    type: "integer"
+  },
+  {
+    option: ["-W", "--output-with-labels"],
+    type: "integer"
+  },
+  {
+    option: ["--output-deme-id"],
+    type: "integer"
+  },
+  {
+    option: ["--output-format"],
+    type: "string"
+  },
+  {
+    option: ["-o", "--output-file"],
+    type: "string"
+  },
+  {
+    option: ["-q", "--min-rand-input"],
+    type: "integer"
+  },
+  {
+    option: ["-w", "--max-rand-input"],
+    type: "integer"
+  },
+  {
+    option: ["-l", "--log-level"],
+    type: "string"
+  },
+  {
+    option: ["-F", "--log-file-dep-opt"],
+    type: "string"
+  },
+  {
+    option: ["-f", "--log-file"],
+    type: "string"
+  },
+  {
+    option: ["-M", "--max-candidates-per-deme"],
+    type: "integer"
+  },
+  {
+    option: ["-G", "--weighted-accuracy"],
+    type: "integer"
+  },
+  {
+    option: ["--diversity-pressure"],
+    type: "integer"
+  },
+  {
+    option: ["--diversity-exponent"],
+    type: "integer"
+  },
+  {
+    option: ["--diversity-normalize"],
+    type: "integer"
+  },
+  {
+    option: ["--diversity-dst"],
+    type: "string"
+  },
+  {
+    option: ["--diversity-p-norm"],
+    type: "integer"
+  },
+  {
+    option: ["--diversity-dst2dp"],
+    type: "string"
+  },
+  {
+    option: ["-R", "--discretize-threshold"],
+    type: "string"
+  },
+  {
+    option: ["-Q", "--alpha"],
+    type: "integer"
+  },
+  {
+    option: ["--time-dispersion-pressure"],
+    type: "integer"
+  },
+  {
+    option: ["--time-dispersion-exponent"],
+    type: "integer"
+  },
+  {
+    option: ["--time-bscore"],
+    type: "integer"
+  },
+  {
+    option: ["--time-bscore-granuality"],
+    type: "string"
+  },
+  {
+    option: ["--gen-best-tree"],
+    type: "integer"
+  },
+  {
+    option: ["--it-abs-err"],
+    type: "integer"
+  },
+  {
+    option: ["--pre-positive"],
+    type: "integer"
+  },
+  {
+    option: ["--enable-fs"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-target-size"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-exp-distrib"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-focus"],
+    type: "string"
+  },
+  {
+    option: ["--fs-seed"],
+    type: "string"
+  },
+  {
+    option: ["--fs-prune-exemplar"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-subsampling-ratio"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-subsampling-by-time"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-demes"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-algo"],
+    type: "string"
+  },
+  {
+    option: ["--fs-scorer"],
+    type: "string"
+  },
+  {
+    option: ["--fs-threshold"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-enforce-features-filename"],
+    type: "string"
+  },
+  {
+    option: ["--fs-diversity-pressure"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-diversity-cap"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-diversity-interaction"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-diversity-jaccard"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-inc-redundant-intensity"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-inc-target-size-epsilon"],
+    type: "float"
+  },
+  {
+    option: ["--fs-inc-interaction-terms"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-pre-penalty"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-pre-min-activation"],
+    type: "float"
+  },
+  {
+    option: ["--fs-pre-max-activation"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-pre-positive"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-hc-max-score"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-hc-max-evals"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-hc-fraction-of-remaining"],
+    type: "float"
+  },
+  {
+    option: ["--fs-hc-crossover"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-hc-crossover-pop-size"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-hc-crossover-min-neighbors"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-hc-widen-search"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-mi-penalty"],
+    type: "integer"
+  },
+  {
+    option: ["--fs-smd-top-size"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-n-subsample-demes"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-n-top-candidates"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-n-tuples"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-std-dev-threshold"],
+    type: "float"
+  },
+  {
+    option: ["--ss-tanimoto-mean-threshold"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-tanimoto-geometric-mean-threshold"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-tanimoto-max-threshold"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-n-best-bfdemes"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-tanimoto-mean-weight"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-tanimoto-geometric-mean-weight"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-tanimoto-max-weight"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-n-subsample-fitness"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-low-dev-pressure"],
+    type: "integer"
+  },
+
+  {
+    option: ["--ss-by-time"],
+    type: "integer"
+  },
+  {
+    option: ["--ss-contiguos-time"],
+    type: "integer"
+  }
 ];

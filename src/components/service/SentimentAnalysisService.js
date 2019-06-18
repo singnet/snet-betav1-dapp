@@ -1,5 +1,4 @@
 import React from 'react';
-import {hasOwnDefinedProperty} from '../../util'
 import Grid from "@material-ui/core/Grid";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
@@ -12,142 +11,102 @@ import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-export default class NamedEntityRecognitionService extends React.Component {
+export default class SentimentAnalysisService extends React.Component {
 
     constructor(props) {
         super(props);
         this.submitAction = this.submitAction.bind(this);
-        this.handleServiceName = this.handleServiceName.bind(this);
         this.handleFormUpdate = this.handleFormUpdate.bind(this);
-        this.handleChange = this.handleChange.bind(this);
+        this.handleMessageChange = this.handleMessageChange.bind(this);
+        this.handleSentences = this.handleSentences.bind(this);
 
         this.state = {
-            serviceName: undefined,
-            methodName: undefined,
+            serviceName: "SentimentAnalysis",
+            methodName: "Analyze",
             message: undefined,
             response: undefined,
-            expanded: null,
             styles: {
                 details: {
                     fontSize: 14,
                     alignItems: 'center',
+                },
+                responseDetails: {
+                    fontSize: 14,
+                    alignItems: 'left',
                 },
                 defaultFontSize: {
                     fontSize: 15
                 }
             }
         };
-        this.message = undefined;
-        this.isComplete = false;
-        this.serviceMethods = [];
-        this.allServices = [];
-        this.methodsForAllServices = [];
-        this.parseProps(props);
-    }
-
-    parseProps(nextProps) {
-        this.isComplete = nextProps.isComplete;
-        if (!this.isComplete) {
-            this.parseServiceSpec(nextProps.serviceSpec);
-        } else {
-            if (typeof nextProps.response !== 'undefined') {
-                if (typeof nextProps.response === 'string') {
-                    this.setState({response: nextProps.response});
-                } else {
-                    this.setState({response: nextProps.response.value});
-                }
-            }
-        }
-    }
-    componentWillReceiveProps(nextProps) {
-        if(this.isComplete !== nextProps.isComplete) {
-            this.parseProps(nextProps);
-        }
-    }
-    parseServiceSpec(serviceSpec) {
-        const packageName = Object.keys(serviceSpec.nested).find(key =>
-            typeof serviceSpec.nested[key] === "object" &&
-            hasOwnDefinedProperty(serviceSpec.nested[key], "nested"));
-
-        var objects = undefined;
-        var items = undefined;
-        if (typeof packageName !== 'undefined') {
-            items = serviceSpec.lookup(packageName);
-            objects = Object.keys(items);
-        } else {
-            items = serviceSpec.nested;
-            objects = Object.keys(serviceSpec.nested);
-        }
-
-        this.methodsForAllServices = [];
-        objects.map(rr => {
-            if (typeof items[rr] === 'object' && items[rr] !== null && items[rr].hasOwnProperty("methods")) {
-                this.allServices.push(rr);
-                this.methodsForAllServices.push(rr);
-                var methods = Object.keys(items[rr]["methods"]);
-                this.methodsForAllServices[rr] = methods;
-            }
-        });
     }
 
     handleFormUpdate(event) {
-        console.log(event.target);
-        this.setState({[event.target.name]: event.target.value});
+        this.setState({
+            [event.target.name]: event.target.value
+        });
     }
 
-    handleServiceName(event) {
-        var strService = event.target.value;
-        this.setState({serviceName: strService});
-        this.serviceMethods.length = 0;
-        var data = Object.values(this.methodsForAllServices[strService]);
-        if (typeof data !== 'undefined') {
-            console.log("typeof data !== 'undefined'");
-            this.serviceMethods = data;
+    handleMessageChange(event) {
+        this.setState({[event.target.name]: event.target.value});
+    };
+
+    renderServiceMethodNames(serviceMethodNames) {
+        const serviceNameOptions = ["Select a method", ...serviceMethodNames];
+        return serviceNameOptions.map((serviceMethodName, index) => {
+            return <MenuItem style={this.state.styles.defaultFontSize} key={index}
+                             value={serviceMethodName}>{serviceMethodName}</MenuItem>
+        });
+    }
+
+    handleSentences() {
+        let tempMessages = this.state.message.toString().split("\n");
+        let tempArray = [];
+        for (let i = 0; i < tempMessages.length; i++) {
+            if (tempMessages[i].length >= 1) {
+                tempArray.push(tempMessages[i]);
+            }
         }
+        let filterArray = tempArray.filter(function (el) {
+            return el != null;
+        });
+
+        let itemsToAnalyze = [];
+        for (let i = 0; i < filterArray.length; i++) {
+            itemsToAnalyze.push({id: i + 1, sentence: filterArray[i]});
+        }
+        return itemsToAnalyze;
+    }
+
+    parseResponse(response) {
+        let parsedResponse = JSON.parse(response);
+        let parsedResult = [];
+        for (let i = 0; i < parsedResponse.length; i++) {
+            let parsedAnalysis = JSON.parse(parsedResponse[i].analysis.split("\'").join("\""));
+            parsedResult.push({id: parsedResponse[i].id, analysis: parsedAnalysis});
+        }
+        return parsedResult;
     }
 
     submitAction() {
         this.props.callApiCallback(
             this.state.serviceName,
             this.state.methodName, {
-                value: btoa(this.state.message)
+                value: JSON.stringify(this.handleSentences())
             });
     }
 
-    handleChange(event) {
-        this.setState({[event.target.name]: event.target.value});
-    };
-
-    parseResponse(response) {
-        //Temporary parse
-        //Will be improved and migrated to backend service soon
-        try {
-            let resultItems = [];
-            const responseArray = atob(response).split('}');
-            for (let i = 0; i < responseArray.length - 1; i++) {
-                let arrayItem = responseArray[i].split('{');
-                let stringJson = "{" + arrayItem[1] + "}";
-                let item = {
-                    sentence: arrayItem[0],
-                    result: JSON.parse(stringJson.replace(new RegExp("'", 'g'), "\""))
-                };
-                resultItems.push(item);
-            }
-            return resultItems;
-        } catch (e) {
-            return [];
-        }
-    }
-
     renderForm() {
+        const service = this.props.protoSpec.findServiceByName(this.state.serviceName);
+        const serviceMethodNames = service.methodNames;
         const answer = {
             first: {
                 sentence: "Great price, fast shipping, great product.",
                 result: {'neg': 0.0, 'neu': 0.328, 'pos': 0.672, 'compound': 0.8481}
             },
             second: {
-                sentence: "@Olielayus I want to go to promote GEAR AND GROOVE but unfornately no ride there  I may b going to the one in Anaheim in May though.",
-                result: {'neg': 0.105, 'neu': 0.785, 'pos': 0.11, 'compound': -0.2144}
+                sentence: "Donald Murph lifted the Jones Act for ten days, not even enough time to load international cargo ships..",
+                result: {"neg": 0, "neu": 1, "pos": 0, "compound": 0}
             },
             third: {
                 sentence: "@maja_dren2, is still sick, and worrying the orange she just ate is going to come back up... ugh.",
@@ -157,43 +116,19 @@ export default class NamedEntityRecognitionService extends React.Component {
         return (
             <React.Fragment>
                 <Grid item xs={12} style={{textAlign: "center"}}>
-                    <h3>Sentiment Analysis Service</h3>
+                    <h3>AI Opinion</h3>
                 </Grid>
                 <Grid item xs={12}>
                     <br/>
                     <br/>
                     <FormControl style={{minWidth: '100%'}}>
                         <Select
-                            value={this.state.serviceName}
-                            onChange={this.handleServiceName}
-                            displayEmpty
-                            name="serviceName"
-                            style={this.state.styles.defaultFontSize}
-                        >
-                            <MenuItem style={this.state.styles.defaultFontSize} value={undefined}>
-                                <em>Select a Service</em>
-                            </MenuItem>
-                            {this.allServices.map((item) =>
-                                <MenuItem style={this.state.styles.defaultFontSize} value={item}
-                                          key={item}>{item}</MenuItem>
-                            )};
-                        </Select>
-                    </FormControl>
-                    <br/>
-                    <FormControl style={{minWidth: '100%'}}>
-                        <Select
-                            value={this.state.methodName}
-                            onChange={this.handleFormUpdate}
-                            displayEmpty
                             name="methodName"
+                            value={this.state.methodName}
                             style={this.state.styles.defaultFontSize}
+                            onChange={this.handleFormUpdate}
                         >
-                            <MenuItem style={this.state.styles.defaultFontSize} value={undefined}>
-                                <em>Select a Method</em>
-                            </MenuItem>
-                            {this.serviceMethods.map((item) =>
-                                <MenuItem style={this.state.styles.defaultFontSize} value={item}>{item}</MenuItem>
-                            )};
+                            {this.renderServiceMethodNames(serviceMethodNames)}
                         </Select>
                     </FormControl>
                     <br/>
@@ -201,6 +136,8 @@ export default class NamedEntityRecognitionService extends React.Component {
                         id="standard-multiline-static"
                         label="Input sentence"
                         style={{width: "100%", fontSize: 24}}
+                        value={this.state.message}
+                        name="message"
                         InputProps={{
                             style: {fontSize: 15}
                         }}
@@ -209,10 +146,8 @@ export default class NamedEntityRecognitionService extends React.Component {
                         }}
                         multiline
                         rows="6"
-                        value={this.state.message}
-                        name="message"
-                        onChange={this.handleChange}
                         defaultValue=""
+                        onChange={(event) => this.handleMessageChange(event)}
                         margin="normal"
                     />
                 </Grid>
@@ -232,7 +167,7 @@ export default class NamedEntityRecognitionService extends React.Component {
                                 overflowX: "scroll"
                             }}>
                               Great price, fast shipping, great product.<br/><br/>
-                                @Olielayus I want to go to promote GEAR AND GROOVE but unfornately no ride there  I may b going to the one in Anaheim in May though.<br/><br/>
+                                Donald Murph lifted the Jones Act for ten days, not even enough time to load international cargo ships..<br/><br/>
                                 @maja_dren2, is still sick, and worrying the orange she just ate is going to come back up... ugh.
                             </pre>
                         </ExpansionPanelDetails>
@@ -254,8 +189,9 @@ export default class NamedEntityRecognitionService extends React.Component {
         )
     }
 
-    renderComplete(){
-        const result = this.parseResponse(this.props.response.value);
+    renderComplete() {
+        const sentSentences = this.handleSentences();
+        const response = this.parseResponse(this.props.response.value);
         return (
             <React.Fragment>
                 <Grid item xs={12} style={{textAlign: "center"}}>
@@ -263,18 +199,44 @@ export default class NamedEntityRecognitionService extends React.Component {
                         Response from service is:
                     </h4>
                     <br/>
-                    <div style={{textAlign: "left", padding: 20, backgroundColor: "#E5EFFC"}}>
-                        {result.map((item) =>
-                            <h5>{item.sentence}<br/>{JSON.stringify(item.result)}<br/></h5>
-                        )};
-                    </div>
+                    {response.map((item, index) =>
+                        <Grid key={index} container
+                              direction="row"
+                              justify="center"
+                              alignItems="center"
+                              style={{textAlign: "left", padding: 20, backgroundColor: "#E5EFFC"}}>
+                            <Grid item xs={11}>
+                                <h5>{sentSentences[index].sentence}<br/>{JSON.stringify(item.analysis)}<br/></h5>
+                            </Grid>
+                            <Grid item xs={1} style={{textAlign: 'center'}}>
+                                {item.analysis.compound >= 0.05 ? <span>POS</span> : null}
+                                {item.analysis.compound > -0.05 && item.analysis.compound <= 0.05 ?
+                                    <span>NEU</span> : null}
+                                {item.analysis.compound <= -0.05 ? <span>NEG</span> : null}
+                            </Grid>
+                        </Grid>
+                    )};
+                </Grid>
+                <Grid item xs={12}>
+                    <ExpansionPanel>
+                        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                            <Typography style={this.state.styles.defaultFontSize}>Details</Typography>
+                        </ExpansionPanelSummary>
+                        <ExpansionPanelDetails style={this.state.styles.responseDetails}>
+                            <pre>
+                                <p>1 - Positive sentiment: compound score &#8925; 0.05</p>
+                                <p>2 - Neutral sentiment: (compound score &#62; -0.05) and (compound score &#60; 0.05)</p>
+                                <p>3 - Negative sentiment: compound score &#8924; -0.05</p>
+                            </pre>
+                        </ExpansionPanelDetails>
+                    </ExpansionPanel>
                 </Grid>
             </React.Fragment>
         );
     }
 
     render() {
-        if (this.isComplete)
+        if (this.props.isComplete)
             return (
                 <div style={{flexGrow: 1}}>
                     <Grid container

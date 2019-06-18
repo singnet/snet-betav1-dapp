@@ -12,7 +12,13 @@ import {
   Switch
 } from "@material-ui/core";
 import { Add } from "@material-ui/icons";
-import { checkRequired, checkMin, checkDuplicate } from "./utils";
+import {
+  checkRequired,
+  checkMin,
+  checkDuplicate,
+  checkMosesOptionValidity,
+  checkMosesOptionValueValidity
+} from "./utils";
 
 export default class MosesOptionsForm extends React.Component {
   constructor(props) {
@@ -48,7 +54,7 @@ export default class MosesOptionsForm extends React.Component {
     );
   }
 
-  validateForm(oldValues, newValues) {
+  validateForm(oldValues, newValues, prevState) {
     const validationErrors = Object.assign({}, this.state.validationErrors);
     let valuesChanged = false;
     // maximumEvals
@@ -104,13 +110,47 @@ export default class MosesOptionsForm extends React.Component {
       valuesChanged = true;
     }
 
+    if (
+      prevState.additionalParameterName !==
+        this.state.additionalParameterName ||
+      prevState.additionalParameterValue !== this.state.additionalParameterValue
+    ) {
+      validationErrors.additionalParameterName = null;
+      validationErrors.additionalParameterValue = null;
+
+      if (!validationErrors.additionalParameterName) {
+        validationErrors.additionalParameterName = checkDuplicate(
+          this.state.additionalParameterName,
+          Object.keys(this.props.additionalParameters)
+        );
+      }
+
+      if (!validationErrors.additionalParameterName) {
+        validationErrors.additionalParameterName = checkMosesOptionValidity(
+          this.state.additionalParameterName
+        );
+      }
+
+      if (
+        !validationErrors.additionalParameterName &&
+        this.state.additionalParameterName
+      ) {
+        validationErrors.additionalParameterValue = checkMosesOptionValueValidity(
+          this.state.additionalParameterName,
+          this.state.additionalParameterValue
+        );
+      }
+
+      valuesChanged = true;
+    }
+
     if (valuesChanged) {
       this.setState({ validationErrors: validationErrors });
     }
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    this.validateForm(prevProps.defaults, this.props.defaults);
+    this.validateForm(prevProps.defaults, this.props.defaults, prevState);
   }
 
   parseAdditionalParameters() {
@@ -430,23 +470,14 @@ export default class MosesOptionsForm extends React.Component {
                 variant="outlined"
                 value={this.state.additionalParameterName}
                 onChange={e => {
-                  let validationErrors = Object.assign(
-                    {},
-                    this.state.validationErrors
-                  );
-
-                  validationErrors.additionalParameterName = checkDuplicate(
-                    e.target.value.trim(),
-                    Object.keys(this.props.additionalParameters)
-                  );
                   this.setState({
-                    validationErrors: validationErrors,
                     additionalParameterName: e.target.value.trim()
                   });
                 }}
                 style={{ marginRight: "5px" }}
               />
               <TextField
+                {...this.state.validationErrors.additionalParameterValue}
                 label="Value"
                 placeholder="Value"
                 margin="dense"
@@ -454,7 +485,7 @@ export default class MosesOptionsForm extends React.Component {
                 value={this.state.additionalParameterValue}
                 onChange={e =>
                   this.setState({
-                    additionalParameterValue: e.target.value
+                    additionalParameterValue: e.target.value.trim()
                   })
                 }
                 style={{ marginRight: "5px" }}
@@ -476,7 +507,9 @@ export default class MosesOptionsForm extends React.Component {
                 }}
                 disabled={
                   !this.state.additionalParameterName ||
-                  !this.state.additionalParameterValue
+                  !this.state.additionalParameterValue ||
+                  this.state.validationErrors.additionalParameterName ||
+                  this.state.validationErrors.additionalParameterValue
                 }
               >
                 <Add /> Add parameter

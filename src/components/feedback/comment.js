@@ -13,7 +13,7 @@ const Comment = ({userComment, handleUserComment}) =>{
                         fullWidth
                         variant="outlined"
                         multiline
-                        rows="6"
+                        rows="4"
                         InputLabelProps={{
                             shrink: true,
                             style: {
@@ -33,7 +33,7 @@ const Comment = ({userComment, handleUserComment}) =>{
                                 opacity: 0.9
                             }
                         }}
-                        value={userComment}
+                        value={userComment == null? '' : userComment}
                         onChange={handleUserComment}
                     />
                 </div> 
@@ -41,7 +41,7 @@ const Comment = ({userComment, handleUserComment}) =>{
 }
 
 Comment.propTypes={
-    userComment: PropTypes.string.isRequired,
-    handleUserComment: PropTypes.func.isRequired
+    userComment: PropTypes.string,
+    handleUserComment: PropTypes.func
 }
 export default Comment;

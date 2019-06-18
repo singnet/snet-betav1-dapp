@@ -2,8 +2,6 @@ import { MAXIMUM_GRAPH_SIZE } from "./gene-annotation-service/visualizer.config"
 import React from "react";
 import GeneSelectionForm from "./gene-annotation-service/GeneSelection";
 import AnnotationSelection from "./gene-annotation-service/AnnotationSelection";
-import AnnotationResultVisualizer from "./gene-annotation-service/AnnotationResultVisualizer";
-import AnnotationResultDownload from "./gene-annotation-service/AnnotationResultDownload";
 import { Button, Grid } from "@material-ui/core";
 import { Check } from "@material-ui/icons";
 import GOFilter from "./gene-annotation-service/GOFilter";
@@ -11,7 +9,8 @@ import GenePathwayFilter from "./gene-annotation-service/GenePathwayFilter";
 import { Snackbar, SnackbarContent, CircularProgress } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 import red from "@material-ui/core/colors/red";
-
+import CheckCircle from "@material-ui/core/es/internal/svg-icons/CheckCircle";
+import Error from "@material-ui/icons/Error";
 const ErrorSnackbarContent = withStyles({
   root: { background: red[600] },
   message: { color: "#fff" }
@@ -51,7 +50,7 @@ export const showNotification = ({ message, busy }, callBack) => {
 
 const availableAnnotations = [
   {
-    key: "gene_go_annotation",
+    key: "gene-go-annotation",
     name: "Gene-GO",
     defaults: {
       namespace: [
@@ -66,12 +65,12 @@ const availableAnnotations = [
     )
   },
   {
-    key: "gene_pathway_annotation",
+    key: "gene-pathway-annotation",
     name: "Gene pathway",
     defaults: {
-      namespace: [],
-      include_prot: false,
-      include_small_molecule: true
+      namespace: ["reactome"],
+      include_prot: true,
+      include_small_molecule: false
     },
     fitlerForm: (defaults, handleFilterChanged) => (
       <GenePathwayFilter
@@ -81,20 +80,26 @@ const availableAnnotations = [
     )
   },
   {
-    key: "biogrid_interaction_annotation",
+    key: "biogrid-interaction-annotation",
     name: "Biogrid protein interaction",
-    fitlerForm: (defaults, handleFilterChanged) => null
+    fitlerForm: (defaults, handleFilterChanged) => null,
+    defaults: {
+      interaction: "genes"
+    }
   }
 ];
 
 export default class GeneAnnotationService extends React.Component {
-  constructor(props) {
+ constructor(props) {
     super(props);
     this.state = {
       genes: [],
       geneList: null,
       selectedAnnotations: [],
-      notification: null
+      annotationResult: null,
+      busy: false,
+      notification: null,
+      error: false
     };
     // bind functions
     this.handleGeneAdded = this.handleGeneAdded.bind(this);
@@ -106,21 +111,40 @@ export default class GeneAnnotationService extends React.Component {
     this.downloadSchemeFile = this.downloadSchemeFile.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
+  componentWillUnmount() {
+     this.isCancelled = true;
+  }
+  async componentDidUpdate(prevProps) {
     if (prevProps.isComplete !== this.props.isComplete) {
-      this.setState({ notification: null });
+       !this.isCancelled && this.parseResponse()
     }
   }
 
   parseResponse() {
     const { response } = this.props;
-    if (typeof response !== "undefined") {
-      const r = {
-        graph: JSON.parse(response.graph),
-        schemeFile: response.scm
-      };
-      return r;
+    if (response.graph !== "") {
+        if(response.graph.includes("Gene Doesn't exist")){
+            const invalidGenes = response.graph
+              .split("`")[1]
+              .split(",")
+              .map(g => g.trim())
+              .filter(g => g);
+            this.setState(state => ({
+              busy: false,
+              genes: state.genes.filter(g => !invalidGenes.includes(g)),
+              notification: { message: response.graph, busy: false },
+              error: true
+            }));
+        }
+        else {
+            this.setState({
+            busy: false,
+            notification: null,
+            annotationResult : response.graph
+        });
+        }
     }
+
   }
 
   handleGeneAdded(input) {
@@ -174,15 +198,28 @@ export default class GeneAnnotationService extends React.Component {
   handleAnnotationsChanged(isSelected, annotation) {
     this.setState(state => {
       let selectedAnnotations = state.selectedAnnotations.slice();
-      isSelected
-        ? selectedAnnotations.push({
-            name: annotation,
-            filter: availableAnnotations.find(a => a.key === annotation)
-              .defaults
-          })
-        : (selectedAnnotations = selectedAnnotations.filter(
-            a => a.name !== annotation
-          ));
+        if (isSelected) {
+            if(annotation === "biogrid-interaction-annotation" && selectedAnnotations.find(a => a.name === "gene-pathway-annotation")){
+                selectedAnnotations.push({
+                name: annotation,
+                filter: {
+                    "interaction": "proteins"
+                }
+            });
+            }
+            else{
+                selectedAnnotations.push({
+                name: annotation,
+                filter: availableAnnotations.find(
+                    a => a.key === annotation
+                ).defaults
+            });
+            }
+        } else {
+            selectedAnnotations = selectedAnnotations.filter(
+                a => a.name !== annotation
+            );
+        }
 
       return { selectedAnnotations: selectedAnnotations };
     });
@@ -204,15 +241,14 @@ export default class GeneAnnotationService extends React.Component {
     let valid = true;
     valid = valid && this.state.selectedAnnotations.length;
     valid = valid && this.state.genes.length;
-
     // If Gene GO annotation is selected, namespace must be defined
     const GO = this.state.selectedAnnotations.find(
-      a => a.name === "gene_go_annotation"
+      a => a.name === "gene-go-annotation"
     );
     if (GO) valid = valid && GO.filter.namespace.length;
     // If Gene Pathway annotation is selected, namespace must be defined
     const Pathway = this.state.selectedAnnotations.find(
-      a => a.name === "gene_pathway_annotation"
+      a => a.name === "gene-pathway-annotation"
     );
     if (Pathway) {
       valid =
@@ -225,7 +261,7 @@ export default class GeneAnnotationService extends React.Component {
 
   downloadSchemeFile() {
     const json = `data:application/txt, ${encodeURIComponent(
-      this.parseResponse().schemeFile
+      this.state.annotationResult.schemeFile
     )}`;
     const link = document.createElement("a");
     link.setAttribute("href", json);
@@ -238,7 +274,7 @@ export default class GeneAnnotationService extends React.Component {
   }
 
   handleSubmit() {
-    const annotationResult = {};
+   const annotationResult = {};
     annotationResult.annotations = this.state.selectedAnnotations.map(sa => {
       const annotation = {};
       annotation["functionName"] = sa.name;
@@ -266,68 +302,171 @@ export default class GeneAnnotationService extends React.Component {
   }
 
   renderForm() {
-    return (
-      <React.Fragment>
-        <GeneSelectionForm
-          genes={this.state.genes}
-          geneList={this.state.geneList}
-          onGeneAdded={this.handleGeneAdded}
-          onGeneRemoved={this.handleGeneRemoved}
-          onGeneListUploaded={this.handleGeneListUploaded}
-          onAllGenesRemoved={this.handleAllGenesRemoved}
-        />
-        <AnnotationSelection
-          handleAnnotationsChanged={this.handleAnnotationsChanged}
-          handleFilterChanged={this.handleFilterChanged}
-          selectedAnnotations={this.state.selectedAnnotations}
-          availableAnnotations={availableAnnotations}
-        />
-        <Grid container justify="flex-end">
-          <Grid item>
-            <Button
-              id="submitButton"
-              variant="contained"
-              onClick={() => this.handleSubmit()}
-              disabled={!this.isFormValid()}
-              color="primary"
-            >
-              <Check />
-              Submit
-            </Button>
-          </Grid>
-        </Grid>
-      </React.Fragment>
-    );
+     return (
+     <React.Fragment>
+          <div>
+            {this.state.notification &&
+              showNotification(this.state.notification, () => {
+                this.setState({ notification: null });
+              })}
+            <GeneSelectionForm
+              genes={this.state.genes}
+              geneList={this.state.geneList}
+              onGeneAdded={this.handleGeneAdded}
+              onGeneRemoved={this.handleGeneRemoved}
+              onGeneListUploaded={this.handleGeneListUploaded}
+              onAllGenesRemoved={this.handleAllGenesRemoved}
+            />
+            <AnnotationSelection
+              handleAnnotationsChanged={this.handleAnnotationsChanged}
+              handleFilterChanged={this.handleFilterChanged}
+              selectedAnnotations={this.state.selectedAnnotations}
+              availableAnnotations={availableAnnotations}
+            />
+            <Grid container justify="flex-end">
+              <Grid item>
+                <Button
+                  id="submitButton"
+                  variant="contained"
+                  onClick={() => this.handleSubmit()}
+                  disabled={!this.isFormValid()}
+                  color="primary"
+                >
+                  <Check />
+                  Submit
+                </Button>
+              </Grid>
+            </Grid>
+          </div>
+     </React.Fragment>
+     );
   }
-
   renderComplete() {
+    let response = this.parseResponse();
     return (
-      <React.Fragment>
-        {this.parseResponse().graph.nodes.length < MAXIMUM_GRAPH_SIZE ? (
-          <AnnotationResultVisualizer
-            notification={this.state.notification}
-            annotations={this.state.selectedAnnotations.map(a => a.name)}
-            graph={this.parseResponse().graph}
-            downloadSchemeFile={this.downloadSchemeFile}
-            sliderWidth={this.props.sliderWidth}
-          />
-        ) : (
-          <AnnotationResultDownload
-            downloadSchemeFile={this.downloadSchemeFile}
-          />
-        )}
+        <React.Fragment>
+          <Grid container justify="center">
+            <Grid
+              item
+              style={{
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "60vh"
+              }}
+            >
+              <CheckCircle style={{ fontSize: "72px", color: "#54C21F" }} />
+              <h1 style={{ margin: 5 }}>Your request is being processed</h1>
+              <h3 style={{ marginTop: 0, color: "#555" }}>
+                Follow the link below to view results.
+              </h3>
+              <a
+                rel="noopener noreferrer"
+                target="_blank"
+                href={response}
+                style={{ fontSize: 18 }}
+              >
+                {response}
+              </a>
+            </Grid>
+          </Grid>
       </React.Fragment>
     );
   }
 
   render() {
-    return (
+     return (
       <React.Fragment>
-        {this.state.notification &&
-          showNotification(this.state.notification, () => {
-            this.setState({ notification: null });
-          })}
-        {this.props.isComplete ? this.renderComplete() : this.renderForm()}
+        {!this.props.isComplete && !this.state.annotationResult && (
+          <div>
+            {this.state.notification &&
+              showNotification(this.state.notification, () => {
+                this.setState({ notification: null });
+              })}
+            <GeneSelectionForm
+              genes={this.state.genes}
+              geneList={this.state.geneList}
+              onGeneAdded={this.handleGeneAdded}
+              onGeneRemoved={this.handleGeneRemoved}
+              onGeneListUploaded={this.handleGeneListUploaded}
+              onAllGenesRemoved={this.handleAllGenesRemoved}
+            />
+            <AnnotationSelection
+              handleAnnotationsChanged={this.handleAnnotationsChanged}
+              handleFilterChanged={this.handleFilterChanged}
+              selectedAnnotations={this.state.selectedAnnotations}
+              availableAnnotations={availableAnnotations}
+            />
+            <Grid container justify="flex-end">
+              <Grid item>
+                <Button
+                  id="submitButton"
+                  variant="contained"
+                  onClick={() => this.handleSubmit()}
+                  disabled={!this.isFormValid()}
+                  color="primary"
+                >
+                  <Check />
+                  Submit
+                </Button>
+              </Grid>
+            </Grid>
+          </div>
+        )}
+        {this.props.isComplete && this.state.annotationResult && !this.state.error ? (
+          <Grid container justify="center">
+            <Grid
+              item
+              style={{
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "60vh"
+              }}
+            >
+              <CheckCircle style={{ fontSize: "72px", color: "#54C21F" }} />
+              <h1 style={{ margin: 5 }}>Your request is being processed</h1>
+              <h3 style={{ marginTop: 0, color: "#555" }}>
+                Follow the link below to view results.
+              </h3>
+              <a
+                rel="noopener noreferrer"
+                target="_blank"
+                href={this.state.annotationResult}
+                style={{ fontSize: 18 }}
+              >
+                {this.state.annotationResult}
+              </a>
+            </Grid>
+          </Grid>
+        ) : null}
+          {
+              this.props.isComplete && this.state.error ? (
+                   <Grid container justify="center">
+            <Grid
+              item
+              style={{
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "60vh"
+              }}
+            >
+              <Error style={{ fontSize: "72px", color: "#c20d25" }} />
+              <h2 style={{ margin: 5 }}>Error Occurred, Please try again.</h2>
+              <h3 style={{ marginTop: 0, color: "#555" }}>
+                {this.state.notification.message}
+              </h3>
+            </Grid>
+          </Grid>
+              ) : null
+          }
       </React.Fragment>
     );
   }

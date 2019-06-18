@@ -234,6 +234,8 @@ a:hover {
 .mr-15 { margin-right:15px; }
 .ml-10 { margin-left: 10px; }
 .mt-100 { margin-top:100px; }
+.mt-23 { margin-top: 23px; }
+.mt-17 { margin-top: 17px; }
 .border-left-1 { border-left:1px solid #ddd; }
 .border { border:1px solid #ddd; }
 .width-100 { width:100%; }
@@ -1244,6 +1246,11 @@ h4 { display: inline-block; }
   font-size: 14px;
   background-image: linear-gradient(90deg, #69c5f9, #5551eb);
   width:100%;
+}
+
+.standalone-container {
+  width: 70%;
+  padding: 25px;
 }
 
 .btn-start-disabled {
