@@ -192,7 +192,7 @@ class SampleServices extends React.Component {
             const pricing = agent["pricing"];
             let pricingJSON = (typeof pricing === 'undefined' || pricing === null) ? JSON.stringify(agent) : pricing;
             agent["pricing_strategy"] = new PricingStrategy(pricingJSON);
-            console.log(agent["pricing_strategy"])
+            //console.log(agent["pricing_strategy"])
             //agent["price_in_agi"] = AGI.inAGI(agent["price_in_cogs"]);
             agent["is_available"] = 0;
             agent["up_vote_count"] = 0;
@@ -284,7 +284,7 @@ class SampleServices extends React.Component {
           <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Price</div>
           <div className="col-sm-2 col-md-2 col-lg-2 price-align">
               <label className="m-0">
-                  <div className="m-0" >{(rown.pricing_strategy.getMaxPriceInCogs())} AGI</div>
+                  <div className="m-0" >{AGI.inAGI(rown.pricing_strategy.getMaxPriceInCogs())} AGI</div>
               </label>
           </div>
           <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Tag</div>
