@@ -7,6 +7,7 @@ import MPEAbi from 'singularitynet-platform-contracts/abi/MultiPartyEscrow.json'
 import MPENetworks from 'singularitynet-platform-contracts/networks/MultiPartyEscrow.json';
 import { AGI } from '../util';
 import { NETWORKS } from '../networks'
+import SnetWeb3 from 'web3';
 
 
 export default class BlockchainHelper {
@@ -22,7 +23,7 @@ export default class BlockchainHelper {
         var web3Initiatized = false;
         if (typeof window.ethereum !== 'undefined') {
             try {
-                window.web3 = new Web3(ethereum);
+                window.web3 = new SnetWeb3(ethereum);
                 await window.ethereum.enable();
                 this.initializeState();
                 web3Initiatized = true;
