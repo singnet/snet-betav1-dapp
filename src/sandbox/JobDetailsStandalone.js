@@ -2,6 +2,7 @@ import { hasOwnDefinedProperty } from '../util'
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import {Jobdetails} from '../components/JobDetails.js';
 import React, { Fragment } from 'react';
+import PricingStrategy from "../components/Pricing.js"
 
 export  class JobdetailsStandalone extends Jobdetails {
     constructor(props) {
@@ -13,6 +14,7 @@ export  class JobdetailsStandalone extends Jobdetails {
     onOpenJobDetails(data) {
       this.serviceSpecJSON = data["serviceSpecJSON"]
       this.endpoint = data['endpoint']
+      data['pricing_strategy'] = new PricingStrategy("{\"price_model\": \"fixed_price\", \"price_in_cogs\": 1}");
 
       super.setServiceSpec(data["serviceSpecJSON"])
       super.onOpenJobDetails(data);
