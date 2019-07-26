@@ -14,6 +14,7 @@ import NeuralSpeechSynthesis from './NeuralSpeechSynthesis.js';
 import LongQuestionAsnswering from './LongQuestionAsnswering.js';
 import ShortQuestionAnswering from './ShortQuestionAnswering.js';
 import BinarySemanticSimilarity from './BinarySemanticSimilarity.js';
+import NeuralTextGeneration from './NeuralTextGeneration.js';
 import NamedEntityRecognitionService from "./NamedEntityRecognitionService.js";
 import SentimentAnalysisService from "./SentimentAnalysisService";
 import TimeSeriesAnomalyDiscoveryService from "./TimeSeriesAnomalyDiscoveryService.js"
@@ -62,8 +63,9 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "speech-recognition", defaultChainId)] = AutomaticSpeechRecognition;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "speech-synthesis", defaultChainId)] = NeuralSpeechSynthesis;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-long-seq", defaultChainId)] = LongQuestionAsnswering;
-        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-short-seq", defaultChainId)] = ShortQuestionAnswering;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "question-answering-short-seq", defaultChainId)] = ShortQuestionAnswering; 
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "semantic-similarity-binary", defaultChainId)] = BinarySemanticSimilarity;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "text-generation", defaultChainId)] = NeuralTextGeneration;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "opencog-vqa", defaultChainId)] = VisualQAOpencog;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-recognition", defaultChainId)] = NamedEntityRecognitionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "sentiment-analysis", defaultChainId)] = SentimentAnalysisService;
@@ -85,7 +87,7 @@ export default class SampleServices {
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "coreference-resolution-service", defaultChainId)] = CoreferenceResolutionService;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "named-entity-disambiguation", defaultChainId)] = NamedEntityDisambiguation;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-robustness", defaultChainId)] = NetworkAnalysisRobustness;
-        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-bipartite", defaultChainId)] = NetworkAnalysisBipartite;
+        this.serviceOrgIDToComponent[this.generateUniqueID("snet", "network-analytics-bipartite", defaultChainId)] = NetworkAnalysisBipartite; 
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "topic-analysis", defaultChainId)] = TopicAnalysis;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "places365-scene-recognition", defaultChainId)] = Places365SceneRecognition;
         this.serviceOrgIDToComponent[this.generateUniqueID("snet", "super-resolution", defaultChainId)] = SuperResolution;
