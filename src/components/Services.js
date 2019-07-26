@@ -11,6 +11,7 @@ import {Jobdetails} from './JobDetails.js';
 import {theme} from './ReactStyles.js';
 import Header from "./Header.js";
 import Footer from "./Footer.js";
+import PricingStrategy from "./Pricing.js"
 
 class SampleServices extends React.Component {
   constructor(props) {
@@ -110,11 +111,11 @@ class SampleServices extends React.Component {
     var pricesort = this.state.agents
     if (this.state.togglePrice === false) {
 
-      pricesort.sort((a, b) => b.price_in_cogs - a.price_in_cogs)
+      pricesort.sort((a, b) => b.pricing_strategy.getMaxPriceInCogs() - a.pricing_strategy.getMaxPriceInCogs())
       this.setState({togglePrice: true})
     } else if (this.state.togglePrice === true) {
 
-      pricesort.sort((a, b) => a.price_in_cogs - b.price_in_cogs)
+      pricesort.sort((a, b) => a.pricing_strategy.getMaxPriceInCogs() - b.pricing_strategy.getMaxPriceInCogs())
       this.setState({togglePrice: false})
     }
     this.setState({agents: pricesort})
@@ -188,7 +189,11 @@ class SampleServices extends React.Component {
       {
         if(Array.isArray(values[0].data)) {
           values[0].data.map(agent => {
-            agent["price_in_agi"] = AGI.inAGI(agent["price_in_cogs"]);
+            const pricing = agent["pricing"];
+            let pricingJSON = (typeof pricing === 'undefined' || pricing === null) ? JSON.stringify(agent) : pricing;
+            agent["pricing_strategy"] = new PricingStrategy(pricingJSON);
+            //console.log(agent["pricing_strategy"])
+            //agent["price_in_agi"] = AGI.inAGI(agent["price_in_cogs"]);
             agent["is_available"] = 0;
             agent["up_vote_count"] = 0;
             agent["down_vote_count"] = 0;
@@ -279,7 +284,7 @@ class SampleServices extends React.Component {
           <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Price</div>
           <div className="col-sm-2 col-md-2 col-lg-2 price-align">
               <label className="m-0">
-                  <div className="m-0" >{(rown["price_in_agi"])} AGI</div>
+                  <div className="m-0" >{AGI.inAGI(rown.pricing_strategy.getMaxPriceInCogs())} AGI</div>
               </label>
           </div>
           <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Tag</div>

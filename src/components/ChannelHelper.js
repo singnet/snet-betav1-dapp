@@ -168,7 +168,7 @@ export default class ChannelHelper {
           if(rrchannels["channelId"] < lowestChannelID){
             lowestChannelID = rrchannels["channelId"];
           }
-          if (parseInt(rrchannels["balance_in_cogs"]) >= parseInt(data["price_in_cogs"]) 
+          if (parseInt(rrchannels["balance_in_cogs"]) >= parseInt(data.pricing_strategy.getMaxPriceInCogs()) 
               && parseInt(rrchannels["expiration"]) >= parseInt(thresholdBlockNumber))
           {
             console.log("Found a channel with adequate funds " + JSON.stringify(rrchannels));

@@ -105,7 +105,7 @@ export class Jobdetails extends React.Component {
   reInitializeJobState() {
     this.setState({ depositopenchannelerror: "" })
     this.setState({ ocexpiration: (this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET) })
-    this.setState({ ocvalue: this.serviceState['price_in_agi'] })
+    this.setState({ ocvalue: AGI.inAGI(this.serviceState.pricing_strategy.getMaxPriceInCogs())})
     const channelInfoUrl = getMarketplaceURL(this.props.chainId) +
       'available-channels?user_address=' + this.props.userAddress +
       '&service_id=' + this.serviceState["service_id"] +
@@ -201,7 +201,7 @@ export class Jobdetails extends React.Component {
     seedDefaultValues(enableFundTab, valueTabIndex) {
       const suggstedExpiration = this.currentBlockNumber + this.serviceState['payment_expiration_threshold'] + BLOCK_OFFSET;
       this.setState({ocexpiration: suggstedExpiration});
-      this.setState({ocvalue: this.serviceState['price_in_agi']});
+      this.setState({ocvalue: AGI.inAGI(this.serviceState.pricing_strategy.getMaxPriceInCogs())});
       this.setState({fundTabEnabled: enableFundTab});
       this.setState({valueTab: valueTabIndex});
       this.setState({grpcResponse: undefined})
@@ -223,7 +223,8 @@ export class Jobdetails extends React.Component {
       let selectedChannel = this.channelHelper.getChannel(this.channelHelper.getChannelId());
       if(channelAvailable) {
         const channelAmount = parseInt(this.channelHelper.getCurrentSignedAmount()) + 
-                              parseInt(this.serviceState["price_in_cogs"]);
+                              parseInt(this.serviceState.pricing_strategy.getMaxPriceInCogs());
+        console.log("Channel Amount = " + channelAmount + " Balance in Channel =" + selectedChannel["balance_in_cogs"]);
         if (parseInt(selectedChannel["balance_in_cogs"]) >= channelAmount 
           && parseInt(selectedChannel["expiration"]) >= thresholdBlockNumber) {
             this.seedDefaultValues(true, 1);
@@ -286,7 +287,7 @@ export class Jobdetails extends React.Component {
     handleJobInvocation(serviceName, methodName, requestObject) {
       this.onShowModal(MESSAGES.WAIT_FOR_MM)
       var nonce = this.channelHelper.getNonce(0);
-      let channelPrice = parseInt(this.serviceState["price_in_cogs"]) + 
+      let channelPrice = parseInt(this.serviceState.pricing_strategy.getPriceInCogs(serviceName, methodName)) + 
                          parseInt(this.channelHelper.getCurrentSignedAmount());
 
       var msg = this.composeSHA3Message(["address", "uint256", "uint256", "uint256"],
@@ -411,7 +412,7 @@ export class Jobdetails extends React.Component {
 
     channelExtend(mpeInstance, rrchannel, amountInCogs) {
       const channelAmount = parseInt(this.channelHelper.getCurrentSignedAmount()) + 
-                            parseInt(this.serviceState["price_in_cogs"]);
+                            parseInt(this.serviceState.pricing_strategy.getMaxPriceInCogs());
       const newBalance = parseInt(rrchannel['balance_in_cogs']) + amountInCogs;
       console.log("Channel " + channelAmount + " New Balance " + newBalance);
       if( newBalance < channelAmount) {
@@ -454,8 +455,8 @@ export class Jobdetails extends React.Component {
     });
   }
   channelOpen(mpeInstance, recipientaddress, groupIDBytes, amountInCogs) {
-    if (amountInCogs < this.serviceState['price_in_cogs']) {
-      this.processChannelErrors("Amount added should be greater than " + this.serviceState['price_in_cogs']);
+    if (amountInCogs < this.serviceState.pricing_strategy.getMaxPriceInCogs()) {
+      this.processChannelErrors("Amount added should be greater than " + this.serviceState.pricing_strategy.getMaxPriceInCogs());
       return;
     }
 
@@ -603,10 +604,12 @@ export class Jobdetails extends React.Component {
   handleChangeCustomFunding() {
     this.setState(prevState => { return { enableCustomFunding: !prevState.enableCustomFunding } });
   }
+  
   handleSliderValueChange(event, value) {
-    let ocvalue = this.serviceState['price_in_agi'] * value;
+    let ocvalue = AGI.inAGI(this.serviceState.pricing_strategy.getMaxPriceInCogs()) * value;
     this.setState({ sliderValue: value, ocvalue});
   }
+
   render() {
     const { valueTab } = this.state;
     let CallComponent = this.serviceMappings.getComponent(this.serviceState["org_id"], this.serviceState["service_id"], this.props.chainId);
@@ -650,7 +653,12 @@ export class Jobdetails extends React.Component {
                         <h3>Job Cost Preview</h3>
                         <div className="col-xs-12 col-sm-12 col-md-12 no-padding">
                           <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Current Price</div>
-                          <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > {this.serviceState["price_in_agi"]} AGI</div>
+                          {typeof this.serviceState.pricing_strategy !== 'undefined' ?
+                            <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter" > 
+                              {AGI.inAGI(this.serviceState.pricing_strategy.getMaxPriceInCogs())} AGI
+                            </div>
+                            : null
+                          }
                           <div className="col-xs-6 col-sm-6 col-md-6 bg-light">Price Model</div>
                           <div className="col-xs-6 col-sm-6 col-md-6 bg-lighter">{this.serviceState["price_model"]}</div>
                         </div>
