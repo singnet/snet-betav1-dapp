@@ -2,6 +2,7 @@ import React from 'react';
 import {hasOwnDefinedProperty} from '../../util'
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import Select from "@material-ui/core/Select";
 
 export default class NeuralTextGeneration extends React.Component {
 
@@ -16,8 +17,9 @@ export default class NeuralTextGeneration extends React.Component {
 
         this.state = {
             response: undefined,
-            model: "",
+            run_name: "run1",
             start_text: "",
+            length: 128,
             temperature: 1,
             top_k: 0
         };
@@ -94,6 +96,8 @@ export default class NeuralTextGeneration extends React.Component {
 
         this.props.callApiCallback(this.serviceName,
             this.methodName, {
+                run_name: this.state.run_name,
+                length: this.state.length,
                 temperature: this.state.temperature,
                 top_k: this.state.top_k,
                 start_text: this.state.start_text
@@ -103,6 +107,58 @@ export default class NeuralTextGeneration extends React.Component {
     renderForm() {
         return (
             <React.Fragment>
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Choose person:</div>
+                    <div className="col-md-3 col-lg-2" style={{fontSize: "13px", marginBottom: "10px"}}>
+                      <Select value={this.state.run_name} onChange={this.handleFormUpdate} displayEmpty name="run_name">
+                        <option value="run1">Universal</option>
+                        <option value="trump">Donald J. Trump</option>
+                        <option value="officialmcafee">John McAfee</option>
+                        <option value="barackobama">Barack Obama</option>
+                        <option value="elonmusk">Elon Musk</option>
+                        <option value="berniesanders">Bernie Sanders</option>
+                        <option value="joebiden">Joe Biden</option>
+                        <option value="joerogan">Joe Rogan</option>
+                        <option value="hillaryclinton">Hillary Clinton</option>
+                        <option value="jimmyfallon">Jimmy Fallon</option>
+                        <option value="therock">Dwayne Johnson</option>
+                        <option value="kimkardashian">Kim Kardashian</option>
+                        <option value="billgates">Bill Gates</option> 
+                        <option value="kevinhart4real">Kevin Hart</option>
+                        <option value="katyperry">Katy Perry</option>
+                        <option value="theellenshow">Ellen DeGeneres</option>
+                        <option value="neiltyson">Neil deGrasse Tyson</option>
+                        <option value="badastronomer">Phil Plait</option>
+                        <option value="ladygaga">Lady Gaga</option>
+                        <option value="conanobrien">Conan O'Brien</option>
+                        <option value="richarddawkins">Richard Dawkins</option>
+                        <option value="cmdr_hadfield">Chris Hadfield</option>
+                        <option value="rickygervais">Ricky Gervais</option>
+                        <option value="thetweetofgod">God</option>
+                        <option value="samharrisorg">Sam Harris</option>
+                        <option value="justinbieber">Justin Bieber</option>
+                        <option value="virginiahughes">Virginia Hughes</option>
+                        <option value="deborahblum">Deborah Blum</option>
+                        <option value="laelaps">Brian Switek</option>
+                        <option value="rebeccaskloot">Rebecca Skloot</option>
+                        <option value="deepakchopra">Deepak Chopra</option>
+                        <option value="beebrookshire">Bethany Brookshire</option>
+                        <option value="jordanbpeterson">Dr Jordan B Peterson</option>
+                        <option value="ericrweinstein">Eric Weinstein</option>
+                        <option value="ticbot">TicBot</option>
+                        <option value="dril">Wint</option>
+                        <option value="terencemckenna_">Terence McKenna</option>
+                      </Select>
+                    </div> 
+                </div>
+
+                <div className="row">
+                    <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Max length:</div>
+                    <div className="col-md-3 col-lg-2" style={{fontSize: "13px", marginBottom: "10px"}}>
+                      <TextField name="length" id="standard-number" value={this.state.length} onChange={this.handleFormUpdate} type="number" InputProps={{ inputProps: { min: 0, max: 1024, step: 1 } }}/>
+                    </div> 
+                </div>
+
                 <div className="row">
                     <div className="col-md-3 col-lg-3" style={{fontSize: "13px", marginLeft: "10px"}}>Temperature:</div>
                     <div className="col-md-3 col-lg-2" style={{fontSize: "13px", marginBottom: "10px"}}>
