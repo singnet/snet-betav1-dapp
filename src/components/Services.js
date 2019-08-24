@@ -4,7 +4,7 @@ import { MuiThemeProvider } from "@material-ui/core/styles"
 import Pagination from "material-ui-flat-pagination"
 import Typography from '@material-ui/core/Typography'
 import { withRouter } from 'react-router-dom'
-import { AGI, getMarketplaceURL, isSupportedNetwork } from '../util'
+import { AGI, getMarketplaceURL, isSupportedNetwork, generateSearchURL } from '../util'
 import { Requests } from '../requests'
 import BlockchainHelper from "./BlockchainHelper.js"
 import {Jobdetails} from './JobDetails.js';
@@ -18,6 +18,7 @@ class SampleServices extends React.Component {
     super(props);
     this.state = {
       agents : [],
+      paginationTotal:0,
       offset:0,
       searchTerm:'',
       searchResults:[],
@@ -28,18 +29,21 @@ class SampleServices extends React.Component {
       chainId: undefined
     };
 
+    this.masterData=[]
+
     this.network = new BlockchainHelper();
     this.account = undefined;
     this.onOpenJobDetailsSlider = this.onOpenJobDetailsSlider.bind(this)
     this.onCloseJobDetailsSlider = this.onCloseJobDetailsSlider.bind(this)
-    this.captureSearchTerm = this.captureSearchTerm.bind(this)
+    this.handleSearch = this.handleSearch.bind(this)
     this.handlepricesort = this.handlepricesort.bind(this)
     this.handleservicenamesort = this.handleservicenamesort.bind(this)
     this.handlehealthsort = this.handlehealthsort.bind(this)
-    this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this)
     this.watchWalletTimer = undefined;
     this.watchNetworkTimer = undefined;
     this.loadDetails = this.loadDetails.bind(this);
+    this.handlePagination = this.handlePagination.bind(this);
+    this.parseSearchResult = this.parseSearchResult.bind(this);
   }
 
     watchWallet() {
@@ -68,27 +72,6 @@ class SampleServices extends React.Component {
       }
     }
     return false;
-  }
-
-  handleSearchKeyUp(e) {
-    e.preventDefault();
-    if(this.state.searchTerm === '') {
-      this.setState({searchResults:[]});
-      return;
-    }
-
-    let ucSearchTerm = this.state.searchTerm.toUpperCase();
-    this.state.agents.map(row =>
-      (this.inArray(row["tags_uc"], ucSearchTerm)) ?
-      console.log("Matched " + row["tags_uc"]) : console.log("Not Matched " + row["tags_uc"]))
-
-    let searchedagents = this.state.agents.map(row =>
-        (row["display_name_uc"].indexOf(ucSearchTerm) !== -1
-        || (this.inArray(row["tags_uc"], ucSearchTerm)) ? row : null))
-
-    let bestsearchresults = [...(searchedagents.filter(row => row !== null).map(row1 => row1))]
-    console.log("Setting search results to " + bestsearchresults.length)
-    this.setState({searchResults:bestsearchresults});
   }
 
   handlehealthsort() {
@@ -174,7 +157,7 @@ class SampleServices extends React.Component {
 
   loadDetails(chainId) {
     if(!isSupportedNetwork(chainId)) {
-      this.setState({agents:[]})
+      this.setState({agents:[],paginationTotal:0})
       return;
     }
     const marketPlaceURL = getMarketplaceURL(chainId);
@@ -224,8 +207,9 @@ class SampleServices extends React.Component {
                   agent["is_available"] = healthDetail["is_available"]
                 }
             }))            
-          }      
-          this.setState({agents: values[0].data})
+          }   
+          this.masterData= values[0].data;   
+          this.setState({agents: values[0].data,paginationTotal:values[0].data.length})
         }   
       }
       //Do this the first time the page gets loaded.
@@ -242,8 +226,20 @@ class SampleServices extends React.Component {
     this.setState({userAddress: web3.eth.defaultAccount});
   }
 
-  handleClick(offset) {
+  handlePagination(offset) {
     this.setState({ offset });
+    let marketPlaceURL = getMarketplaceURL(this.state.chainId);
+    let searchTerm = this.state.searchTerm;
+    let searchURL = generateSearchURL({marketPlaceURL,searchTerm,offset});
+    Requests.get(searchURL).then(response=>{
+      if(response.status === 'success'){
+        let { offset, total_count:paginationTotal } = response.data;
+        let agents = this.parseSearchResult(response);
+        this.setState({agents,offset,paginationTotal});
+      }
+    }).catch(err=>{
+      console.log('error',err);
+    });
   }
 
   onOpenJobDetailsSlider(data) {
@@ -254,21 +250,46 @@ class SampleServices extends React.Component {
     this.refs.jobdetailsComp.onCloseJobDetailsSlider();
   }
 
-  captureSearchTerm(e) {
-    this.setState({searchTerm:e.target.value})
+  handleSearch(e) {
+    let marketPlaceURL = getMarketplaceURL(this.state.chainId);
+    let searchTerm = e.target.value;
+    this.setState({searchTerm});
+    let searchURL = generateSearchURL({marketPlaceURL,searchTerm})
+    Requests.get(searchURL).then(response=>{
+      if(response.status === 'success'){
+        let { offset, total_count:paginationTotal } = response.data;
+        let agents = this.parseSearchResult(response);
+        this.setState({agents, offset, paginationTotal});
+      }
+    }).catch(err=>{
+      console.log('error',err);
+    });
+    
+  }
+
+  parseSearchResult(response){
+    let {result:searchResults} = response.data;
+        if(!Array.isArray(searchResults) || (searchResults.length == 0)){ return []}
+        searchResults.map(srchRslt=>{
+          this.masterData.map(agent=>{
+            if(srchRslt["service_id"] === agent["service_id"] && srchRslt["org_id"] === agent["org_id"]){
+              srchRslt["is_available"] = agent["is_available"];
+              srchRslt["price_in_agi"] = agent["price_in_agi"];
+              srchRslt["comment"] = agent["comment"];
+              srchRslt["down_vote"] = agent["down_vote"];
+              srchRslt["down_vote_count"] = agent["down_vote_count"];
+              srchRslt["up_vote"] = agent["up_vote"];
+              srchRslt["up_vote_count"] = agent["up_vote_count"];
+            }
+          }); // end of agents map
+        }); // end of searchResults map
+        return searchResults;
   }
 
   render() {
-    const {open} = this.state;
-    let arraylimit = this.state.agents.length
-
     let agentsample = this.state.agents
-    if (this.state.searchTerm != '' || this.state.searchResults.length > 0) {
-      agentsample = this.state.searchResults
-      arraylimit = this.state.searchResults.length
-    }
 
-    const agents = agentsample.slice(this.state.offset, this.state.offset + 15).map((rown,index) =>
+    const agents = agentsample.slice(0,15).map((rown,index) =>
       <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 media" key={index} id={rown[ "service_id"]} name={rown[ "display_name"].toUpperCase()}>
           <div className="col-sm-2 col-md-2 col-lg-2 agent-boxes-label">Agent Name</div>
           <div className="col-sm-2 col-md-2 col-lg-2 agent-name-align" id={rown[ "service_id"]} name={rown[ "display_name"]}>
@@ -331,7 +352,12 @@ class SampleServices extends React.Component {
                         <span className="service-agents">Service Agents</span>
                     </div>
                     <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6 search-bar">
-                    <input className="search" placeholder={this.state.searchTerm === '' ? 'Search by Agent or Tags' : this.state.searchTerm} name="srch-term" id="srch-term" type="label" onChange={this.captureSearchTerm} onKeyUp={(e)=>this.handleSearchKeyUp(e)} />
+                    <input className="search" 
+                          placeholder={'Search by Agent or Tags'}
+                          value={this.state.searchTerm} 
+                          name="srch-term" id="srch-term" type="label" 
+                          onChange={this.handleSearch}
+                          disabled={this.masterData.length == 0}  />
                     <button className="btn-search"><i className="fa fa-search search-icon" aria-hidden="true"></i></button> 
                     </div>
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 head-txt-sec">
@@ -375,10 +401,10 @@ class SampleServices extends React.Component {
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 no-mobile-padding">
                         {agents}
                     </div>
-                    <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-right no-padding">
-                        {arraylimit>15?
+                    <div className="col-xs-12 col-md-12 col-lg-12 pagination pagination-singularity text-center no-padding">
+                        {(this.state.agents.length>15 || this.state.paginationTotal > 15)?
                         <MuiThemeProvider theme={theme}>
-                            <Pagination limit={15} offset={this.state.offset} total={arraylimit} onClick={(e, offset)=> this.handleClick(offset)} />
+                            <Pagination limit={15} offset={this.state.offset} total={this.state.paginationTotal} onClick={(e, offset)=> this.handlePagination(offset)} />
                         </MuiThemeProvider>
                         :null}
                     </div>
